@@ -1,5 +1,5 @@
 class ThermodynamicModel:
-    def convert_x_to_y(self, x):
+    def convert_x_to_y(self, x_i):
         """
         Computes the conversion from liquid mole fraction to vapor mole fraction 
 
@@ -11,7 +11,7 @@ class ThermodynamicModel:
         """
         raise NotImplementedError("Method convert_x_to_y not implemented in base class")
 
-    def convert_y_to_x(self, y):
+    def convert_y_to_x(self, y_i):
         """
         Computes the conversion from vapor mole fraction to liquid mole fraction 
 
@@ -23,4 +23,10 @@ class ThermodynamicModel:
         """
         raise NotImplementedError("Method convert_y_to_x not implemented in base class")
 
+class RaoultsLawModel(ThermodynamicModel):
+    def __init__(self, Pressure_system):
+        self.P_sys = Pressure_system
     
+    def convert_x_to_y(self, *x_i, P_isat):
+        
+        
