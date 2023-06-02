@@ -1,3 +1,5 @@
+import math as math
+
 class ThermodynamicModel:
     """
     Base class representing a thermodynamic model.
@@ -69,6 +71,15 @@ class RaoultsLawModel(ThermodynamicModel):
         for index,y in enumerate(y_array):
             x_array.append(y*self.P_sys/P_sat_array[index])
         return x_array
+    
+class Antoine_equation:
+    def __init__(self,A,B,C):
+        self.A = A
+        self.B = B
+        self.C = C
+        
+    def partial_pressure(self,Temp):
+        return 10**(self.A - self.B/(Temp + self.C))
             
             
         
