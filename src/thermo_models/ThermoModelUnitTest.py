@@ -1,5 +1,5 @@
 import unittest
-from ThermodynamicModel import RaoultsLawModel
+from .RaoultsLawModel import RaoultsLawModel
 
 class TestRaoultsLawModelBinary(unittest.TestCase):
     def setUp(self):
