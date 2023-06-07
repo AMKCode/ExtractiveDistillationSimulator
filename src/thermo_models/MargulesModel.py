@@ -15,9 +15,9 @@ class MargulesModel(ThermodynamicModel):
         P_sys (float): The system pressure used in the calculations.
 
     Methods:
-        convert_x_to_y(x, psat, A, B):
+        convert_x_to_y(x, psat, A12, A21):
             Convert liquid mole fraction to vapor mole fraction based on Margules.
-        convert_y_to_x(y, psat, A, B):
+        convert_y_to_x(y, psat, A12, A21):
             Convert vapor mole fraction to liquid mole fraction based on Margules.
     """
     def __init__(self, P_sys):
@@ -61,7 +61,7 @@ class MargulesModel(ThermodynamicModel):
             x[0] = (self.P_sys*y[0])/(psat[0]*gammas[0])
             x[1] = 1 - x[0]
         
-            gammas = self.get_gammas_van_laar(x, A, bz2)
+            gammas = self.get_gammas_van_laar(x, A12, A21)
             residuals = self.P_sys*y - psat*gammas*x
   
         return x
