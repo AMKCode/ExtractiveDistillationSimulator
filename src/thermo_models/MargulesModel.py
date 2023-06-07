@@ -54,14 +54,14 @@ class MargulesModel(ThermodynamicModel):
             A21 (float): Margules Parameter
         """
         x = np.zeros(y.shape) + 0.5
-        gammas = self.get_gammas_van_laar(x, A12, A21)
+        gammas = self.get_gammas_margules(x, A12, A21)
         residuals = self.P_sys*y - psat*gammas*x
         
         while np.abs(np.sum(residuals)) > 0.001: # 0.001 is arbitrarily chosen threshold
             x[0] = (self.P_sys*y[0])/(psat[0]*gammas[0])
             x[1] = 1 - x[0]
         
-            gammas = self.get_gammas_van_laar(x, A12, A21)
+            gammas = self.get_gammas_margules(x, A12, A21)
             residuals = self.P_sys*y - psat*gammas*x
   
         return x
