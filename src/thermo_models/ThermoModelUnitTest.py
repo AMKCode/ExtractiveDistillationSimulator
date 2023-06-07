@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 from RaoultsLawModel import RaoultsLawModel
 
+
 class TestRaoultsLawModelBinary(unittest.TestCase):
     def setUp(self):
         self.component_vapor_pressure = np.array([10.0, 100.0])  # Example vapor pressures for two components
@@ -20,6 +21,8 @@ class TestRaoultsLawModelBinary(unittest.TestCase):
         calculated_x = self.model.convert_y_to_x(y, [41,109+1/3])
         for i in range(len(expected_x)):
             self.assertAlmostEqual(calculated_x[i], expected_x[i])
+        
 
 if __name__ == '__main__':
     unittest.main()
+

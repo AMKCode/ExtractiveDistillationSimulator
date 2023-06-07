@@ -1,5 +1,4 @@
-from .ThermodynamicModel import ThermodynamicModel
-from ..utils.AntoineEquation import AntoineEquation
+from ThermodynamicModel import ThermodynamicModel
 import numpy as np
 
 class VanLaarModel(ThermodynamicModel):
