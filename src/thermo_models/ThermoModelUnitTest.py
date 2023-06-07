@@ -6,7 +6,7 @@ from RaoultsLawModel import RaoultsLawModel
 class TestRaoultsLawModelBinary(unittest.TestCase):
     def setUp(self):
         self.component_vapor_pressure = np.array([10.0, 100.0])  # Example vapor pressures for two components
-        self.model = RaoultsLawModel(82)
+        self.model = RaoultsLawModel(P_sys = 82)
 
     def test_convert_x_to_y(self):
         x = np.array([0.2, 0.8])

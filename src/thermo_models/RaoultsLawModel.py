@@ -33,10 +33,7 @@ class RaoultsLawModel(ThermodynamicModel):
             Convert vapor mole fraction to liquid mole fraction based on Raoult's law.
     """
     
-    def __init__(self, P_sys):
-        self.P_sys = P_sys
-    
-    def __init__(self, antoine_eqs, P_sys):
+    def __init__(self, P_sys, antoine_eqs=None):
         self.P_sys = P_sys
         self.antoine_eqs = antoine_eqs
         
