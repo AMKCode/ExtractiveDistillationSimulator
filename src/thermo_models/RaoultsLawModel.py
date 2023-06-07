@@ -90,7 +90,7 @@ def main():
     toluene_antoine = AE.AntoineEquation(Tol_A, Tol_B, Tol_C)
 
     # Create a Raoult's law object
-    raoults_law = RaoultsLawModel([benzene_antoine, toluene_antoine], P_sys)
+    raoults_law = RaoultsLawModel(P_sys, [benzene_antoine, toluene_antoine])
 
     # Use the Antoine equations to find the saturation temperatures
     t_sat_ben = benzene_antoine.get_temperature(P_sys)
