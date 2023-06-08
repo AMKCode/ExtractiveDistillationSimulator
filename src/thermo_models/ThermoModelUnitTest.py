@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 from RaoultsLawModel import RaoultsLawModel
+import os, sys
 
 
 class TestRaoultsLawModelBinary(unittest.TestCase):
@@ -21,6 +22,48 @@ class TestRaoultsLawModelBinary(unittest.TestCase):
         calculated_x = self.model.convert_y_to_x(y, [41,109+1/3])
         for i in range(len(expected_x)):
             self.assertAlmostEqual(calculated_x[i], expected_x[i])
+
+class TestRaoultsLawAntoinePlotting(unittest.TestCase):
+    def testPlot(self):
+        #
+        # Panwa: I'm not sure how else to import these properly
+        #
+        PROJECT_ROOT = os.path.abspath(os.path.join(
+                    os.path.dirname(__file__), 
+                    os.pardir)
+        )
+        sys.path.append(PROJECT_ROOT) 
+
+        import utils.AntoineEquation as AE
+        import matplotlib.pyplot as plt  
+        
+        # Antoine Parameters for benzene
+        Ben_A = 4.72583
+        Ben_B = 1660.652
+        Ben_C = -1.461
+
+        # Antoine Parameters for toluene
+        Tol_A = 4.07827
+        Tol_B = 1343.943
+        Tol_C = -53.773
+        
+        P_sys = 1.0325
+        # Create Antoine equations for benzene and toluene
+        benzene_antoine = AE.AntoineEquation(Ben_A, Ben_B, Ben_C)
+        toluene_antoine = AE.AntoineEquation(Tol_A, Tol_B, Tol_C)
+
+        # Create a Raoult's law object
+        raoults_law = RaoultsLawModel(P_sys, [benzene_antoine, toluene_antoine])
+
+        # Use the Antoine equations to find the saturation temperatures
+        t_sat_ben = benzene_antoine.get_temperature(P_sys)
+        t_sat_tol = toluene_antoine.get_temperature(P_sys)
+
+        # Use Raoult's law to compute the compositions
+        T_space = np.linspace(t_sat_ben,t_sat_tol,1000)
+        x_Ben, y_Ben = raoults_law.compute_composition(T_space)
+        plt.plot(x_Ben,y_Ben) 
+        plt.show()
         
 
 if __name__ == '__main__':
