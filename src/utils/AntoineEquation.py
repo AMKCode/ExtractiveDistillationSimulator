@@ -22,7 +22,7 @@ class AntoineEquation:
         self.B = B
         self.C = C
 
-    def get_partial_pressure(self, Temp: np.ndarray) -> np.ndarray:
+    def get_partial_pressure(self, Temp: np.ndarray):
         """
         Calculates the saturation pressure at a given temperature using the Antoine equation.
 
@@ -34,7 +34,7 @@ class AntoineEquation:
         """
         return 10**(self.A - self.B/(Temp + self.C))
 
-    def get_temperature(self, partial_pressure: np.ndarray) -> np.ndarray:
+    def get_temperature(self, partial_pressure: np.ndarray):
         """
         Calculates the temperature at a given saturation pressure using the Antoine equation.
 
