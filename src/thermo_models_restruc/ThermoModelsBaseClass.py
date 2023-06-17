@@ -23,7 +23,7 @@ class IGM_ILM_Model(VLEModel):
         return np.ones(self.num_comp)
     
     def compute_Txy_eq(self, x:np.ndarray, data_points:int, Temp_range):
-        boiling_point = self.partial_pressure_eq.get_boiling_point()
+        boiling_point = self.partial_pressure_eqs.get_boiling_point()
         Temp_range = np.amax(boiling_point), np.amin(boiling_point)
         Temp_space = np.linspace(Temp_range[0],Temp_range[1], data_points)
         activity_coeff = self.get_activity_coefficient()
