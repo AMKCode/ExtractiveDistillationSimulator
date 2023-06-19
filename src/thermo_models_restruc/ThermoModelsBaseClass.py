@@ -1,38 +1,57 @@
-import math
 import numpy as np
-from scipy.optimize import fsolve
-from ThermoModel import *
+import os, sys
+import numpy as np
+#
+# Panwa: I'm not sure how else to import these properly
+#
+PROJECT_ROOT = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), 
+            os.pardir)
+)
+sys.path.append(PROJECT_ROOT) 
+
 from utils.AntoineEquation import *
+from ThermoModel import *
 
 class IGM_ILM_Model(VLEModel):
-    def __init__(self, num_comp: int, P_sys: float, partial_pressure_eqs:np.ndarray):
-        super().__init__(num_comp)
-        self.P_sys = P_sys
+    def __init__(self, num_comp: int, P_sys: float, partial_pressure_eqs: AntoineEquation):
+        super().__init__(num_comp, P_sys)
         self.partial_pressure_eqs = partial_pressure_eqs
         
     def compute_gas_partial_fugacity(self,y_i:np.ndarray) -> np.ndarray:
         return y_i * self.P_sys
     
-    def get_vapor_pressure(self, Temp:np.ndarray)->np.ndarray:
+    def get_vapor_pressure(self, Temp:float)->np.ndarray:
         vap_pressure_array = []
         for partial_pressure_eq in self.partial_pressure_eqs:
             vap_pressure_array.append(partial_pressure_eq.get_partial_pressure(Temp))
         return np.array(vap_pressure_array)
     
-    def get_activity_coefficient(self):
+    def get_activity_coefficient(self, *args):
         return np.ones(self.num_comp)
     
-    def compute_Txy_eq(self, x:np.ndarray, data_points:int, Temp_range):
-        boiling_point = self.partial_pressure_eqs.get_boiling_point()
-        Temp_range = np.amax(boiling_point), np.amin(boiling_point)
-        Temp_space = np.linspace(Temp_range[0],Temp_range[1], data_points)
-        activity_coeff = self.get_activity_coefficient()
-        vapor_pressure_array = self.get_vapor_pressure(Temp_space)
-        return x * activity_coeff * vapor_pressure_array - self.P_sys
+def main():
+    #Antoine Parameters for benzene
+    Ben_A = 4.72583
+    Ben_B = 1660.652
+    Ben_C = -1.461
+
+    #Antoine Parameters for toluene
+    Tol_A = 4.07827
+    Tol_B = 1343.943
+    Tol_C = -53.773
     
-    def get_Txy(self):
-        pass
-        
+    AntoineEquations = AntoineEquation(Ben_A,Ben_B,Ben_C),AntoineEquation(Tol_A,Tol_B,Tol_C)
+    
+    # Total Pressure of system
+    P = 1 #bar
+    
+    TolBenSys = IGM_ILM_Model(2,P,AntoineEquations)
+    TolBenSys.convert_x_to_y(None)
+    
+if __name__ == "__main__":
+    main()
+
         
 
     
