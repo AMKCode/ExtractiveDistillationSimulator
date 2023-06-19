@@ -2,7 +2,8 @@ import math
 import numpy as np
 from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
-
+import matplotlib
+import ternary
 
 class VLEModel:
     def __init__(self,num_comp:int,P_sys:float):
@@ -21,7 +22,10 @@ class VLEModel:
         num_data_points = len(xandy)  # Number of data points
         x_solutions, y_solutions = np.split(np.array(xandy).reshape(num_data_points, self.num_comp*2), 2, axis=1)
         
-        
+        if self.num_comp == 2:
+            self.plot_binary_Txy(x_solutions[:,0],y_solutions[:,0],temp)
+        if self.num_comp == 3:
+            self.plot_ternary_Tx(x_solutions[:,0],x_solutions[:,1],x_solutions[:,2])
             
     def convert_y_to_x(self, y_array):
         """
@@ -64,12 +68,6 @@ class VLEModel:
             solutions.append(solution)
         return Temp_space, solutions
 
-
-
-
-        
-        
-
     def plot_binary_Txy(self,x_array, y_array, t_evaluated):
         plt.figure(figsize=(10, 6))
 
@@ -80,16 +78,32 @@ class VLEModel:
         plt.xlabel("Mole fraction of component 1")
         plt.ylabel("Temperature")
         plt.legend()
-
         plt.show()
-    
-# def main():
-#     model = VLEModel(2,2)
-#     model.get_Txy(2)
         
+    def plot_ternary_Tx(self,x_array_comp1, x_array_comp2, x_array_comp3):
+        matplotlib.rcParams['figure.dpi'] = 200 # Make images higher resolution
+        matplotlib.rcParams['figure.figsize'] = (4, 4) # and set default size
+        # Sample trajectory plot
+        figure, ax = ternary.figure(scale=100)
+
+        # Define pure component names
+        ax.right_corner_label("          Component 1", fontsize=8, offset=0.25)
+        ax.top_corner_label("Component 2", fontsize=8, offset=0.2)
+        ax.left_corner_label("Component 3", fontsize=8, offset=0.25)
         
-# if __name__ == "__main__":
-#     main()
+        ax.boundary()
+        ax.gridlines(multiple=10, color="black")
+        ax.set_title("Ternary Diagram\n", fontsize=10)
+        
+        points = []
+        for idx, x in x_array_comp1:
+            points.append[x,x_array_comp2[idx],x_array_comp3[idx]]
+        ax.plot(points=points)
+        
+        ax.get_axes().axis('off')
+        ax.clear_matplotlib_ticks()
+        ax.legend(loc='upper right', prop={'size': 5})
+        ax.show()
 
 
 
