@@ -9,10 +9,11 @@ class MargulesModel(ThermodynamicModel):
     based on Margules's model.
 
     Args:
+        num_comp (int): The number of components of the system -- typically 2 or 3
         P_sys (float): The system pressure in units compatible with the vapor pressures.
+        A_dict (dictionary): Dict of floats for {ternary: A12, A21, A23, A32, A13, A31} 
 
-    Attributes:
-        P_sys (float): The system pressure used in the calculations.
+
 
     Methods:
         convert_x_to_y(x, psat, A12, A21):
@@ -20,14 +21,18 @@ class MargulesModel(ThermodynamicModel):
         convert_y_to_x(y, psat, A12, A21):
             Convert vapor mole fraction to liquid mole fraction based on Margules.
     """
-    def __init__(self, P_sys):
+    def __init__(self,num_comp:int,P_sys:float, A_dict:dict):
+        self.num_comp = num_comp
         self.P_sys = P_sys
-    
-    def get_gammas_margules(x_, A12, A21):
+        self.A_dict = A_dict
 
+    def get_gammas_margules(x_, A_dict):
+        #need to update for multicomponent
         gamma1 = np.exp((A12 + 2(A21 - A12)*x_[0]) * (x_[1]**2))
         gamma2 = np.exp((A21 + 2(A12 - A21)*x_[1]) * (x_[0]**2))     
         return np.array([gamma1, gamma2])
+    
+    #These (x <-> y) functions will be put into base class?
     
     def convert_x_to_y(self, x, psat, A12, A21):
         """
