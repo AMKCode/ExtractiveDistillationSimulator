@@ -4,6 +4,35 @@ import matplotlib.pyplot as plt
 
 
 class VLEModel:
+    """
+    A class used to represent a Vapor-Liquid Equilibrium (VLE) model.
+
+    This base class provides methods for computing activity coefficients, vapor pressures, 
+    and converting between liquid and vapor mole fractions. Derived classes provide
+    specific calculation of activity coefficient and vapor pressure for different 
+    types of mixtures.
+    ...
+
+    Attributes
+    ----------
+    num_comp : int
+        The number of components in the mixture.
+    P_sys : float
+        The total pressure of the system.
+
+    Methods
+    -------
+    get_activity_coefficient(*args) -> np.ndarray:
+        Computes the activity coefficient for each component in the the model.
+    get_vapor_pressure(*args) -> np.ndarray:
+        Computes the vapor pressure for each component in the model.
+    convert_x_to_y(x_array:np.ndarray) -> np.ndarray:
+        Computes the conversion from liquid mole fraction to vapor mole fraction.
+    compute_Txy(vars:np.ndarray, x_array:np.ndarray) -> list:
+        Computes the system of equations for the T-x-y calculations.
+    plot_binary_Txy(data_points:int, comp_index:int):
+        Plots the T-x-y diagram for a binary mixture.
+    """
     def __init__(self,num_comp:int,P_sys:float):
         self.num_comp = num_comp
         self.P_sys = P_sys
