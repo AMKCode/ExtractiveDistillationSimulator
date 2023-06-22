@@ -1,6 +1,6 @@
 import unittest
-import os, sys
 import numpy as np
+import os, sys
 #
 # Panwa: I'm not sure how else to import these properly
 #
