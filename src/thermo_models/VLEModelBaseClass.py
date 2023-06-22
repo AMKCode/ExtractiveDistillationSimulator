@@ -84,7 +84,20 @@ class VLEModel:
         solution = fsolve(self.compute_Txy, init_guess, args=(x_array,))
 
         return solution
+    
+    def convert_y_to_x(self, y_array:np.ndarray)->np.ndarray:
+        """
+        Computes the conversion from vapor mole fraction to liquid mole fraction.
 
+        Args:
+            y_array (np.ndarray): Vapor mole fraction of each component.
+
+        Returns:
+            solution (np.ndarray): The solution from the fsolve function, which includes the liquid mole fractions and the system temperature.
+        """
+        
+        
+        
     def compute_Txy(self, vars:np.ndarray, x_array:np.ndarray)->list:
         """
         Computes the system of equations for the T-x-y calculations.
