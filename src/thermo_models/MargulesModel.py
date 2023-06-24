@@ -1,7 +1,7 @@
-from ThermodynamicModel import ThermodynamicModel
+from VLEModelBaseClass import VLEModel
 import numpy as np
 
-class MargulesModel(ThermodynamicModel):
+class MargulesModel(VLEModel):
     """
     A class representing a thermodynamic model based on Margules.
 
@@ -11,8 +11,8 @@ class MargulesModel(ThermodynamicModel):
     Args:
         num_comp (int): The number of components of the system -- typically 2 or 3
         P_sys (float): The system pressure in units compatible with the vapor pressures.
-        A_dict (dictionary): Dict of floats for {ternary: A12, A21, A23, A32, A13, A31} 
-
+        A_ (dict): Dictionary keys are tuples (i,j) that indicate the coefficient with corresponding value 
+                             ex: A_[(1,2)] = A12
 
 
     Methods:
@@ -21,19 +21,27 @@ class MargulesModel(ThermodynamicModel):
         convert_y_to_x(y, psat, A12, A21):
             Convert vapor mole fraction to liquid mole fraction based on Margules.
     """
-    def __init__(self,num_comp:int,P_sys:float, A_dict:dict):
+    def __init__(self, num_comp:int, P_sys:float, A_:dict):
         self.num_comp = num_comp
         self.P_sys = P_sys
-        self.A_dict = A_dict
+        self.A_ = A_
+        #Assert that A_[(i,i)] = 1
+        for i in range(num_comp):
+            if (A_[(i,i)] != 1):
+                raise ValueError('Coefficients entered incorrectly')
+            
 
-    def get_gammas_margules(x_, A_dict):
-        #need to update for multicomponent
-        gamma1 = np.exp((A12 + 2(A21 - A12)*x_[0]) * (x_[1]**2))
-        gamma2 = np.exp((A21 + 2(A12 - A21)*x_[1]) * (x_[0]**2))     
-        return np.array([gamma1, gamma2])
+    def get_activity(x_, A_, num_comp):
+        if (num_comp == 2):
+            gamma1 = np.exp((A_[(1,2)] + 2(A_[(2,1)] - A_[(1,2)])*x_[0]) * (x_[1]**2))
+            gamma2 = np.exp((A_[(2,1)] + 2(A_[(1,2)] - A_[(2,1)])*x_[1]) * (x_[0]**2))     
+            return np.array([gamma1, gamma2])
+        else: 
+            print("Margules model only handles binary mixtures")
+
     
-    #These (x <-> y) functions will be put into base class?
-    
+
+    #I think these can be removed since x to y conversions are in base class
     def convert_x_to_y(self, x, psat, A12, A21):
         """
         Computes the conversion from liquid mole fraction to vapor mole fraction.
