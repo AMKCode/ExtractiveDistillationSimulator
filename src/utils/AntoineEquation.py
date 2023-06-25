@@ -44,7 +44,7 @@ class AntoineEquation:
         Returns:
             np.ndarray: The calculated temperature(s).
         """
-        print("boiling point",(self.B/(self.A - np.log10(partial_pressure))) - self.C)
+        # print("boiling point",(self.B/(self.A - np.log10(partial_pressure))) - self.C)
         return (self.B/(self.A - np.log10(partial_pressure))) - self.C
     
     def get_boiling_point(self, P_sys:float) -> float:

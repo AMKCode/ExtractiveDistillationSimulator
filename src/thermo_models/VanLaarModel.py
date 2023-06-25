@@ -1,7 +1,8 @@
-from ThermodynamicModel import ThermodynamicModel
 import numpy as np
+from utils.AntoineEquation import *
+from thermo_models.VLEModelBaseClass  import *
 
-class VanLaarModel(ThermodynamicModel):
+class VanLaarModel(VLEModel):
     """
     A class representing a thermodynamic model based on Van Laar.
 
@@ -20,55 +21,32 @@ class VanLaarModel(ThermodynamicModel):
         convert_y_to_x(y, psat, A, B):
             Convert vapor mole fraction to liquid mole fraction based on Van Laar.
     """
-    def __init__(self, P_sys):
-        self.P_sys = P_sys
-    
-    def get_gammas_van_laar(x_, A, B):
+    def __init__(self, num_comp: int, P_sys: float, partial_pressure_eqs: AntoineEquation, A, B):
+        super().__init__(num_comp, P_sys)
+        self.partial_pressure_eqs = partial_pressure_eqs
+        self.A = A
+        self.B = B
 
-        gamma1 = np.exp(A/((1+((A*x_[0])/(B*x_[1])))**2))
-        gamma2 = np.exp(B/((1+((B*x_[1])/(A*x_[0])))**2))
+    def get_activity_coefficient(self, x_array):
+
+        gamma1 = np.exp(self.A/(np.power(1+((self.A*x_array[0])/(self.B*x_array[1])), 2)))
+        gamma2 = np.exp(self.B/(np.power(1+((self.B*x_array[1])/(self.A*x_array[0])), 2)))
         
         return np.array([gamma1, gamma2])
-    
-    def convert_x_to_y(self, x, psat, A, B):
-        """
-        Computes the conversion from liquid mole fraction to vapor mole fraction.
 
+    def get_vapor_pressure(self, Temp)->np.ndarray:
+        """
+        Computes the vapor pressure for each component at a given temperature.
+        
         Args:
-            x (np.array): Liquid mole fraction of each component.
-            psat (np.array): Saturation pressure of components.
-            A (float): Van Laar Parameter
-            B (float): Van Laar Parameter
+            Temp (float): The temperature at which to compute the vapor pressure.
+            
+        Returns:
+            np.ndarray: The vapor pressure for each component.
         """
-        y = np.zeros(x.shape)
-
-        gammas = self.get_gammas_van_laar(x, A, B)
-
-        y = (psat * gammas * x) / self.P_sys
-
-        return y
-        
-    def convert_y_to_x(self, y, psat, A, B):
-        """
-        Computes the conversion from vapor mole fraction to liquid mole fraction.
-
-        Args:
-            y (np.array): vapor mole fraction of each component.
-            psat (np.array): Saturation pressure of components.
-            A (float): Van Laar Parameter
-            B (float): Van Laar Parameter
-        """
-        x = np.zeros(y.shape) + 0.5
-        gammas = self.get_gammas_van_laar(x, A, B)
-        residuals = self.P_sys*y - psat*gammas*x
-        
-        while np.abs(np.sum(residuals)) > 0.001: # 0.001 is arbitrarily chosen threshold
-            x[0] = (self.P_sys*y[0])/(psat[0]*gammas[0])
-            x[1] = 1 - x[0]
-        
-            gammas = self.get_gammas_van_laar(x, A, B)
-            residuals = self.P_sys*y - psat*gammas*x
-        
-        return x
+        vap_pressure_array = []
+        for partial_pressure_eq in self.partial_pressure_eqs:
+            vap_pressure_array.append(partial_pressure_eq.get_partial_pressure(Temp))
+        return np.array(vap_pressure_array)
             
             

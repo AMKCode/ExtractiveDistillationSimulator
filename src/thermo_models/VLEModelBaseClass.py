@@ -37,7 +37,7 @@ class VLEModel:
         self.num_comp = num_comp
         self.P_sys = P_sys
         
-    def get_activity_coefficient(self,*args)->np.ndarray:
+    def get_activity_coefficient(self, x_array=None)->np.ndarray:
         """
         Computes the activity coefficient for each component in the the model.
 
@@ -49,7 +49,7 @@ class VLEModel:
         """
         raise NotImplementedError
     
-    def get_vapor_pressure(self, *args)->np.ndarray:
+    def get_vapor_pressure(self, Temp)->np.ndarray:
         """
         Compute the vapor pressure for each component in the model.
 
@@ -95,8 +95,12 @@ class VLEModel:
         Returns:
             solution (np.ndarray): The solution from the fsolve function, which includes the liquid mole fractions and the system temperature.
         """
-        
-        
+        boiling_points = [eq.get_boiling_point(self.P_sys) for eq in self.partial_pressure_eqs]
+        Temp_guess = np.mean([np.amax(boiling_points), np.amin(boiling_points)])
+        init_guess = np.append(np.full(self.num_comp, 1/self.num_comp), Temp_guess)
+        solution = fsolve(self.compute_Txy2, init_guess, args=(y_array,))
+
+        return solution
         
     def compute_Txy(self, vars:np.ndarray, x_array:np.ndarray)->list:
         """
@@ -119,7 +123,7 @@ class VLEModel:
         Temp = vars[-1]
 
         # Compute the left-hand side of the equilibrium equations
-        lefths = x_array * self.get_activity_coefficient(Temp) * self.get_vapor_pressure(Temp)
+        lefths = x_array * self.get_activity_coefficient(x_array) * self.get_vapor_pressure(Temp)
 
         # Compute the right-hand side of the equilibrium equations
         righths = y_array * self.P_sys
@@ -129,6 +133,18 @@ class VLEModel:
         eqs = (lefths - righths).tolist() + [np.sum(y_array) - 1]
 
         return eqs
+    
+    def compute_Txy2(self, vars:np.ndarray, y_array:np.ndarray)->list:
+        x_array = vars[:-1]
+        Temp = vars[-1]
+
+        lhs = x_array * self.get_activity_coefficient(x_array) * self.get_vapor_pressure(Temp)
+        rhs = y_array * self.P_sys
+
+        eqs = (lhs - rhs).tolist() + [np.sum(x_array) - 1]
+
+        return eqs
+
 
 
     def plot_binary_Txy(self, data_points:int, comp_index:int):
@@ -172,6 +188,39 @@ class VLEModel:
         plt.ylabel("Temperature")
         plt.legend()
         plt.show()
+    
+    def plot_ternary_txy(self, data_points:int, comp_index:int):
+        x_array = np.zeros((data_points**2, 3))
+        idx = 0
+        for x1 in np.linspace(0, 1, data_points):
+            for x2 in np.linspace(0, 1-x1, data_points):
+                x3 = 1 - x1 - x2
+                x_array[idx] = np.array([x1, x2, x3])
+                idx = idx + 1
+
+        # Initialize lists to store the vapor mole fractions and system temperatures
+        y_array, t_evaluated = [], []
+
+        # Compute the vapor mole fractions and system temperatures for each set of liquid mole fractions
+        for x in x_array:
+            solution = self.convert_x_to_y(x)
+            y_array.append(solution[:-1])
+            t_evaluated.append(solution[-1])
+
+        # Convert the list of vapor mole fractions to a 2D numpy array
+        y_array = np.array(y_array)
+        t_evaluated = np.array(t_evaluated)
+
+        # Create the plot
+        plt.figure(figsize=(10, 6))
+        plt.plot(x_array[:, comp_index], t_evaluated, label="Liquid phase")
+        plt.plot(y_array[:, comp_index], t_evaluated, label="Vapor phase")
+        plt.title("T-x-y Diagram")
+        plt.xlabel(f"Mole fraction of component {comp_index + 1}")
+        plt.ylabel("Temperature")
+        plt.legend()
+        plt.show()
+
 
         
    
