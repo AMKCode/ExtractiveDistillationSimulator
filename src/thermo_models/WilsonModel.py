@@ -1,7 +1,9 @@
-from ThermodynamicModel import ThermodynamicModel
 import numpy as np
+from utils.AntoineEquation import *
+from thermo_models.VLEModelBaseClass  import *
 
-class WilsonModel(ThermodynamicModel):
+
+class WilsonModel(VLEModel):
     """
     A class representing a thermodynamic model based on Wilson.
 
@@ -14,8 +16,7 @@ class WilsonModel(ThermodynamicModel):
         Lambdas (dict): Dictionary keys are tuples (i,j) that indicate the lambda coefficient with corresponding value
 
     Methods:
-        get_activity: Using the known Lambda values, the gamma activity coefficients are computed according to Wilson's Equation
-
+        get_activity_coefficient: Using the known Lambda values, the gamma activity coefficients are computed according to Wilson's Equation
         
     Reference: MULTICOMPONENT EQUILIBRIA—THE WILSON EQUATION, R. V. Orye and J. M. Prausnitz.
     Industrial & Engineering Chemistry 1965 57 (5), 18-26.  DOI: 10.1021/ie50665a005
@@ -32,9 +33,9 @@ class WilsonModel(ThermodynamicModel):
                 raise ValueError('Lambda Coefficients entered incorrectly')
 
 
-    #From Equation 15 in Prausnitz, the gamma values are computed
-    #This will work for any number of components
-    def get_activity(self, num_comp, Lambdas, x_)
+    def get_activity_coefficicent(self, num_comp, Lambdas, x_):
+        #From Equation 15 in Prausnitz, the gamma values are computed
+        #This will work for any number of components
         gamma_list = []
         for k in range(num_comp):
             gamma_k = 1
@@ -50,8 +51,10 @@ class WilsonModel(ThermodynamicModel):
                     divisor += (x_[j] * Lambdas[(i,j)] )
                 gamma_k -= (dividend / divisor)
             gamma_list.append(gamma_k)
+        return gamma_list
+    
 
-
+    
 
     
 
