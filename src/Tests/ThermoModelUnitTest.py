@@ -11,6 +11,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(
 sys.path.append(PROJECT_ROOT) 
 
 from thermo_models.RaoultsLawModel import RaoultsLawModel
+from thermo_models.WilsonModel import WilsonModel
 import os, sys
 import utils.AntoineEquation as AE
 import matplotlib.pyplot as plt 
@@ -44,6 +45,65 @@ class TestRaoultsLawAntoinePlotting(unittest.TestCase):
         y_array_sol = solution[:-1]
         temp_sol = solution[-1]
         assert(solution.all() == self.TolBenSys.convert_y_to_x(y_array=y_array_sol).all())
+
+class TestWilsonModel(unittest.TestCase):
+    #Test a Ternary Mixture of Acetone, Methyl Acetate, Methanol
+    # Acetone = 1
+    # Methyl Acetate = 2 (AKA Acetic Acid)
+    # Methanol = 3
+
+    def setUp(self) -> None:
+        # Lambda values from Prausnitz Table IV
+        P_sys = 1.0325
+        num_comp = 3
+        Lambdas = {
+            (1,1) : 1.0,
+            (1,2) : 0.5781,
+            (1,3) : 0.6917,
+            (2,1) : 1.3654,
+            (2,2) : 1.0,
+            (2,3) : 0.6370,
+            (3,1) : 0.7681,
+            (3,2) : 0.4871,
+            (3,3) : 1.0
+            }
+        
+        #Antoine parameters for Acetone
+        Ace_A = 4.42448
+        Ace_B = 1312.253
+        Ace_C = -32.445
+
+        #Antoine parameters for Methyl Acetate
+        MA_A = 4.68206
+        MA_B = 1642.54
+        MA_C = -39.764
+
+        #Antoine parameters for Methanol
+        Me_A = 5.20409
+        Me_B = 1581.341
+        Me_C = -33.5
+
+        #Antoine Equations 
+        Acetate_antoine = AE.AntoineEquation(Ace_A, Ace_B, Ace_C)
+        MethylAcetate_antoine = AE.AntoineEquation(MA_A, MA_B, MA_C)
+        Methanol_antoine = AE.AntoineEquation(Me_A, Me_B, Me_C)
+
+        # Create a Wilson's Model object
+        self.TernarySys = WilsonModel(num_comp,P_sys,Lambdas,[Acetate_antoine, MethylAcetate_antoine ,Methanol_antoine] )
+
+        def testPlot(self):
+            # Use Wilson Model to plot the Txy
+            self.TernarySys.plot_ternary_txy(100,0)
+            
+            
+
+
+
+        
+        
+
+
+    pass
 
 if __name__ == '__main__':
     unittest.main()
