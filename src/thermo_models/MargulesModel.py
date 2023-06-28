@@ -17,6 +17,7 @@ class MargulesModel(VLEModel):
 
     Methods:
         get_activity_coefficient: Using the known Aij values, the gamma activity coefficients are computed according to Margules Equation
+        get_vapor_pressure: Computes the vapor pressure for each component at a given temperature.
     """
 
     #CONSTRUCTOR 
@@ -33,7 +34,7 @@ class MargulesModel(VLEModel):
         '''
             
 
-    def get_activity_coefficient(x_, A_, num_comp):
+    def get_activity_coefficient(self, x_, A_, num_comp):
         #For binary mixtures, the Activity coefficients will be returned 
         if (num_comp == 2):
             gamma1 = np.exp((A_[(1,2)] + 2(A_[(2,1)] - A_[(1,2)])*x_[0]) * (x_[1]**2))
@@ -41,6 +42,18 @@ class MargulesModel(VLEModel):
             return np.array([gamma1, gamma2])
         else: 
             print("Margules model only handles binary mixtures")
+
+    def get_vapor_pressure(self, Temp)->np.ndarray:
+        """
+        Args:
+            Temp (float): The temperature at which to compute the vapor pressure.      
+        Returns:
+            np.ndarray: The vapor pressure for each component.
+        """
+        vap_pressure_array = []
+        for partial_pressure_eq in self.partial_pressure_eqs:
+            vap_pressure_array.append(partial_pressure_eq.get_partial_pressure(Temp))
+        return np.array(vap_pressure_array)
             
   
 
