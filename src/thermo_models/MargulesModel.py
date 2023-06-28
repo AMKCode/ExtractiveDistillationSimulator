@@ -21,10 +21,11 @@ class MargulesModel(VLEModel):
     """
 
     #CONSTRUCTOR 
-    def __init__(self, num_comp:int, P_sys:float, A_:dict):
+    def __init__(self, num_comp:int, P_sys:float, A_:dict, partial_pressure_eqs: AntoineEquation):
         self.num_comp = num_comp
         self.P_sys = P_sys
         self.A_ = A_
+        self.partial_pressure_eqs = partial_pressure_eqs
         '''
         Only needed if Margules is used in ternary mixture
         #Assert that A_[(i,i)] = 1

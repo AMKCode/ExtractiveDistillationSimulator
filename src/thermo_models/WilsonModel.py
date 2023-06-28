@@ -68,6 +68,15 @@ class WilsonModel(VLEModel):
             vap_pressure_array.append(partial_pressure_eq.get_partial_pressure(Temp))
         return np.array(vap_pressure_array)
     
+
+
+
+
+
+
+
+
+    
 if __name__=='__main__':
     #Test a Ternary Mixture of Acetone, Methyl Acetate, Methanol
     # Acetone = 1
