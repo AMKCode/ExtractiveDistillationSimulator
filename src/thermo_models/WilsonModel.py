@@ -1,6 +1,6 @@
 import numpy as np
 from utils.AntoineEquation import *
-from VLEModelBaseClass import *
+from thermo_models.VLEModelBaseClass import *
 
 
 class WilsonModel(VLEModel):
