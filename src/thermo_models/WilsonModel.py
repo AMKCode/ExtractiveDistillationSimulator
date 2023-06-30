@@ -1,5 +1,15 @@
 import numpy as np
-from utils.AntoineEquation import *
+import os, sys
+#
+# Panwa: I'm not sure how else to import these properly
+#
+PROJECT_ROOT = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), 
+            os.pardir)
+)
+sys.path.append(PROJECT_ROOT) 
+
+import utils.AntoineEquation as AE
 from thermo_models.VLEModelBaseClass import *
 
 
@@ -24,34 +34,34 @@ class WilsonModel(VLEModel):
     """
 
     #CONSTRUCTOR 
-    def __init__(self, num_comp:int, P_sys:float, Lambdas:dict, partial_pressure_eqs: AntoineEquation):
+    def __init__(self, num_comp:int, P_sys:float, Lambdas:dict, partial_pressure_eqs:AE):
         self.num_comp = num_comp
         self.P_sys = P_sys
         self.Lambdas = Lambdas
         self.partial_pressure_eqs = partial_pressure_eqs
 
-    def get_activity_coefficient(self, num_comp, Lambdas, x_):
+    def get_activity_coefficient(self, x_):
         #From Equation 15 in Prausnitz, the gamma values are computed
         #This will work for any number of components
 
         #Assert that Lambdas[(i,i)] = 1
-        for i in range(1, num_comp+1):
-            if (Lambdas[(i,i)] != 1):
+        for i in range(1, self.num_comp+1):
+            if (self.Lambdas[(i,i)] != 1):
                 raise ValueError('Lambda Coefficients entered incorrectly')
             
         gamma_list = []
-        for k in range(1, num_comp+1):
+        for k in range(1, self.num_comp+1):
             gamma_k = 1
             log_arg = 0
-            for j in range(1, num_comp+1):
-               log_arg += ( x_[j-1] * Lambdas[(k,j)] )
+            for j in range(1, self.num_comp+1):
+               log_arg += ( x_[j-1] * self.Lambdas[(k,j)] )
             gamma_k -= np.log(log_arg)
 
-            for i in range(1, num_comp+1):
-                dividend = (x_[i-1] * Lambdas[(i,k)] )
+            for i in range(1, self.num_comp+1):
+                dividend = (x_[i-1] * self.Lambdas[(i,k)] )
                 divisor = 0
-                for j in range(1, num_comp+1):
-                    divisor += (x_[j-1] * Lambdas[(i,j)] )
+                for j in range(1, self.num_comp+1):
+                    divisor += (x_[j-1] * self.Lambdas[(i,j)] )
                 gamma_k -= (dividend / divisor)
             gamma_list.append(gamma_k)
         return gamma_list
@@ -71,12 +81,6 @@ class WilsonModel(VLEModel):
 
 
 
-
-
-
-
-
-    
 if __name__=='__main__':
     #Test a Ternary Mixture of Acetone, Methyl Acetate, Methanol
     # Acetone = 1
@@ -98,5 +102,25 @@ if __name__=='__main__':
         (3,3) : 1.0
         }
     
-    Acetone_MethylAcetate_Methanol = WilsonModel(num_comp, P_sys, Lambdas)  
-    print(Acetone_MethylAcetate_Methanol.get_activity_coefficient(3, Lambdas, x_))
+    #Antoine parameters for Acetone
+    Ace_A = 4.42448
+    Ace_B = 1312.253
+    Ace_C = -32.445
+
+    #Antoine parameters for Methyl Acetate
+    MA_A = 4.68206
+    MA_B = 1642.54
+    MA_C = -39.764
+
+    #Antoine parameters for Methanol
+    Me_A = 5.20409
+    Me_B = 1581.341
+    Me_C = -33.5
+
+    #Antoine Equations 
+    Acetate_antoine = AE.AntoineEquation(Ace_A, Ace_B, Ace_C)
+    MethylAcetate_antoine = AE.AntoineEquation(MA_A, MA_B, MA_C)
+    Methanol_antoine = AE.AntoineEquation(Me_A, Me_B, Me_C)
+
+    Acetone_MethylAcetate_Methanol = WilsonModel(num_comp, P_sys, Lambdas,[Acetate_antoine, MethylAcetate_antoine, Methanol_antoine])  
+    print(Acetone_MethylAcetate_Methanol.get_activity_coefficient(x_))

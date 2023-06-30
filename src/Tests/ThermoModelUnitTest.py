@@ -89,7 +89,7 @@ class TestWilsonModel(unittest.TestCase):
         Methanol_antoine = AE.AntoineEquation(Me_A, Me_B, Me_C)
 
         # Create a Wilson's Model object
-        self.TernarySys = WilsonModel(num_comp,P_sys,Lambdas,[Acetate_antoine, MethylAcetate_antoine ,Methanol_antoine] )
+        self.TernarySys = WilsonModel(num_comp,P_sys,Lambdas,[Acetate_antoine, MethylAcetate_antoine, Methanol_antoine] )
 
     def testPlot(self):
         # Use Wilson Model to plot the Txy

@@ -26,20 +26,12 @@ class MargulesModel(VLEModel):
         self.P_sys = P_sys
         self.A_ = A_
         self.partial_pressure_eqs = partial_pressure_eqs
-        '''
-        Only needed if Margules is used in ternary mixture
-        #Assert that A_[(i,i)] = 1
-        for i in range(num_comp):
-            if (A_[(i,i)] != 1):
-                raise ValueError('Coefficients entered incorrectly')
-        '''
-            
-
-    def get_activity_coefficient(self, x_, A_, num_comp):
+    
+    def get_activity_coefficient(self, x_):
         #For binary mixtures, the Activity coefficients will be returned 
-        if (num_comp == 2):
-            gamma1 = np.exp((A_[(1,2)] + 2(A_[(2,1)] - A_[(1,2)])*x_[0]) * (x_[1]**2))
-            gamma2 = np.exp((A_[(2,1)] + 2(A_[(1,2)] - A_[(2,1)])*x_[1]) * (x_[0]**2))     
+        if (self.num_comp == 2):
+            gamma1 = np.exp((self.A_[(1,2)] + 2(self.A_[(2,1)] - self.A_[(1,2)])*x_[0]) * (x_[1]**2))
+            gamma2 = np.exp((self.A_[(2,1)] + 2(self.A_[(1,2)] - self.A_[(2,1)])*x_[1]) * (x_[0]**2))     
             return np.array([gamma1, gamma2])
         else: 
             print("Margules model only handles binary mixtures")
