@@ -94,16 +94,23 @@ class VLEModel:
         Returns:
             solution (np.ndarray): The solution from the fsolve function, which includes the liquid mole fractions and the system temperature.
         """
+        # Compute the boiling points for each component
         boiling_points = [eq.get_boiling_point(self.P_sys) for eq in self.partial_pressure_eqs]
+        
+        # Estimate the system temperature as the average of the maximum and minimum boiling points
         Temp_guess = np.mean([np.amax(boiling_points), np.amin(boiling_points)])
+        
+         # Create an initial guess for the liquid mole fractions and system temperature
         init_guess = np.append(np.full(self.num_comp, 1/self.num_comp), Temp_guess)
+        
+        # Use fsolve to find the liquid mole fractions and system temperature that satisfy the equilibrium conditions
         solution = fsolve(self.compute_Txy2, init_guess, args=(y_array,))
 
         return solution
         
     def compute_Txy(self, vars:np.ndarray, x_array:np.ndarray)->list:
         """
-        Computes the system of equations for the T-x-y calculations.
+        Computes the system of equations for the T-x-y calculations for convert_x_to_y.
 
         This function is used as the input to the fsolve function to find the roots 
         of the system of equations, which represent the equilibrium conditions for 
@@ -134,17 +141,37 @@ class VLEModel:
         return eqs
     
     def compute_Txy2(self, vars:np.ndarray, y_array:np.ndarray)->list:
+        """
+        Computes the system of equations for the T-x-y calculations for convert_y_to_x.
+
+        This function is used as the input to the fsolve function to find the roots 
+        of the system of equations, which represent the equilibrium conditions for 
+        the vapor-liquid equilibrium calculations.
+
+        Args:
+            vars (np.ndarray): A 1D array containing the initial guess for the 
+                liquid mole fractions and the system temperature.
+            y_array (np.ndarray): A 1D array containing the vapor mole fractions.
+
+        Returns:
+            eqs (list): A list of equations representing the equilibrium conditions.
+        """
+        
+        # Extract the liquid mole fractions and temperature from the vars array
         x_array = vars[:-1]
         Temp = vars[-1]
 
+        # Compute the left-hand side of the equilibrium equations
         lhs = x_array * self.get_activity_coefficient(x_array) * self.get_vapor_pressure(Temp)
+        
+        # Compute the right-hand side of the equilibrium equations
         rhs = y_array * self.P_sys
 
+        # Form the system of equations by subtracting the right-hand side from the left-hand side
+        # Also include the normalization conditions for the mole fractions
         eqs = (lhs - rhs).tolist() + [np.sum(x_array) - 1]
 
         return eqs
-
-
 
     def plot_binary_Txy(self, data_points:int, comp_index:int):
         """

@@ -1,5 +1,6 @@
-from VLEModelBaseClass import VLEModel
 import numpy as np
+from utils.AntoineEquation import *
+from thermo_models.VLEModelBaseClass  import *
 
 class MargulesModel(VLEModel):
     """
@@ -14,68 +15,39 @@ class MargulesModel(VLEModel):
         A_ (dict): Dictionary keys are tuples (i,j) that indicate the coefficient with corresponding value 
                              ex: A_[(1,2)] = A12
 
-
     Methods:
-        convert_x_to_y(x, psat, A12, A21):
-            Convert liquid mole fraction to vapor mole fraction based on Margules.
-        convert_y_to_x(y, psat, A12, A21):
-            Convert vapor mole fraction to liquid mole fraction based on Margules.
+        get_activity_coefficient: Using the known Aij values, the gamma activity coefficients are computed according to Margules Equation
+        get_vapor_pressure: Computes the vapor pressure for each component at a given temperature.
     """
-    def __init__(self, num_comp:int, P_sys:float, A_:dict):
+
+    #CONSTRUCTOR 
+    def __init__(self, num_comp:int, P_sys:float, A_:dict, partial_pressure_eqs: AntoineEquation):
         self.num_comp = num_comp
         self.P_sys = P_sys
         self.A_ = A_
-        #Assert that A_[(i,i)] = 1
-        for i in range(num_comp):
-            if (A_[(i,i)] != 1):
-                raise ValueError('Coefficients entered incorrectly')
-            
-
-    def get_activity(x_, A_, num_comp):
-        if (num_comp == 2):
-            gamma1 = np.exp((A_[(1,2)] + 2(A_[(2,1)] - A_[(1,2)])*x_[0]) * (x_[1]**2))
-            gamma2 = np.exp((A_[(2,1)] + 2(A_[(1,2)] - A_[(2,1)])*x_[1]) * (x_[0]**2))     
+        self.partial_pressure_eqs = partial_pressure_eqs
+    
+    def get_activity_coefficient(self, x_):
+        #For binary mixtures, the Activity coefficients will be returned 
+        if (self.num_comp == 2):
+            gamma1 = np.exp((self.A_[(1,2)] + 2(self.A_[(2,1)] - self.A_[(1,2)])*x_[0]) * (x_[1]**2))
+            gamma2 = np.exp((self.A_[(2,1)] + 2(self.A_[(1,2)] - self.A_[(2,1)])*x_[1]) * (x_[0]**2))     
             return np.array([gamma1, gamma2])
         else: 
             print("Margules model only handles binary mixtures")
 
-    
-
-    #I think these can be removed since x to y conversions are in base class
-    def convert_x_to_y(self, x, psat, A12, A21):
+    def get_vapor_pressure(self, Temp)->np.ndarray:
         """
-        Computes the conversion from liquid mole fraction to vapor mole fraction.
         Args:
-            x (np.array): Liquid mole fraction of each component.
-            psat (np.array): Saturation pressure of components.
-            A12 (float): Margules Parameter
-            A21 (float): Margules Parameter
+            Temp (float): The temperature at which to compute the vapor pressure.      
+        Returns:
+            np.ndarray: The vapor pressure for each component.
         """
-        
-        y = np.zeros(x.shape)
-        gammas = self.get_gammas_margules(x, A12, A21)
-        y = (psat * gammas * x) / self.P_sys
-        return y
-        
-    def convert_y_to_x(self, y, psat, A12, A21):
-        """
-        Computes the conversion from vapor mole fraction to liquid mole fraction.
-        Args:
-            y (np.array): vapor mole fraction of each component.
-            psat (np.array): Saturation pressure of components.
-            A12 (float): Margules Parameter
-            A21 (float): Margules Parameter
-        """
-        x = np.zeros(y.shape) + 0.5
-        gammas = self.get_gammas_margules(x, A12, A21)
-        residuals = self.P_sys*y - psat*gammas*x
-        
-        while np.abs(np.sum(residuals)) > 0.001: # 0.001 is arbitrarily chosen threshold
-            x[0] = (self.P_sys*y[0])/(psat[0]*gammas[0])
-            x[1] = 1 - x[0]
-        
-            gammas = self.get_gammas_margules(x, A12, A21)
-            residuals = self.P_sys*y - psat*gammas*x
-  
-        return x
+        vap_pressure_array = []
+        for partial_pressure_eq in self.partial_pressure_eqs:
+            vap_pressure_array.append(partial_pressure_eq.get_partial_pressure(Temp))
+        return np.array(vap_pressure_array)
             
+  
+
+    
