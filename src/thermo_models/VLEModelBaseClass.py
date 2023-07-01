@@ -216,6 +216,21 @@ class VLEModel:
         plt.show()
     
     def plot_ternary_txy(self, data_points:int, keep_zero:int):
+        """
+        Plots the surface plots for the ternary system, and also plots a T-x-y diagram
+        with a specific component's composition set to 0.
+
+        Args:
+            data_points (int): Number of data points to use in the plot.
+            comp_index (int): Index of the component to set to 0
+
+        Raises:
+            ValueError: If the number of components is not 3.
+        """
+
+        if self.num_comp != 3:
+            raise ValueError("This method can only be used for ternary mixtures.")
+    
         if keep_zero == 1:
             x1s, x2s = np.meshgrid(np.linspace(0, 1, data_points), 
                         np.linspace(0, 1, data_points))

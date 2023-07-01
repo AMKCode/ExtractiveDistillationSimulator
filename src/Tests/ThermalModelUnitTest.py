@@ -47,7 +47,7 @@ import matplotlib.pyplot as plt
 #         temp_sol = solution[-1]
 #         assert(solution.all() == self.TolBenSys.convert_y_to_x(y_array=y_array_sol).all())
 
-class TestMargulesModel(unittest.Testcase):
+class TestMargulesModel(unittest.TestCase):
     # Test a Binary Mixture of Benzene and Toluene
     # Benzene = 1
     # Toluene = 2
