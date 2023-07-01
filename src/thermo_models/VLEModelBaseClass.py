@@ -2,7 +2,6 @@ import numpy as np
 from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 
-
 class VLEModel:
     """
     A class used to represent a Vapor-Liquid Equilibrium (VLE) model.
@@ -189,37 +188,124 @@ class VLEModel:
         plt.legend()
         plt.show()
     
-    def plot_ternary_txy(self, data_points:int, comp_index:int):
-        x_array = np.zeros((data_points**2, 3))
-        idx = 0
-        for x1 in np.linspace(0, 1, data_points):
-            for x2 in np.linspace(0, 1-x1, data_points):
-                x3 = 1 - x1 - x2
-                x_array[idx] = np.array([x1, x2, x3])
-                idx = idx + 1
+    def plot_ternary_txy(self, data_points:int, keep_zero:int):
+        if keep_zero == 1:
+            x1s, x2s = np.meshgrid(np.linspace(0, 1, data_points), 
+                        np.linspace(0, 1, data_points))
 
-        # Initialize lists to store the vapor mole fractions and system temperatures
-        y_array, t_evaluated = [], []
+            T = np.zeros((data_points, data_points))
+            y1s, y2s = np.zeros((data_points, data_points)), np.zeros((data_points, data_points))
 
-        # Compute the vapor mole fractions and system temperatures for each set of liquid mole fractions
-        for x in x_array:
-            solution = self.convert_x_to_y(x)
-            y_array.append(solution[:-1])
-            t_evaluated.append(solution[-1])
+            for i in range(data_points):
+                for j in range(data_points):
+                    if x1s[i, j] + x2s[i, j] > 1:
+                        T[i, j] = float('nan')
+                        y1s[i, j] = float('nan')
+                        y2s[i, j] = float('nan')
+                        x1s[i, j] = float('nan')
+                        x2s[i, j] = float('nan')
+                    else:
+                        solution = self.convert_x_to_y(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))
+                        y1s[i, j] = solution[0]
+                        y2s[i, j] = solution[1]
+                        T[i, j] = solution[3]
+            fig = plt.figure(figsize=(15, 5))
+            ax = plt.subplot(121, projection='3d')
+            ax.plot_surface(x1s, y1s, T)
+            ax.plot_surface(x2s, y2s, T)
 
-        # Convert the list of vapor mole fractions to a 2D numpy array
-        y_array = np.array(y_array)
-        t_evaluated = np.array(t_evaluated)
+            ax.set_title('Surface Plot of Ternary System')
 
-        # Create the plot
-        plt.figure(figsize=(10, 6))
-        plt.plot(x_array[:, comp_index], t_evaluated, label="Liquid phase")
-        plt.plot(y_array[:, comp_index], t_evaluated, label="Vapor phase")
-        plt.title("T-x-y Diagram")
-        plt.xlabel(f"Mole fraction of component {comp_index + 1}")
-        plt.ylabel("Temperature")
-        plt.legend()
-        plt.show()
+            ax.set_xlabel('x1, x2')
+            ax.set_ylabel('y1, y2')
+            ax.set_zlabel('T')
+
+            ax = plt.subplot(122)
+            ax.plot(x1s[0,:], T[0,:])
+            ax.plot(y1s[0,:], T[0,:])
+
+            ax.set_title('T-x-y cross section of Ternary plot: keeping x2 fixed at 0')
+
+            ax.set_xlabel('x1, y1')
+            ax.set_ylabel('T')
+        elif keep_zero == 2:
+            x1s, x3s = np.meshgrid(np.linspace(0, 1, 100), 
+                       np.linspace(0, 1, 100))
+
+            T = np.zeros((100, 100))
+            y1s, y3s = np.zeros((100, 100)), np.zeros((100, 100))
+
+            for i in range(100):
+                for j in range(100):
+                    if x1s[i, j] + x3s[i, j] > 1:
+                        T[i, j] = float('nan')
+                        y1s[i, j] = float('nan')
+                        y3s[i, j] = float('nan')
+                        x1s[i, j] = float('nan')
+                        x3s[i, j] = float('nan')
+                    else:
+                        solution = self.convert_x_to_y(np.array([x1s[i, j], 1 - x1s[i, j] - x3s[i, j], x3s[i, j]]))
+                        y1s[i, j] = solution[0]
+                        y3s[i, j] = solution[2]
+                        T[i, j] = solution[3]
+            fig = plt.figure(figsize=(15, 5))
+            ax = plt.subplot(121, projection='3d')
+            ax.plot_surface(x1s, y1s, T)
+            ax.plot_surface(1-x1s-x3s, 1-y1s-y3s, T)
+
+            ax.set_title('Surface Plot of Ternary system: X-to-Y')
+
+            ax.set_xlabel('x1, x2')
+            ax.set_ylabel('y1, y2')
+            ax.set_zlabel('T')
+
+            ax = plt.subplot(122)
+            ax.plot(x1s[0,:], T[0,:])
+            ax.plot(y1s[0,:], T[0,:])
+
+            ax.set_title('T-x-y cross section of Ternary plot: keeping x3 fixed at 0')
+
+            ax.set_xlabel('x1, y1')
+            ax.set_ylabel('T')
+        elif keep_zero == 0:
+            x2s, x1s = np.meshgrid(np.linspace(0, 1, 100), 
+                       np.linspace(0, 1, 100))
+
+            T = np.zeros((100, 100))
+            y2s, y1s = np.zeros((100, 100)), np.zeros((100, 100))
+
+            for i in range(100):
+                for j in range(100):
+                    if x2s[i, j] + x1s[i, j] > 1:
+                        T[i, j] = float('nan')
+                        y2s[i, j] = float('nan')
+                        y1s[i, j] = float('nan')
+                        x2s[i, j] = float('nan')
+                        x1s[i, j] = float('nan')
+                    else:
+                        solution = self.convert_x_to_y(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))
+                        y1s[i, j] = solution[0]
+                        y2s[i, j] = solution[1]
+                        T[i, j] = solution[3]
+            fig = plt.figure(figsize=(15, 5))
+            ax = plt.subplot(121, projection='3d')
+            ax.plot_surface(x1s, y1s, T)
+            ax.plot_surface(x2s, y2s, T)
+
+            ax.set_title('Surface Plot of Ternary system: X-to-Y')
+
+            ax.set_xlabel('x1, x2')
+            ax.set_ylabel('y1, y2')
+            ax.set_zlabel('T')
+
+            ax = plt.subplot(122)
+            ax.plot(x2s[0,:], T[0,:])
+            ax.plot(y2s[0,:], T[0,:])
+
+            ax.set_title('T-x-y cross section of Ternary plot: keeping x1 fixed at 0')
+
+            ax.set_xlabel('x2, y2')
+            ax.set_ylabel('T')
 
 
         

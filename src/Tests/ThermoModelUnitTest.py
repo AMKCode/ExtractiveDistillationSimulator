@@ -38,6 +38,9 @@ class TestRaoultsLawAntoinePlotting(unittest.TestCase):
     def testPlot(self):
         # Use Raoult's law to plot the Txy
         self.TolBenSys.plot_binary_Txy(100,0)
+        return
+    
+
         
     def test_Convert_ytox_from_convert_xtoy_output_binary_case(self):
         solution = (self.TolBenSys.convert_x_to_y(np.array([0.5,0.5])))
