@@ -253,8 +253,8 @@ class VLEModel:
                         T[i, j] = solution[3]
             fig = plt.figure(figsize=(15, 5))
             ax = plt.subplot(121, projection='3d')
-            ax.plot_surface(x1s, y1s, T)
-            ax.plot_surface(x2s, y2s, T)
+            ax.plot_surface(x1s, x2s, T)
+            ax.plot_surface(y1s, y2s, T)
 
             ax.set_title('Surface Plot of Ternary System')
 
@@ -292,8 +292,8 @@ class VLEModel:
                         T[i, j] = solution[3]
             fig = plt.figure(figsize=(15, 5))
             ax = plt.subplot(121, projection='3d')
-            ax.plot_surface(x1s, y1s, T)
-            ax.plot_surface(1-x1s-x3s, 1-y1s-y3s, T)
+            ax.plot_surface(x1s, 1-x1s-x3s, T)
+            ax.plot_surface(y1s, 1-y1s-y3s, T)
 
             ax.set_title('Surface Plot of Ternary system: X-to-Y')
 
@@ -331,8 +331,8 @@ class VLEModel:
                         T[i, j] = solution[3]
             fig = plt.figure(figsize=(15, 5))
             ax = plt.subplot(121, projection='3d')
-            ax.plot_surface(x1s, y1s, T)
-            ax.plot_surface(x2s, y2s, T)
+            ax.plot_surface(x1s, x2s, T)
+            ax.plot_surface(y1s, y2s, T)
 
             ax.set_title('Surface Plot of Ternary system: X-to-Y')
 
