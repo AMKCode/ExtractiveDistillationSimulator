@@ -30,8 +30,8 @@ class MargulesModel(VLEModel):
     def get_activity_coefficient(self, x_):
         #For binary mixtures, the Activity coefficients will be returned 
         if (self.num_comp == 2):
-            gamma1 = np.exp((self.A_[(1,2)] + 2(self.A_[(2,1)] - self.A_[(1,2)])*x_[0]) * (x_[1]**2))
-            gamma2 = np.exp((self.A_[(2,1)] + 2(self.A_[(1,2)] - self.A_[(2,1)])*x_[1]) * (x_[0]**2))     
+            gamma1 = np.exp((self.A_[(1,2)] + 2*(self.A_[(2,1)] - self.A_[(1,2)])*x_[0]) * (x_[1]**2))
+            gamma2 = np.exp((self.A_[(2,1)] + 2*(self.A_[(1,2)] - self.A_[(2,1)])*x_[1]) * (x_[0]**2))     
             return np.array([gamma1, gamma2])
         else: 
             print("Margules model only handles binary mixtures")

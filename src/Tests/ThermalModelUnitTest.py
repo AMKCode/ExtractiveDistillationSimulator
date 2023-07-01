@@ -16,36 +16,46 @@ from thermo_models.MargulesModel import MargulesModel
 import os, sys
 import utils.AntoineEquation as AE
 import matplotlib.pyplot as plt 
+import random as rand
 
-# class TestRaoultsLawAntoinePlotting(unittest.TestCase):
-#     def setUp(self) -> None:
-#         # Antoine Parameters for benzene
-#         Ben_A = 4.72583
-#         Ben_B = 1660.652
-#         Ben_C = -1.461
 
-#         # Antoine Parameters for toluene
-#         Tol_A = 4.07827
-#         Tol_B = 1343.943
-#         Tol_C = -53.773
+class TestRaoultsLawAntoinePlotting(unittest.TestCase):
+    def setUp(self) -> None:
+        # Antoine Parameters for benzene
+        Ben_A = 4.72583
+        Ben_B = 1660.652
+        Ben_C = -1.461
+
+        # Antoine Parameters for toluene
+        Tol_A = 4.07827
+        Tol_B = 1343.943
+        Tol_C = -53.773
         
-#         P_sys = 1.0325
-#         # Create Antoine equations for benzene and toluene
-#         benzene_antoine = AE.AntoineEquation(Ben_A, Ben_B, Ben_C)
-#         toluene_antoine = AE.AntoineEquation(Tol_A, Tol_B, Tol_C)
+        P_sys = 1.0325
+        # Create Antoine equations for benzene and toluene
+        benzene_antoine = AE.AntoineEquation(Ben_A, Ben_B, Ben_C)
+        toluene_antoine = AE.AntoineEquation(Tol_A, Tol_B, Tol_C)
 
-#         # Create a Raoult's law object
-#         self.TolBenSys = RaoultsLawModel(2,P_sys,[benzene_antoine, toluene_antoine])
+        # Create a Raoult's law object
+        self.TolBenSys = RaoultsLawModel(2,P_sys,[benzene_antoine, toluene_antoine])
 
-#     def testPlot(self):
-#         # Use Raoult's law to plot the Txy
-#         self.TolBenSys.plot_binary_Txy(100,0)
+    def testPlot(self):
+        # Use Raoult's law to plot the Txy
+        self.TolBenSys.plot_binary_Txy(100,0)
         
-#     def test_Convert_ytox_from_convert_xtoy_output_binary_case(self):
-#         solution = (self.TolBenSys.convert_x_to_y(np.array([0.5,0.5])))
-#         y_array_sol = solution[:-1]
-#         temp_sol = solution[-1]
-#         assert(solution.all() == self.TolBenSys.convert_y_to_x(y_array=y_array_sol).all())
+    def testRandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
+        for i in range(100):
+            x1 = rand.random()
+            x2 = 1 - x1
+            solution = (self.TolBenSys.convert_x_to_y(np.array([x1,x2])))
+            y_array_sol = solution[:-1]
+            np.testing.assert_allclose(np.array([x1,x2,solution[-1]]), self.TolBenSys.convert_y_to_x(y_array=y_array_sol), atol = 1e-2)
+            
+            
+
+    
+
+        
 
 class TestMargulesModel(unittest.TestCase):
     # Test a Binary Mixture of Benzene and Toluene
@@ -78,14 +88,17 @@ class TestMargulesModel(unittest.TestCase):
         self.MargulesSys = MargulesModel(num_comp, P_sys, A_, [benzene_antoine, toluene_antoine])
 
     def testPlot(self):
-        # Use Raoult's law to plot the Txy
+        # Use Margules's law to plot the Txy
         self.MargulesSys.plot_binary_Txy(100,0)
         
     def test_Convert_ytox_from_convert_xtoy_output_binary_case(self):
-        solution = (self.MargulesSys.convert_x_to_y(np.array([0.5,0.5])))
-        y_array_sol = solution[:-1]
-        temp_sol = solution[-1]
-        assert(solution.all() == self.MargulesSys.convert_y_to_x(y_array=y_array_sol).all())
+        for i in range(100):
+            x1 = rand.random()
+            x2 = 1 - x1
+            solution = (self.MargulesSys.convert_x_to_y(np.array([x1,x2])))
+            y_array_sol = solution[:-1]
+            temp_sol = solution[-1]
+            np.testing.assert_allclose(np.array([x1,x2,temp_sol]), self.MargulesSys.convert_y_to_x(y_array=y_array_sol),atol=1e-3)
 
 
 
