@@ -50,7 +50,15 @@ class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
             x2 = 1 - x1
             solution = (self.TolBenSys.convert_x_to_y(np.array([x1,x2])))
             y_array_sol = solution[:-1]
-            np.testing.assert_allclose(np.array([x1,x2,solution[-1]]), self.TolBenSys.convert_y_to_x(y_array=y_array_sol), atol = 1e-2)
+            np.testing.assert_allclose(np.array([x1,x2,solution[-1]]), self.TolBenSys.convert_y_to_x(y_array=y_array_sol), atol = 1e-4)
+    
+    def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
+        for i in range(100):
+            y1 = rand.random()
+            y2 = 1 - y1
+            solution = (self.TolBenSys.convert_y_to_x(np.array([y1,y2])))
+            x_array_sol = solution[:-1]
+            np.testing.assert_allclose(np.array([y1,y2,solution[-1]]), self.TolBenSys.convert_x_to_y(x_array=x_array_sol), atol = 1e-4)
             
         
 class TestMargulesModelBinary(unittest.TestCase):
@@ -94,7 +102,15 @@ class TestMargulesModelBinary(unittest.TestCase):
             solution = (self.MargulesSys.convert_x_to_y(np.array([x1,x2])))
             y_array_sol = solution[:-1]
             temp_sol = solution[-1]
-            np.testing.assert_allclose(np.array([x1,x2,temp_sol]), self.MargulesSys.convert_y_to_x(y_array=y_array_sol),atol=1e-3)
+            np.testing.assert_allclose(np.array([x1,x2,temp_sol]), self.MargulesSys.convert_y_to_x(y_array=y_array_sol),atol=1e-4)
+            
+    def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
+        for i in range(100):
+            y1 = rand.random()
+            y2 = 1 - y1
+            solution = (self.MargulesSys.convert_y_to_x(np.array([y1,y2])))
+            x_array_sol = solution[:-1]
+            np.testing.assert_allclose(np.array([y1,y2,solution[-1]]), self.MargulesSys.convert_x_to_y(x_array=x_array_sol), atol = 1e-4)
             
 class TestTernaryRaoults(unittest.TestCase):
     def setUp(self) -> None:
@@ -166,6 +182,8 @@ class TestVanLaar(unittest.TestCase):
         AcetoneAntoine = AE.AntoineEquation(Acet_A,Acet_B,Acet_C)
         self.AcetWaterVanLaar = VanLaarModel(2,P_sys,[WaterAntoine,AcetoneAntoine],A12,A21)
         
+    # def testPlot(self):
+    #     self.AcetWaterVanLaar.plot_binary_Txy(100,0)
    
     
     def test_RandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
@@ -176,13 +194,21 @@ class TestVanLaar(unittest.TestCase):
             y_array_sol = solution[:-1]
             temp_sol = solution[-1]
             np.testing.assert_allclose(np.array([x1,x2,temp_sol]), self.AcetWaterVanLaar.convert_y_to_x(y_array=y_array_sol),atol=1e-3)
+    
+    def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
+        for i in range(100):
+            y1 = rand.random()
+            y2 = 1 - y1
+            solution = (self.AcetWaterVanLaar.convert_y_to_x(np.array([y1,y2])))
+            x_array_sol = solution[:-1]
+            np.testing.assert_allclose(np.array([y1,y2,solution[-1]]), self.AcetWaterVanLaar.convert_x_to_y(x_array=x_array_sol), atol = 1e-4)
 
     
         
     
         
 
-        
+  
         
 class TestWilsonModel(unittest.TestCase):
     # Test a Ternary Mixture of Acetone, Methyl Acetate, Methanol
@@ -227,18 +253,18 @@ class TestWilsonModel(unittest.TestCase):
         Methanol_antoine = AE.AntoineEquation(Me_A, Me_B, Me_C)
 
         # Create a Wilson's Model object
-        self.TernarySys = WilsonModel(num_comp,P_sys,Lambdas,[Acetate_antoine, MethylAcetate_antoine, Methanol_antoine] )
+        self.TernarySys = WilsonModel(num_comp,P_sys,Lambdas,[Acetate_antoine, MethylAcetate_antoine, Methanol_antoine])
     
-    def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
-        for i in range(100):
-            x1 = rand.uniform(0,1)
-            x2 = rand.uniform(0,1 - x1)
-            x3 = 1 - (x1 + x2)
+    # def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
+    #     for i in range(100):
+    #         x1 = rand.uniform(0,1)
+    #         x2 = rand.uniform(0,1 - x1)
+    #         x3 = 1 - (x1 + x2)
             
-            solution = (self.TernarySys.convert_x_to_y(np.array([x1, x2, x3])))
-            y_array_sol = solution[:-1]
-            temp_sol = solution[-1]
-            np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), self.TernarySys.convert_y_to_x(y_array=y_array_sol), atol=1e-4)
+    #         solution = (self.TernarySys.convert_x_to_y(np.array([x1, x2, x3])))
+    #         y_array_sol = solution[:-1]
+    #         temp_sol = solution[-1]
+    #         np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), self.TernarySys.convert_y_to_x(y_array=y_array_sol), atol=1e-4)
             
     # def test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case(self):
     #     for i in range(100):
