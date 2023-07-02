@@ -348,6 +348,8 @@ class VLEModel:
 
             ax.set_xlabel('x2, y2')
             ax.set_ylabel('T')
+            
+        plt.show()
 
 
         
