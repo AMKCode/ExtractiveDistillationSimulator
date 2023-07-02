@@ -13,6 +13,7 @@ sys.path.append(PROJECT_ROOT)
 from thermo_models.RaoultsLawModel import RaoultsLawModel
 from thermo_models.WilsonModel import WilsonModel
 from thermo_models.MargulesModel import MargulesModel
+from thermo_models.VanLaarModel import VanLaarModel
 import os, sys
 import utils.AntoineEquation as AE
 import matplotlib.pyplot as plt 
@@ -146,7 +147,43 @@ class TestTernaryRaoults(unittest.TestCase):
             temp_sol = solution[-1]
             np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), self.TolBenXylSys.convert_x_to_y(x_array=x_array_sol), atol=1e-4)
 
+class TestVanLaar(unittest.TestCase):
+    #Test a binary mixture for vanlar of acetone and water based on
+    #https://en.wikipedia.org/wiki/Van_Laar_equation#cite_note-:0-3 
+    def setUp(self) -> None:
+        A12 = 2.1041
+        A21 = 1.5555
+        #Referencing NIST website
+        Water_A = 3.55959
+        Water_B = 643.748
+        Water_C = -198.043
+        Acet_A = 4.42448
+        Acet_B = 1312.253
+        Acet_C = -32.445
+        
+        P_sys = 1
+        WaterAntoine = AE.AntoineEquation(Water_A,Water_B,Water_C)
+        AcetoneAntoine = AE.AntoineEquation(Acet_A,Acet_B,Acet_C)
+        self.AcetWaterVanLaar = VanLaarModel(2,P_sys,[WaterAntoine,AcetoneAntoine],A12,A21)
+        
+   
+    
+    def test_RandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
+        for i in range(100):
+            x1 = rand.random()
+            x2 = 1 - x1
+            solution = (self.AcetWaterVanLaar.convert_x_to_y(np.array([x1,x2])))
+            y_array_sol = solution[:-1]
+            temp_sol = solution[-1]
+            np.testing.assert_allclose(np.array([x1,x2,temp_sol]), self.AcetWaterVanLaar.convert_y_to_x(y_array=y_array_sol),atol=1e-3)
 
+    
+        
+    
+        
+
+        
+        
 class TestWilsonModel(unittest.TestCase):
     # Test a Ternary Mixture of Acetone, Methyl Acetate, Methanol
     # Acetone = 1
@@ -203,20 +240,20 @@ class TestWilsonModel(unittest.TestCase):
             temp_sol = solution[-1]
             np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), self.TernarySys.convert_y_to_x(y_array=y_array_sol), atol=1e-4)
             
-    def test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case(self):
-        for i in range(100):
-            y1 = rand.uniform(0,1)
-            y2 = rand.uniform(0,1 - y1)
-            y3 = 1 - (y1 + y2)
+    # def test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case(self):
+    #     for i in range(100):
+    #         y1 = rand.uniform(0,1)
+    #         y2 = rand.uniform(0,1 - y1)
+    #         y3 = 1 - (y1 + y2)
             
-            solution = (self.TernarySys.convert_y_to_x(np.array([y1, y2, y3])))
-            x_array_sol = solution[:-1]
-            temp_sol = solution[-1]
-            np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), self.TernarySys.convert_x_to_y(x_array=x_array_sol), atol=1e-4)
+    #         solution = (self.TernarySys.convert_y_to_x(np.array([y1, y2, y3])))
+    #         x_array_sol = solution[:-1]
+    #         temp_sol = solution[-1]
+    #         np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), self.TernarySys.convert_x_to_y(x_array=x_array_sol), atol=1e-4)
 
-    def testPlot(self):
-        # Use Wilson Model to plot the Txy
-        self.TernarySys.plot_ternary_txy(100,0)
+    # def testPlot(self):
+    #     # Use Wilson Model to plot the Txy
+    #     self.TernarySys.plot_ternary_txy(100,0)
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
+import random as rand
 
 class VLEModel:
     """
@@ -80,8 +81,14 @@ class VLEModel:
         init_guess = np.append(np.full(self.num_comp, 1/self.num_comp), Temp_guess)
 
         # Use fsolve to find the vapor mole fractions and system temperature that satisfy the equilibrium conditions
-        solution = fsolve(self.compute_Txy, init_guess, args=(x_array,))
-
+        solution, infodict, ier, mesg = fsolve(self.compute_Txy, init_guess, args=(x_array,), full_output=True)
+        if ier != 0:
+            for i in range(200):
+                random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
+                new_guess = np.append(random_number/np.sum(random_number), rand.uniform(np.amax(boiling_points), np.amin(boiling_points)))
+                solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True)
+                if ier == 1:
+                    break
         return solution
     
     def convert_y_to_x(self, y_array:np.ndarray)->np.ndarray:
@@ -104,8 +111,14 @@ class VLEModel:
         init_guess = np.append(np.full(self.num_comp, 1/self.num_comp), Temp_guess)
         
         # Use fsolve to find the liquid mole fractions and system temperature that satisfy the equilibrium conditions
-        solution = fsolve(self.compute_Txy2, init_guess, args=(y_array,))
-
+        solution, infodict, ier, mesg = fsolve(self.compute_Txy2, init_guess, args=(y_array,), full_output=True)
+        if ier != 0:
+            for i in range(200):
+                random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
+                new_guess = np.append(random_number/np.sum(random_number), rand.uniform(np.amax(boiling_points), np.amin(boiling_points)))
+                solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True)
+                if ier == 1:
+                    break
         return solution
         
     def compute_Txy(self, vars:np.ndarray, x_array:np.ndarray)->list:
