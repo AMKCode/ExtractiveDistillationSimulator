@@ -63,8 +63,8 @@ class WilsonModel(VLEModel):
                 for j in range(1, self.num_comp+1):
                     divisor += (x_[j-1] * self.Lambdas[(i,j)] )
                 gamma_k -= (dividend / divisor)
-            gamma_list.append(gamma_k)
-        return gamma_list
+            gamma_list.append(np.exp(gamma_k))
+        return np.array(gamma_list)
     
     def get_vapor_pressure(self, Temp)->np.ndarray:
         """
