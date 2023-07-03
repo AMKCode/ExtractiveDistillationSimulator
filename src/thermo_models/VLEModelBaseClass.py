@@ -82,7 +82,30 @@ class VLEModel:
 
         # Use fsolve to find the vapor mole fractions and system temperature that satisfy the equilibrium conditions
         solution, infodict, ier, mesg = fsolve(self.compute_Txy, init_guess, args=(x_array,), full_output=True)
-        if ier != 0:
+        # if ier != 1:
+        #     span = 10
+        #     x1s, x2s = np.meshgrid(np.linspace(0, 1, span), 
+        #                 np.linspace(0, 1, span))
+            
+        #     should_break = 0
+        #     for i in range(span):
+        #         if should_break == 1:
+        #             break
+        #         for j in range(span):
+        #             if should_break == 1:
+        #                 break
+        #             for T in np.linspace(rand.uniform(np.amax(boiling_points), np.amin(boiling_points)), span):
+        #                 if x1s[i, j] + x2s[i, j] > 1:
+        #                     continue
+        #                 else:
+        #                     new_guess = np.array([x1s[i,j], x2s[i,j], 1-x1s[i,j]-x2s[i,j], T])
+        #                     solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(x_array,), full_output=True)
+        #                     if ier == 1:
+        #                         should_break = 1
+        #                         break
+        # if ier != 1:
+        #     print('failed to converge')                            
+        if ier != 1:
             for i in range(200):
                 random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
                 new_guess = np.append(random_number/np.sum(random_number), rand.uniform(np.amax(boiling_points), np.amin(boiling_points)))
@@ -112,7 +135,30 @@ class VLEModel:
         
         # Use fsolve to find the liquid mole fractions and system temperature that satisfy the equilibrium conditions
         solution, infodict, ier, mesg = fsolve(self.compute_Txy2, init_guess, args=(y_array,), full_output=True)
-        if ier != 0:
+        # if ier != 1:
+        #     span = 10
+        #     y1s, y2s = np.meshgrid(np.linspace(0, 1, span), 
+        #                 np.linspace(0, 1, span))
+            
+        #     should_break = 0
+        #     for i in range(span):
+        #         if should_break == 1:
+        #             break
+        #         for j in range(span):
+        #             if should_break == 1:
+        #                 break
+        #             for T in np.linspace(rand.uniform(np.amin(boiling_points), np.amax(boiling_points)), span):
+        #                 if y1s[i, j] + y2s[i, j] > 1:
+        #                     continue
+        #                 else:
+        #                     new_guess = np.array([y1s[i,j], y2s[i,j], 1-y1s[i,j]-y2s[i,j], T])
+        #                     solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True)
+        #                     if ier == 1:
+        #                         should_break = 1
+        #                         break
+        #     if ier != 1:
+        #         print('failed to converge')                     
+        if ier != 1:
             for i in range(200):
                 random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
                 new_guess = np.append(random_number/np.sum(random_number), rand.uniform(np.amax(boiling_points), np.amin(boiling_points)))
