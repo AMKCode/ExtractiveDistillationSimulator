@@ -74,6 +74,9 @@ class VLEModel:
         Returns:
             solution (np.ndarray): The solution from the fsolve function, which includes the vapor mole fractions and the system temperature.
         """
+        #set seed for reproducibility
+        np.random.seed(0)
+        
         # Compute the boiling points for each component
         boiling_points = [eq.get_boiling_point(self.P_sys) for eq in self.partial_pressure_eqs]
 
@@ -91,8 +94,13 @@ class VLEModel:
         
         # If fsolve fails, try Broyden's method
         if ier != 1:
-            solution = root(func, init_guess, method='lm').x
-        return solution
+            for i in range(200):
+                random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
+                new_guess = np.append(random_number/np.sum(random_number), rand.uniform(np.amax(boiling_points), np.amin(boiling_points)))
+                solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-15)
+                if ier == 1:
+                    return solution, mesg
+        return solution, mesg
 
 
     
@@ -106,6 +114,9 @@ class VLEModel:
         Returns:
             solution (np.ndarray): The solution from the fsolve function, which includes the liquid mole fractions and the system temperature.
         """
+        #set seed for reproducibility
+        np.random.seed(0)
+        
         # Compute the boiling points for each component
         boiling_points = [eq.get_boiling_point(self.P_sys) for eq in self.partial_pressure_eqs]
         
@@ -121,8 +132,14 @@ class VLEModel:
         # Use fsolve to find the liquid mole fractions and system temperature that satisfy the equilibrium conditions
         solution, infodict, ier, mesg = fsolve(self.compute_Txy2, init_guess, args=(y_array,), full_output=True)                   
         if ier != 1:
-            solution = root(func, init_guess, method = 'lm').x
-        return solution
+            for i in range(200):
+                random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
+                new_guess = np.append(random_number/np.sum(random_number), rand.uniform(np.amax(boiling_points), np.amin(boiling_points)))
+                solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-15)
+                if ier == 1:
+                    return solution, mesg
+            # solution = root(func, init_guess, method = 'excitingmixing').x
+        return solution, mesg
         
     def compute_Txy(self, vars:np.ndarray, x_array:np.ndarray)->list:
         """
