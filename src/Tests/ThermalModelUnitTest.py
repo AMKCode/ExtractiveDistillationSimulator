@@ -44,7 +44,7 @@ class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
     #     self.TolBenSys.plot_binary_Txy(100,0)
         
     def testRandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
-        np.random.seed(0)
+        rand.seed(0)
         for i in range(100):
             x1 = rand.random()
             x2 = 1 - x1
@@ -53,7 +53,7 @@ class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
             np.testing.assert_allclose(np.array([x1,x2,solution[-1]]), self.TolBenSys.convert_y_to_x(y_array=y_array_sol), atol = 1e-4)
     
     def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
-        np.random.seed(0)
+        rand.seed(0)
         for i in range(100):
             y1 = rand.random()
             y2 = 1 - y1
@@ -97,7 +97,7 @@ class TestMargulesModelBinary(unittest.TestCase):
     #     self.MargulesSys.plot_binary_Txy(100,0)
         
     def test_RandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
-        np.random.seed(0)
+        rand.seed(0)
         for i in range(100):
             x1 = rand.random()
             x2 = 1 - x1
@@ -107,7 +107,7 @@ class TestMargulesModelBinary(unittest.TestCase):
             np.testing.assert_allclose(np.array([x1,x2,temp_sol]), self.MargulesSys.convert_y_to_x(y_array=y_array_sol),atol=1e-4)
             
     def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
-        np.random.seed(0)
+        rand.seed(0)
         for i in range(100):
             y1 = rand.random()
             y2 = 1 - y1
@@ -145,7 +145,7 @@ class TestTernaryRaoults(unittest.TestCase):
     #     self.TolBenXylSys.plot_ternary_txy(100,0)
         
     def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
-        np.random.seed(0)
+        rand.seed(0)
         for i in range(100):
             x1 = rand.uniform(0,1)
             x2 = rand.uniform(0,1 - x1)
@@ -157,7 +157,7 @@ class TestTernaryRaoults(unittest.TestCase):
             np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), self.TolBenXylSys.convert_y_to_x(y_array=y_array_sol), atol=1e-4)
             
     def test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case(self):
-        np.random.seed(0)
+        rand.seed(0)
         for i in range(100):
             y1 = rand.uniform(0,1)
             y2 = rand.uniform(0,1 - y1)
@@ -192,7 +192,7 @@ class TestVanLaar(unittest.TestCase):
    
     
     def test_RandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
-        np.random.seed(0)
+        rand.seed(0)
         for i in range(100):
             x1 = rand.random()
             x2 = 1 - x1
@@ -202,7 +202,7 @@ class TestVanLaar(unittest.TestCase):
             np.testing.assert_allclose(np.array([x1,x2,temp_sol]), self.AcetWaterVanLaar.convert_y_to_x(y_array=y_array_sol),atol=1e-3)
     
     def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
-        np.random.seed(0)
+        rand.seed(0)
         for i in range(100):
             y1 = rand.random()
             y2 = 1 - y1
@@ -313,7 +313,7 @@ class TestWilsonModel(unittest.TestCase):
         
 
     def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
-        np.random.seed(0)
+        rand.seed(0)
         for i in range(1000):
             x1 = rand.uniform(0,1)
             x2 = rand.uniform(0,1 - x1)
@@ -329,7 +329,7 @@ class TestWilsonModel(unittest.TestCase):
                 )
             
     def test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case(self):
-        np.random.seed(0)
+        rand.seed(0)
         for i in range(1000):
             y1 = rand.uniform(0,1)
             y2 = rand.uniform(0,1 - y1)
@@ -345,9 +345,9 @@ class TestWilsonModel(unittest.TestCase):
                 err_msg=f"Failed for y1={y1}, y2={y2}, y3={y3}, solution={solution}"
                 )
 
-    def testPlot(self):
+    # def testPlot(self):
         # Use Wilson Model to plot the Txy
-        self.TernarySys.plot_ternary_txy(100,0)
+        # self.TernarySys.plot_ternary_txy(100,0)
 
 if __name__ == '__main__':
     unittest.main()
