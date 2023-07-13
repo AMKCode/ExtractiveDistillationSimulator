@@ -64,7 +64,7 @@ class VLEModel:
     
 
 
-    def convert_x_to_y(self, x_array:np.ndarray)->np.ndarray:
+    def convert_x_to_y(self, x_array:np.ndarray, temp_guess = None)->np.ndarray:
         """
         Computes the conversion from liquid mole fraction to vapor mole fraction.
 
@@ -81,30 +81,32 @@ class VLEModel:
         boiling_points = [eq.get_boiling_point(self.P_sys) for eq in self.partial_pressure_eqs]
 
         # Estimate the system temperature as the average of the maximum and minimum boiling points
-        Temp_guess = np.mean([np.amax(boiling_points), np.amin(boiling_points)])
+        if temp_guess == None:
+            temp_guess = rand.uniform(np.amax(boiling_points), np.amin(boiling_points))
 
         # Create an initial guess for the vapor mole fractions and system temperature
-        init_guess = np.append(np.full(self.num_comp, 1/self.num_comp), Temp_guess)
-
-        # Function to be solved
-        func = lambda x: self.compute_Txy(x, x_array)
+        # init_guess = np.append(np.full(self.num_comp, 1/self.num_comp), Temp_guess)
 
         # Use fsolve to find the vapor mole fractions and system temperature that satisfy the equilibrium conditions
-        solution, infodict, ier, mesg = fsolve(func, init_guess, full_output=True)
+        # solution, infodict, ier, mesg = fsolve(func, init_guess, full_output=True)
         
+        ier = 0
         # If fsolve fails, try Broyden's method
         if ier != 1:
             for i in range(200):
-                random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
-                new_guess = np.append(random_number/np.sum(random_number), rand.uniform(np.amax(boiling_points), np.amin(boiling_points)))
-                solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-15)
-                if ier == 1:
-                    return solution, mesg
+                try:
+                    random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
+                    new_guess = np.append(random_number/np.sum(random_number),temp_guess)
+                    solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12)
+                    if ier == 1:
+                        return solution, mesg
+                except:
+                    continue
         return solution, mesg
 
 
     
-    def convert_y_to_x(self, y_array:np.ndarray)->np.ndarray:
+    def convert_y_to_x(self, y_array:np.ndarray, temp_guess = None)->np.ndarray:
         """
         Computes the conversion from vapor mole fraction to liquid mole fraction.
 
@@ -121,25 +123,31 @@ class VLEModel:
         boiling_points = [eq.get_boiling_point(self.P_sys) for eq in self.partial_pressure_eqs]
         
         # Estimate the system temperature as the average of the maximum and minimum boiling points
-        Temp_guess = np.mean([np.amax(boiling_points), np.amin(boiling_points)])
+        # Temp_guess = np.mean([np.amax(boiling_points), np.amin(boiling_points)])
         
          # Create an initial guess for the liquid mole fractions and system temperature
-        init_guess = np.append(np.full(self.num_comp, 1/self.num_comp), Temp_guess)
-        
-        # Function to be solved
-        func = lambda x: self.compute_Txy2(x, y_array)
+        # init_guess = np.append(np.full(self.num_comp, 1/self.num_comp), Temp_guess)
+        ier = 0
+        if temp_guess == None:
+            temp_guess = rand.uniform(np.amax(boiling_points), np.amin(boiling_points))
+        # random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
+        # init_guess = np.append(random_number/np.sum(random_number), rand.uniform(np.amax(boiling_points), np.amin(boiling_points)))
+        # print("init_guess", init_guess)
         
         # Use fsolve to find the liquid mole fractions and system temperature that satisfy the equilibrium conditions
-        solution, infodict, ier, mesg = fsolve(self.compute_Txy2, init_guess, args=(y_array,), full_output=True)                   
+        # solution, infodict, ier, mesg = fsolve(self.compute_Txy2, init_guess, args=(y_array,), full_output=True)                   
         if ier != 1:
-            for i in range(200):
-                random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
-                new_guess = np.append(random_number/np.sum(random_number), rand.uniform(np.amax(boiling_points), np.amin(boiling_points)))
-                solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-15)
-                if ier == 1:
-                    return solution, mesg
+            while True:
+                try:
+                    random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
+                    new_guess = np.append(random_number/np.sum(random_number), temp_guess)
+                    solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12)
+                    if ier == 1:
+                        return solution, mesg
+                except:
+                    continue
             # solution = root(func, init_guess, method = 'excitingmixing').x
-        return solution, mesg
+        # return solution, mesg
         
     def compute_Txy(self, vars:np.ndarray, x_array:np.ndarray)->list:
         """
@@ -231,7 +239,7 @@ class VLEModel:
 
         # Compute the vapor mole fractions and system temperatures for each set of liquid mole fractions
         for x in x_array:
-            solution = self.convert_x_to_y(x)
+            solution = self.convert_x_to_y(x)[0]
             y_array.append(solution[:-1])
             t_evaluated.append(solution[-1])
 
@@ -242,7 +250,7 @@ class VLEModel:
         plt.figure(figsize=(10, 6))
         plt.plot(x_array[:, comp_index], t_evaluated, label="Liquid phase")
         plt.plot(y_array[:, comp_index], t_evaluated, label="Vapor phase")
-        plt.title("T-x-y Diagram")
+        plt.title("T-x-y Diagram for"+ self.__class__.__name__)
         plt.xlabel(f"Mole fraction of component {comp_index + 1}")
         plt.ylabel("Temperature")
         plt.legend()
@@ -280,7 +288,7 @@ class VLEModel:
                         x1s[i, j] = float('nan')
                         x2s[i, j] = float('nan')
                     else:
-                        solution = self.convert_x_to_y(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))
+                        solution = self.convert_x_to_y(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))[0]
                         y1s[i, j] = solution[0]
                         y2s[i, j] = solution[1]
                         T[i, j] = solution[3]
@@ -358,7 +366,7 @@ class VLEModel:
                         x2s[i, j] = float('nan')
                         x1s[i, j] = float('nan')
                     else:
-                        solution = self.convert_x_to_y(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))
+                        solution = self.convert_x_to_y(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))[0]
                         y1s[i, j] = solution[0]
                         y2s[i, j] = solution[1]
                         T[i, j] = solution[3]

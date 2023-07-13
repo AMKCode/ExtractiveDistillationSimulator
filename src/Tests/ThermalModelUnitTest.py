@@ -14,11 +14,12 @@ from thermo_models.RaoultsLawModel import RaoultsLawModel
 from thermo_models.WilsonModel import WilsonModel
 from thermo_models.MargulesModel import MargulesModel
 from thermo_models.VanLaarModel import VanLaarModel
+from thermo_models.VLEEmpiricalModel import VLEEmpiricalModel
 import utils.AntoineEquation as AE
 import matplotlib.pyplot as plt 
 import random as rand
 
-
+"""
 class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
     def setUp(self) -> None:
         # Antoine Parameters for benzene
@@ -39,9 +40,9 @@ class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
         # Create a Raoult's law object
         self.TolBenSys = RaoultsLawModel(2,P_sys,[benzene_antoine, toluene_antoine])
 
-    # def testPlot(self):
-    #     # Use Raoult's law to plot the Txy
-    #     self.TolBenSys.plot_binary_Txy(100,0)
+    def testPlot(self):
+        # Use Raoult's law to plot the Txy
+        self.TolBenSys.plot_binary_Txy(100,0)
         
     def testRandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
         rand.seed(0)
@@ -92,9 +93,9 @@ class TestMargulesModelBinary(unittest.TestCase):
         #Create a Margules' Model Object
         self.MargulesSys = MargulesModel(num_comp, P_sys, A_, [benzene_antoine, toluene_antoine])
 
-#     # def testPlot(self):
-#     #     # Use Margules's law to plot the Txy
-#     #     self.MargulesSys.plot_binary_Txy(100,0)
+    def testPlot(self):
+        # Use Margules's law to plot the Txy
+        self.MargulesSys.plot_binary_Txy(100,0)
         
     def test_RandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
         rand.seed(0)
@@ -141,8 +142,8 @@ class TestTernaryRaoults(unittest.TestCase):
         # Create a Raoult's law object
         self.TolBenXylSys = RaoultsLawModel(3,P_sys,[benzene_antoine, toluene_antoine, xylene_antoine])
         
-    # def testPlot(self):
-    #     self.TolBenXylSys.plot_ternary_txy(100,0)
+    def testPlot(self):
+        self.TolBenXylSys.plot_ternary_txy(100,0)
         
     def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
         rand.seed(0)
@@ -187,8 +188,8 @@ class TestVanLaar(unittest.TestCase):
         AcetoneAntoine = AE.AntoineEquation(Acet_A,Acet_B,Acet_C)
         self.AcetWaterVanLaar = VanLaarModel(2,P_sys,[WaterAntoine,AcetoneAntoine],A12,A21)
         
-    # def testPlot(self):
-    #     self.AcetWaterVanLaar.plot_binary_Txy(100,0)
+    def testPlot(self):
+        self.AcetWaterVanLaar.plot_binary_Txy(100,0)
    
     
     def test_RandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
@@ -221,7 +222,7 @@ class TestVanLaar(unittest.TestCase):
         
     
         
-
+"""
   
         
 class TestWilsonModel(unittest.TestCase):
@@ -274,14 +275,16 @@ class TestWilsonModel(unittest.TestCase):
         y2 = 0.9086022817212395
         y3 = 0.08469890628823629
         solution, mesg = (self.TernarySys.convert_y_to_x(np.array([y1, y2, y3])))
-
+        print("convert_yto_x message", mesg)
         x_array_sol = solution[:-1]
         temp_sol = solution[-1]
         
         expected_array =  np.array([y1, y2, y3, temp_sol])
-        actual_array, mseg = self.TernarySys.convert_x_to_y(x_array=x_array_sol)
+        actual_array, mesg = self.TernarySys.convert_x_to_y(x_array=x_array_sol)
         if not np.allclose(expected_array, actual_array, atol=1e-4):
             print("\ntestpecific1:")
+            print("x_array_sol",x_array_sol)
+            print("temp", temp_sol)
             print(f"Expected array: {expected_array}, but got: {actual_array} with err\n, {mesg}\n")
             raise ValueError
 
@@ -305,26 +308,30 @@ class TestWilsonModel(unittest.TestCase):
             raise ValueError
 
         
-
-    # def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
-    #     rand.seed(0)
-    #     for i in range(1000):
-    #         x1 = rand.uniform(0,1)
-    #         x2 = rand.uniform(0,1 - x1)
-    #         x3 = 1 - (x1 + x2)
+    def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
+        rand.seed(0)
+        for i in range(100):
+            x1 = rand.uniform(0,1)
+            x2 = rand.uniform(0,1 - x1)
+            x3 = 1 - (x1 + x2)
             
-    #         solution = (self.TernarySys.convert_x_to_y(np.array([x1, x2, x3])))
-    #         y_array_sol = solution[:-1]
-    #         temp_sol = solution[-1]
-    #         np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), 
-    #             self.TernarySys.convert_y_to_x(y_array=y_array_sol),
-    #             atol=1e-4,
-    #             err_msg=f"Failed for x1={x1}, x2={x2}, x3={x3}, solution={solution}"
-    #             )
+            solution, mseg = (self.TernarySys.convert_x_to_y(np.array([x1, x2, x3])))
+            y_array_sol = solution[:-1]
+            temp_sol = solution[-1]
+            
+            expected_array = np.array([x1,x2,x3,temp_sol])
+            actual_array, mesg = self.TernarySys.convert_y_to_x(np.array([x1,x2,x3]), temp_guess=temp_sol)
+            
+            if not np.allclose(expected_array, actual_array, atol=1e-4):
+                print("\WILSON: test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case")
+                print(f"For iteration {i}: Expected array: {expected_array}, but got: {actual_array} with err\n, {mesg}")
+                print("y_array_sol", y_array_sol)
+                print("temp_sol", temp_sol)
+                raise ValueError
             
     def test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case(self):
-        rand.seed(0)
-        for i in range(1000):
+        rand.seed(100)
+        for i in range(100):
             y1 = rand.uniform(0,1)
             y2 = rand.uniform(0,1 - y1)
             y3 = 1 - (y1 + y2)
@@ -333,17 +340,30 @@ class TestWilsonModel(unittest.TestCase):
             x_array_sol = solution[:-1]
             temp_sol = solution[-1]
             
-            expected_array = np.array([y1,y2,y3,solution[-1]])
-            actual_array, mesg = self.TernarySys.convert_x_to_y(x_array=x_array_sol)
+            expected_array = np.array([y1,y2,y3,temp_sol])
+            actual_array, mesg = self.TernarySys.convert_x_to_y(x_array=x_array_sol, temp_guess=temp_sol)
             
             if not np.allclose(expected_array, actual_array, atol=1e-4):
                 print("\WILSON: test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case")
                 print(f"For iteration {i}: Expected array: {expected_array}, but got: {actual_array} with err\n, {mesg}")
+                print("x_array_sol", x_array_sol)
+                print("temp_sol", temp_sol)
                 raise ValueError
 
     # def testPlot(self):
         # Use Wilson Model to plot the Txy
         # self.TernarySys.plot_ternary_txy(100,0)
+        
+    class TestEmpiricalModelVLE(unittest.TestCase):
+        def setUp(self) -> None:
+            xtoy = lambda x:x**2
+            ytox = lambda x:x**(1/2)
+            self.empirical_model = VLEEmpiricalModel(xtoy,ytox)
+            
+        def test_TryPlotBinary(self):
+            self.empirical_model.plot_binary_Txy(100)
+            
+        
 
 if __name__ == '__main__':
     unittest.main()

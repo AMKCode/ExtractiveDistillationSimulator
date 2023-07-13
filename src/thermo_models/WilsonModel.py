@@ -55,6 +55,9 @@ class WilsonModel(VLEModel):
             log_arg = 0
             for j in range(1, self.num_comp+1):
                log_arg += ( x_[j-1] * self.Lambdas[(k,j)] )
+            if log_arg <= 0:
+                print("x_", x_)
+                raise ValueError
             gamma_k -= np.log(log_arg)
 
             for i in range(1, self.num_comp+1):
