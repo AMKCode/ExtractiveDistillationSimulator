@@ -1,5 +1,4 @@
 import unittest
-import numpy as np
 import os, sys
 #
 # Panwa: I'm not sure how else to import these properly
@@ -10,11 +9,13 @@ PROJECT_ROOT = os.path.abspath(os.path.join(
 )
 sys.path.append(PROJECT_ROOT) 
 
+import numpy as np
+import math as math
 from thermo_models.RaoultsLawModel import RaoultsLawModel
 from thermo_models.WilsonModel import WilsonModel
 from thermo_models.MargulesModel import MargulesModel
 from thermo_models.VanLaarModel import VanLaarModel
-from thermo_models.VLEEmpiricalModel import VLEEmpiricalModel
+from thermo_models.VLEEmpiricalModel import VLEEmpiricalModelBinary
 import utils.AntoineEquation as AE
 import matplotlib.pyplot as plt 
 import random as rand
@@ -222,9 +223,9 @@ class TestVanLaar(unittest.TestCase):
         
     
         
-"""
+
   
-        
+
 class TestWilsonModel(unittest.TestCase):
     # Test a Ternary Mixture of Acetone, Methyl Acetate, Methanol
     # Acetone = 1
@@ -349,19 +350,39 @@ class TestWilsonModel(unittest.TestCase):
                 print("x_array_sol", x_array_sol)
                 print("temp_sol", temp_sol)
                 raise ValueError
-
+    
     # def testPlot(self):
         # Use Wilson Model to plot the Txy
         # self.TernarySys.plot_ternary_txy(100,0)
+"""       
+class TestEmpiricalModelVLEBinary(unittest.TestCase):
+    def setUp(self) -> None:
+        a = 9
+        b = -0.6
+        xtoy = lambda x: a*x/(1+(a-1)*x) + b*x*(1-x)
+        self.empirical_model = VLEEmpiricalModelBinary(xtoy)
         
-    class TestEmpiricalModelVLE(unittest.TestCase):
-        def setUp(self) -> None:
-            xtoy = lambda x:x**2
-            ytox = lambda x:x**(1/2)
-            self.empirical_model = VLEEmpiricalModel(xtoy,ytox)
+    def test_TryPlotBinary(self):
+        self.empirical_model.plot_binary_yx(1000,comp_id=0)
+
+
+    def test_convertxtoy_from_convertytox(self):
+        for i in range(200):
+            x_expected = rand.uniform(0,1)
+            y, _ = self.empirical_model.convert_x_to_y(x_expected)
+            x_actual, _ = self.empirical_model.convert_y_to_x(y)
+            if not math.isclose(x_expected, x_actual, rel_tol=1e-4):
+                print(f"For iteration {i}: Expected x: {x_expected}, but got: {x_actual}")
+                raise ValueError
             
-        def test_TryPlotBinary(self):
-            self.empirical_model.plot_binary_Txy(100)
+    def test_convertytox_from_convertxtoy(self):
+        for i in range(200):
+            y_expected = rand.uniform(0,1)
+            x, _ = self.empirical_model.convert_y_to_x(y_expected)
+            y_actual, _ = self.empirical_model.convert_x_to_y(x)
+            if not math.isclose(y_expected, y_actual, rel_tol=1e-4):
+                print(f"For iteration {i}: Expected y: {y_expected}, but got: {y_actual}")
+                raise ValueError
             
         
 

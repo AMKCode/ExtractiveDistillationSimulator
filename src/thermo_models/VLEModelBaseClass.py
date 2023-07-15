@@ -84,16 +84,11 @@ class VLEModel:
         if temp_guess == None:
             temp_guess = rand.uniform(np.amax(boiling_points), np.amin(boiling_points))
 
-        # Create an initial guess for the vapor mole fractions and system temperature
-        # init_guess = np.append(np.full(self.num_comp, 1/self.num_comp), Temp_guess)
-
         # Use fsolve to find the vapor mole fractions and system temperature that satisfy the equilibrium conditions
-        # solution, infodict, ier, mesg = fsolve(func, init_guess, full_output=True)
         
         ier = 0
-        # If fsolve fails, try Broyden's method
         if ier != 1:
-            for i in range(200):
+            while True:
                 try:
                     random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
                     new_guess = np.append(random_number/np.sum(random_number),temp_guess)
@@ -102,7 +97,6 @@ class VLEModel:
                         return solution, mesg
                 except:
                     continue
-        return solution, mesg
 
 
     
@@ -122,20 +116,11 @@ class VLEModel:
         # Compute the boiling points for each component
         boiling_points = [eq.get_boiling_point(self.P_sys) for eq in self.partial_pressure_eqs]
         
-        # Estimate the system temperature as the average of the maximum and minimum boiling points
-        # Temp_guess = np.mean([np.amax(boiling_points), np.amin(boiling_points)])
-        
-         # Create an initial guess for the liquid mole fractions and system temperature
-        # init_guess = np.append(np.full(self.num_comp, 1/self.num_comp), Temp_guess)
-        ier = 0
+        #Provides a random guess for temp if no temp_guess was provided as a parameter
         if temp_guess == None:
             temp_guess = rand.uniform(np.amax(boiling_points), np.amin(boiling_points))
-        # random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
-        # init_guess = np.append(random_number/np.sum(random_number), rand.uniform(np.amax(boiling_points), np.amin(boiling_points)))
-        # print("init_guess", init_guess)
-        
-        # Use fsolve to find the liquid mole fractions and system temperature that satisfy the equilibrium conditions
-        # solution, infodict, ier, mesg = fsolve(self.compute_Txy2, init_guess, args=(y_array,), full_output=True)                   
+            
+        ier = 0                  
         if ier != 1:
             while True:
                 try:
@@ -146,8 +131,6 @@ class VLEModel:
                         return solution, mesg
                 except:
                     continue
-            # solution = root(func, init_guess, method = 'excitingmixing').x
-        # return solution, mesg
         
     def compute_Txy(self, vars:np.ndarray, x_array:np.ndarray)->list:
         """
@@ -392,7 +375,43 @@ class VLEModel:
             
         plt.show()
 
+    def plot_yx_binary(self, data_points:int=100):
+        """
+        Plots the y-x diagram for a binary mixture.
+        
+        Args:
+            data_points (int): Number of data points to use in the plot. Default is 100.
+        """
+        
+        # Initialize a figure for plotting
+        plt.figure(figsize=(10, 6))
+        
+        # Create an array of mole fractions for the first component
+        x_space = np.linspace(0, 1, data_points)
+        y_space = []
+        
+        # Compute the vapor mole fractions for each set of liquid mole fractions
+        for x1 in x_space:
+            # The mole fraction of the second component in the liquid phase is 1 - x1
+            x2 = 1 - x1
+            # Initialize a mole fraction array for all components
+            x_array = np.array([x1, x2])
+            # Solve for the vapor-liquid equilibrium
+            y_array = self.convert_x_to_y(x_array)[0]
+            # Append the vapor mole fraction for the first component
+            y_space.append(y_array[0])
 
+        # Plot y vs. x for the binary mixture
+        plt.plot(x_space, y_space, label="Component 1")
+        plt.xlabel("Liquid phase mole fraction (Component 1)")
+        plt.ylabel("Vapor phase mole fraction (Component 1)")
+        plt.title("y-x Diagram for Binary Mixture")
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+        
+        
         
    
 
