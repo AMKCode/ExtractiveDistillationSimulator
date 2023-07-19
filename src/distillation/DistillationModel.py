@@ -92,6 +92,7 @@ class DistillationModel:
         plt.plot(x_r, y_r)
         plt.plot(x_s, y_s)
         plt.plot(x_0, y_0, 'ro')
+        plt.show()
     
     
         
