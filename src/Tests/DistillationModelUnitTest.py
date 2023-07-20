@@ -33,11 +33,14 @@ class TestDistillationModelBinaryCase(unittest.TestCase):
         hexane_antoine = AE.AntoineEquation (Hex_A, Hex_B, Hex_C)
         heptane_antoine = AE.AntoineEquation (Hep_A, Hep_B, Hep_C)
         self.thermo_model = RaoultsLawModel (2,P_sys, [hexane_antoine, heptane_antoine])
+        self.dist_model = DistillationModel(self.thermo_model, [0.5, 0.5], [0.93, 0.1], [0.01, 0.99], 1, 1, 1, 1)
     
-    def test_PlotRmin(self):
-        dist_model = DistillationModel(self.thermo_model, [0.5, 0.5], [0.9, 0.1], [0.01, 0.99], 1, 1, 1, 1)
-        dist_model.plot_r_min_binary()
-        plt.show()
+    # def test_PlotRmin(self):
+    #     self.dist_model.plot_r_min_binary()
+    #     plt.show()
+    
+    def testPlotdistilBinary(self):
+        self.dist_model.plot_distil_binary()
         
 if __name__ == '__main__':
     unittest.main()

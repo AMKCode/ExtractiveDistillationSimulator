@@ -18,7 +18,7 @@ class VLEEmpiricalModelBinary():
         """
         self.func_xtoy = func_xtoy
 
-    def convert_x_to_y(self, x_array: float) -> (float, str):
+    def convert_x_to_y(self, x_array: float):
         """Converts x to y using the provided function.
 
         Args:
@@ -31,7 +31,7 @@ class VLEEmpiricalModelBinary():
         solution = self.func_xtoy(x_array)
         return solution, "Does not use a solver"
     
-    def convert_y_to_x(self, y: float, x_guess: float = None) -> (float, str):
+    def convert_y_to_x(self, y: float, x_guess: float = None):
         """Converts y to x by solving the provided function.
 
         Args:
