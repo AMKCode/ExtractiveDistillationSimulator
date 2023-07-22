@@ -38,14 +38,19 @@ class DistillationModel:
         self.q = ((boil_up+1)*((xD[0]-xF[0])/(xD[0]-xF[0])))-(reflux*((xF[0]-xB[0])/(xD[0]-xB[0])))
         self.s = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
     
-    def rectifying_step(self, x_r_j):
+    def rectifying_step_xtoy(self, x_r_j):
         # Fidkowski and Malone, eqn 3b
         r = self.reflux
         return ((r/(r+1))*x_r_j)+((1/(r+1))*self.xD[0])
     
-    def stripping_step(self, y_s_j):
+    def stripping_step_ytox(self, y_s_j):
         s = self.s
         return ((s/(s+1))*y_s_j)+((1/(s+1))*self.xB[0])
+    
+    def stripping_step_xtoy(self, x_s_j):
+        s = self.s
+        xB = self.xB[0]
+        return ((s+1)/s)*x_s_j - (xB/s)
     
     def plot_r_min_binary(self):
         if self.num_comp != 2:
@@ -85,14 +90,14 @@ class DistillationModel:
         y0_values = []
         
 
-        def compute_strip_fixed(y_s):            
+        def compute_strip_fixed(x_s):            
             # Check if x_s is zero or very close to zero
-            if abs(y_s) < 1e-10:
+            if abs(x_s) < 1e-10:
                 return float('inf')
             else:
-                sol_array, mesg = self.thermo_model.convert_y_to_x(np.array([y_s, 1 - y_s]))
-                x_0 = sol_array[0]
-                return x_0 - self.stripping_step(y_s)
+                sol_array, mesg = self.thermo_model.convert_x_to_y(np.array([x_s, 1 - x_s]))
+                y_0 = sol_array[0]
+                return y_0 - self.stripping_step_xtoy(x_s_j=x_s)
 
         # Define the initial bracket
         a = 0
@@ -102,12 +107,11 @@ class DistillationModel:
 
         for b in partition_points:
             try:
-                y_0 = brentq(compute_strip_fixed, a, b, xtol=1e-5)
-                x_0 = self.thermo_model.convert_x_to_y(np.array([y_0, 1 - y_0]))[0][0]
-                y0_values.append(x_0)
-                x0_values.append(y_0)
+                x_s_0 = brentq(compute_strip_fixed, a, b, xtol=1e-8)
+                y_s_0 = self.thermo_model.convert_x_to_y(np.array([x_s_0, 1 - x_s_0]))[0][0]
+                y0_values.append(y_s_0)
+                x0_values.append(x_s_0)
             except ValueError:
-                # If brentq fails because the function has the same sign at the endpoints, we simply skip this partition
                 pass
             # Update a to be the current b for the next partition
             a = b
@@ -122,7 +126,7 @@ class DistillationModel:
         def compute_rect_fixed(x_r):
             sol_array, mesg = self.thermo_model.convert_x_to_y(np.array([x_r, 1 - x_r]))
             y_x_0 = sol_array[0]
-            return - y_x_0 + self.rectifying_step(x_r_j=x_r)
+            return - y_x_0 + self.rectifying_step_xtoy(x_r_j=x_r)
 
         # Define the initial bracket
         a = 0
@@ -137,11 +141,9 @@ class DistillationModel:
                 x0_values.append(x_0)
                 y0_values.append(y_0)
             except ValueError:
-                # If brentq fails because the function has the same sign at the endpoints, we simply skip this partition
                 pass
             # Update a to be the current b for the next partition
             a = b
-
         return x0_values, y0_values
 
         
@@ -167,14 +169,11 @@ class DistillationModel:
         ax.plot(x_array[:,0], y_array[:,0])
         ax.plot([0,1], [0,1], linestyle='dashed')
 
-        x_r = np.linspace(0, 1, 100)
-        y_s = np.linspace(0, 1, 100)
-
-        y_r = self.rectifying_step(x_r)
-        x_s = self.stripping_step(y_s)
+        y_r = self.rectifying_step_xtoy(x1_space)
+        y_s = self.stripping_step_xtoy(x1_space)
             
-        ax.plot(x_r, y_r)
-        ax.plot(x_s, y_s)
+        ax.plot(x1_space, y_r)
+        ax.plot(x1_space, y_s)
         
         x_r_0, y_r_0  = self.find_rect_fixedpoints_binary(n=10)
         x_s_0, y_s_0 = self.find_strip_fixedpoints_binary(n=10)
