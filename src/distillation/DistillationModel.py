@@ -171,16 +171,29 @@ class DistillationModel:
 
         y_r = self.rectifying_step_xtoy(x1_space)
         y_s = self.stripping_step_xtoy(x1_space)
-            
-        ax.plot(x1_space, y_r)
-        ax.plot(x1_space, y_s)
+
+        op_color = 'yellow'
+        for i in range(len(x1_space)):
+            if (abs((y_r[i]) - y_s[i]) <= 0.001):
+                if (y_r[i] < solution[i]):
+                    op_color = 'green'
+                else:
+                    op_color = 'red'   
+
+
+        ax.plot(x1_space, y_r, color = op_color)
+        ax.plot(x1_space, y_s, color = op_color)
         
         x_r_0, y_r_0  = self.find_rect_fixedpoints_binary(n=10)
         x_s_0, y_s_0 = self.find_strip_fixedpoints_binary(n=10)
         
         ax.scatter( x_r_0,y_r_0, s=100, c="red")
         ax.scatter(x_s_0, y_s_0, s=100, c="red")
-    
+
+        ax.set_xlabel('$x_{Benzene}$')
+        ax.set_ylabel('$y_{Benzene}$')
+        ax.set_title("Minimum Reflux Ratio Demo (Benzene/Toluene)")
+
         ax.set_aspect('equal', adjustable='box')
         plt.show()
 
