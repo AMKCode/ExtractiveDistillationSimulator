@@ -171,7 +171,9 @@ class DistillationModel:
 
         y_r = self.rectifying_step_xtoy(x1_space)
         y_s = self.stripping_step_xtoy(x1_space)
-
+        
+        op_color = 'green'
+        '''
         op_color = 'yellow'
         for i in range(len(x1_space)):
             if (abs((y_r[i]) - y_s[i]) <= 0.001):
@@ -179,7 +181,7 @@ class DistillationModel:
                     op_color = 'green'
                 else:
                     op_color = 'red'   
-
+        '''
 
         ax.plot(x1_space, y_r, color = op_color)
         ax.plot(x1_space, y_s, color = op_color)
