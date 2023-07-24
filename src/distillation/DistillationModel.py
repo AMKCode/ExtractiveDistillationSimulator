@@ -147,9 +147,13 @@ class DistillationModel:
         return x0_values, y0_values
 
         
-    def plot_distil_binary(self):
+    def plot_distil_binary(self, axs):
         if self.num_comp != 2:
             raise ValueError("This method can only be used for binary distillation.") 
+        ax1, ax2, ax3 = axs
+        ax1.set_xlim([0,1]); ax2.set_xlim([0,1]); ax3.set_xlim([0,1]); 
+        ax1.set_ylim([0,1]); ax2.set_ylim([0,1]); ax3.set_ylim([0,1]) 
+        
         
         x1_space = np.linspace(0, 1, 100)
         x_array = np.column_stack([x1_space, 1 - x1_space])
@@ -161,13 +165,8 @@ class DistillationModel:
             t_evaluated.append(solution[-1])
         y_array = np.array(y_array)
 
-        fig = plt.figure()
-        ax = fig.add_subplot()
-        ax.set_xlim([0,1])
-        ax.set_ylim([0,1])
-            
-        ax.plot(x_array[:,0], y_array[:,0])
-        ax.plot([0,1], [0,1], linestyle='dashed')
+        ax1.plot(x_array[:,0], y_array[:,0]); ax2.plot(x_array[:,0], y_array[:,0]); ax3.plot(x_array[:,0], y_array[:,0])
+        ax1.plot([0,1], [0,1], linestyle='dashed'); ax2.plot([0,1], [0,1], linestyle='dashed'); ax3.plot([0,1], [0,1], linestyle='dashed')
 
         y_r = self.rectifying_step_xtoy(x1_space)
         y_s = self.stripping_step_xtoy(x1_space)
@@ -183,21 +182,23 @@ class DistillationModel:
                     op_color = 'red'   
         '''
 
-        ax.plot(x1_space, y_r, color = op_color)
-        ax.plot(x1_space, y_s, color = op_color)
+        ax3.plot(x1_space, y_r, color = op_color); ax2.plot(x1_space, y_r, color = op_color)
+        ax3.plot(x1_space, y_s, color = op_color); ax1.plot(x1_space, y_s, color = op_color)
         
         x_r_0, y_r_0  = self.find_rect_fixedpoints_binary(n=10)
         x_s_0, y_s_0 = self.find_strip_fixedpoints_binary(n=10)
         
-        ax.scatter( x_r_0,y_r_0, s=100, c="red")
-        ax.scatter(x_s_0, y_s_0, s=100, c="red")
+        ax3.scatter( x_r_0,y_r_0, s=100, c="red"); ax2.scatter( x_r_0,y_r_0, s=100, c="red")
+        ax3.scatter(x_s_0, y_s_0, s=100, c="red"); ax1.scatter(x_s_0, y_s_0, s=100, c="red")
 
-        ax.set_xlabel('$x_{Benzene}$')
-        ax.set_ylabel('$y_{Benzene}$')
-        ax.set_title("Minimum Reflux Ratio Demo (Benzene/Toluene)")
+        ax1.set_xlabel('$x_{1}$'); ax2.set_xlabel('$x_{1}$'); ax3.set_xlabel('$x_{1}$')
+        ax1.set_ylabel('$y_{1}$'); ax2.set_ylabel('$y_{1}$'); ax3.set_ylabel('$y_{1}$')
+        ax1.set_title("Equilibrium and Stripping Line")
+        ax2.set_title("Equilibrium and Rectifying Line")
+        ax3.set_title("Equilibrium and Operating Lines")
 
-        ax.set_aspect('equal', adjustable='box')
-        plt.show()
+        ax1.set_aspect('equal', adjustable='box'); ax2.set_aspect('equal', adjustable='box'); ax3.set_aspect('equal', adjustable='box')
+        return [ax1,ax2,ax3]
 
         # def find_fixed_point_binary(self):
     #     def fixed_pt_eqn(var):
