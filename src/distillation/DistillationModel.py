@@ -42,6 +42,11 @@ class DistillationModel:
         # Fidkowski and Malone, eqn 3b
         r = self.reflux
         return ((r/(r+1))*x_r_j)+((1/(r+1))*self.xD[0])
+
+
+    def rectifying_step_ytox(self, y_r_j):
+        r = self.reflux
+        return (((r+1)/r)*y_r_j - (self.xD[0]/r))
     
     def stripping_step_ytox(self, y_VB_j):
         VB = self.VB
@@ -173,13 +178,31 @@ class DistillationModel:
         
    
         op_color = 'yellow'
+        
         for i in range(len(x1_space)):
-            if (abs((y_r[i]) - y_VB[i]) <= 0.001):
-                if (y_r[i] < y_array[i,0]):
+            if (abs((y_r[i]) - y_VB[i]) <= 0.001):    
+                if (y_r[i] < y_array[i,0]):           
                     op_color = 'green'
                 else:
                     op_color = 'red'   
-        
+        '''
+        ## ADD POINTS TO X AXIS TO REPRESENT NUMBER OF EQUILIBRIA ##
+        N = 0
+        x1, x2, y1, y2 = self.xD[0], self.xD[0], self.xD[0], self.xD[0]
+        x_pts = []
+        while (x1 > self.xB[0]):
+            x_pts.append(x1)
+            N += 1
+            solution = self.thermo_model.convert_y_to_x([y1, 1-y1])
+            x2 = solution[0]
+            y2 = rectifying_step_xtoy(x2)
+            x1 = x2
+            y1 = y2 
+
+        x_zero = np.zeros(N)       
+
+        ax2.scatter(x_pts, x_zero)
+        '''
 
         ax3.plot(x1_space, y_r, color = op_color); ax2.plot(x1_space, y_r, color = op_color)
         ax3.plot(x1_space, y_VB, color = op_color); ax1.plot(x1_space, y_VB, color = op_color)
