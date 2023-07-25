@@ -155,7 +155,7 @@ class DistillationModel:
         ax1.set_ylim([0,1]); ax2.set_ylim([0,1]); ax3.set_ylim([0,1]) 
         
         
-        x1_space = np.linspace(0, 1, 100)
+        x1_space = np.linspace(0, 1, 1000)
         x_array = np.column_stack([x1_space, 1 - x1_space])
         y_array, t_evaluated = [], []
         
@@ -171,16 +171,15 @@ class DistillationModel:
         y_r = self.rectifying_step_xtoy(x1_space)
         y_VB = self.stripping_step_xtoy(x1_space)
         
-        op_color = 'green'
-        '''
+   
         op_color = 'yellow'
         for i in range(len(x1_space)):
-            if (abs((y_r[i]) - y_s[i]) <= 0.001):
-                if (y_r[i] < solution[i]):
+            if (abs((y_r[i]) - y_VB[i]) <= 0.001):
+                if (y_r[i] < y_array[i,0]):
                     op_color = 'green'
                 else:
                     op_color = 'red'   
-        '''
+        
 
         ax3.plot(x1_space, y_r, color = op_color); ax2.plot(x1_space, y_r, color = op_color)
         ax3.plot(x1_space, y_VB, color = op_color); ax1.plot(x1_space, y_VB, color = op_color)
@@ -188,7 +187,7 @@ class DistillationModel:
         x_r_0, y_r_0  = self.find_rect_fixedpoints_binary(n=10)
         x_VB_0, y_VB_0 = self.find_strip_fixedpoints_binary(n=10)
         
-        ax3.scatter( x_r_0,y_r_0, s=100, c="red"); ax2.scatter( x_r_0,y_r_0, s=100, c="red")
+        ax3.scatter(x_r_0,y_r_0, s=100, c="red"); ax2.scatter( x_r_0,y_r_0, s=100, c="red")
         ax3.scatter(x_VB_0, y_VB_0, s=100, c="red"); ax1.scatter(x_VB_0, y_VB_0, s=100, c="red")
 
         ax1.set_xlabel('$x_{1}$'); ax2.set_xlabel('$x_{1}$'); ax3.set_xlabel('$x_{1}$')
