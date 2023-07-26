@@ -165,7 +165,7 @@ class DistillationModel:
             ax.set_xlim([0,1])
             ax.set_ylim([0,1])
         
-        x1_space = np.linspace(0, 1, 100)
+        x1_space = np.linspace(0, 1, 1000)
         x_array = np.column_stack([x1_space, 1 - x1_space])
         y_array, t_evaluated = [], []
         
@@ -186,6 +186,12 @@ class DistillationModel:
         y_s = self.stripping_step_xtoy(x1_space)
         
         op_color = 'green'
+        for i in range(len(x1_space)):
+            if (abs((y_r[i]) - y_s[i]) <= 0.001):
+                if (y_r[i] < y_array[i,0]):
+                    op_color = 'green'
+                else:
+                    op_color = 'red'  
         
         ax3.plot(x1_space, y_r, color = op_color)
         ax2.plot(x1_space, y_r, color = op_color)
