@@ -1,4 +1,14 @@
 import os, sys
+#
+# Panwa: I'm not sure how else to import these properly
+#
+PROJECT_ROOT = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), 
+            os.pardir)
+)
+sys.path.append(PROJECT_ROOT) 
+
+from thermo_models.VLEModelBaseClass  import *
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
@@ -9,7 +19,7 @@ import random as rand
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 sys.path.append(PROJECT_ROOT) 
 
-class VLEEmpiricalModelBinary():
+class VLEEmpiricalModelBinary(VLEModel):
     def __init__(self, func_xtoy: Callable[[float], float]) -> None:
         """Initialize the VLE empirical model.
 
@@ -17,6 +27,7 @@ class VLEEmpiricalModelBinary():
             func_xtoy (Callable): Function to convert mole fraction x to y.
         """
         self.func_xtoy = func_xtoy
+        self.num_comp = 2
 
     def convert_x_to_y(self, x_array: float):
         """Converts x to y using the provided function.
@@ -95,3 +106,6 @@ class VLEEmpiricalModelBinary():
         plt.grid(True)
         plt.legend()
         plt.show()
+    
+
+    

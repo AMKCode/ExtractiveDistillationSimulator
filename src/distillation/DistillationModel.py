@@ -192,8 +192,8 @@ class DistillationModel:
         ax3.plot(x1_space, y_s, color = op_color)
         ax1.plot(x1_space, y_s, color = op_color)
         
-        x_r_0, y_r_0  = self.find_rect_fixedpoints_binary(n=10)
-        x_s_0, y_s_0 = self.find_strip_fixedpoints_binary(n=10)
+        x_r_0, y_r_0  = self.find_rect_fixedpoints_binary(n=30)
+        x_s_0, y_s_0 = self.find_strip_fixedpoints_binary(n=30)
         
         # Scatter plots
         ax3.scatter(x_r_0, y_r_0, s=50, c="red")
