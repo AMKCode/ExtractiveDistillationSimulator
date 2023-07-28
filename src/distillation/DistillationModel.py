@@ -9,52 +9,58 @@ PROJECT_ROOT = os.path.abspath(os.path.join(
 )
 sys.path.append(PROJECT_ROOT) 
 from thermo_models.VLEModelBaseClass import *
-from thermo_models.RaoultsLawModel import RaoultsLawModel
-from thermo_models.WilsonModel import WilsonModel
-from thermo_models.MargulesModel import MargulesModel
-from thermo_models.VanLaarModel import VanLaarModel
-import utils.AntoineEquation as AE
 import matplotlib.pyplot as plt 
 import random as rand
 from scipy.optimize import fsolve
 from scipy.optimize import brentq
+from utils.AntoineEquation import *
+from thermo_models.RaoultsLawModel import *
 
 
 #Notes:
 #Conditions for a feasible column, profiles match at the feed stage  + no pinch point in between xB and xD
 class DistillationModel:
-    def __init__(self, thermo_model:VLEModel, xF = None, xD = None, xB = None, reflux = None, boil_up = None, total_stages = None, feed_stage = None) -> None:
+    def __init__(self, thermo_model:VLEModel, xF, xD, xB, reflux = None, boil_up = None, q = 1, feed_stage = None) -> None:
         self.thermo_model = thermo_model
         self.num_comp = thermo_model.num_comp
         self.xF = xF
         self.xD = xD
         self.xB = xB
-        self.reflux = reflux
-        self.boil_up = boil_up
-        self.total_stages = total_stages
+        self.q = q
         self.feed_stage = feed_stage
         
-        # Fidkowski and Malone, eqn 2
-        self.q = ((boil_up+1)*((xD[0]-xF[0])/(xD[0]-xF[0])))-(reflux*((xF[0]-xB[0])/(xD[0]-xB[0])))
-        self.VB = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
+        if reflux is not None and boil_up is not None and q is None:
+            self.boil_up = boil_up
+            self.reflux = reflux
+            self.q = ((boil_up+1)*((xD[0]-xF[0])/(xD[0]-xF[0])))-(reflux*((xF[0]-xB[0])/(xD[0]-xB[0]))) #this one need 1 component
+        elif reflux is None and boil_up is not None and q is not None:
+            self.boil_up = boil_up
+            self.q = q
+            self.reflux = (((boil_up+1)*((xD[0]-xF[0])/(xD[0]-xF[0]))) - self.q)/((xF[0]-xB[0])/(xD[0]-xB[0]))
+        elif reflux is not None and boil_up is None and q is not None:
+            self.reflux = reflux
+            self.q = q
+            self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
+        else:
+            raise ValueError("Underspecification or overspecification: only 2 variables between reflux, boil up, and q can be provided")
     
     def rectifying_step_xtoy(self, x_r_j):
         # Fidkowski and Malone, eqn 3b
         r = self.reflux
-        return ((r/(r+1))*x_r_j)+((1/(r+1))*self.xD[0])
+        return ((r/(r+1))*x_r_j)+((1/(r+1))*self.xD)
 
     def rectifying_step_ytox(self, y_r_j):
         r = self.reflux
-        return (((r+1)/r)*y_r_j - (self.xD[0]/r))
+        return (((r+1)/r)*y_r_j - (self.xD/r))
     
-    def stripping_step_ytox(self, y_VB_j):
-        VB = self.VB
-        return ((VB/(VB+1))*y_VB_j)+((1/(VB+1))*self.xB[0])
+    def stripping_step_ytox(self, y_s_j):
+        boil_up = self.boil_up
+        return ((boil_up/(boil_up+1))*y_s_j)+((1/(boil_up+1))*self.xB[0])
     
-    def stripping_step_xtoy(self, x_VB_j):
-        VB = self.VB
+    def stripping_step_xtoy(self, x_s_j):
+        boil_up = self.boil_up
         xB = self.xB[0]
-        return ((VB+1)/VB)*x_VB_j - (xB/VB)
+        return ((boil_up+1)/boil_up)*x_s_j - (xB/boil_up)
     
     def plot_r_min_binary(self):
         if self.num_comp != 2:
@@ -94,14 +100,14 @@ class DistillationModel:
         y0_values = []
         
 
-        def compute_strip_fixed(x_VB):            
+        def compute_strip_fixed(x_s):            
             # Check if x_s is zero or very close to zero
-            if abs(x_VB) < 1e-10:
+            if abs(x_s) < 1e-10:
                 return float('inf')
             else:
-                sol_array, mesg = self.thermo_model.convert_x_to_y(np.array([x_VB, 1 - x_VB]))
+                sol_array, mesg = self.thermo_model.convert_x_to_y(np.array([x_s, 1 - x_s]))
                 y_0 = sol_array[0]
-                return y_0 - self.stripping_step_xtoy(x_VB_j=x_VB)
+                return y_0 - self.stripping_step_xtoy(x_s_j=x_s)
 
         # Define the initial bracket
         a = 0
@@ -111,10 +117,10 @@ class DistillationModel:
 
         for b in partition_points:
             try:
-                x_VB_0 = brentq(compute_strip_fixed, a, b, xtol=1e-8)
-                y_VB_0 = self.thermo_model.convert_x_to_y(np.array([x_VB_0, 1 - x_VB_0]))[0][0]
-                y0_values.append(y_VB_0)
-                x0_values.append(x_VB_0)
+                x_s_0 = brentq(compute_strip_fixed, a, b, xtol=1e-8)
+                y_s_0 = self.thermo_model.convert_x_to_y(np.array([x_s_0, 1 - x_s_0]))[0][0]
+                y0_values.append(y_s_0)
+                x0_values.append(x_s_0)
             except ValueError:
                 pass
             # Update a to be the current b for the next partition
@@ -140,10 +146,10 @@ class DistillationModel:
 
         for b in partition_points:
             try:
-                x_0 = brentq(compute_rect_fixed, a, b, xtol=1e-5)
-                y_0 = self.thermo_model.convert_x_to_y(np.array([x_0, 1- x_0]))[0][0]
-                x0_values.append(x_0)
-                y0_values.append(y_0)
+                x_r_0 = brentq(compute_rect_fixed, a, b, xtol=1e-5)
+                y_r_0 = self.thermo_model.convert_x_to_y(np.array([x_r_0, 1- x_r_0]))[0][0]
+                x0_values.append(x_r_0)
+                y0_values.append(y_r_0)
             except ValueError:
                 pass
             # Update a to be the current b for the next partition
@@ -245,8 +251,10 @@ class DistillationModel:
             ax.set_aspect('equal', adjustable='box')
         
         # Plot and format all fixed plots
-        for ax_fixed, x in zip([ax1_fixed, ax2_fixed, ax3_fixed], [x_s_0, x_r_0, x_r_0]):
+        for i, (ax_fixed, x) in enumerate(zip([ax1_fixed, ax2_fixed, ax3_fixed], [x_s_0, x_r_0, x_r_0])):
             ax_fixed.scatter(x, [0]*len(x), marker='x', color='black')
+            if i == 2:  # if we're dealing with the third plot
+                ax_fixed.scatter(x_s_0, [0]*len(x_s_0), marker='x', color='black')
             ax_fixed.spines['top'].set_visible(False)
             ax_fixed.spines['right'].set_visible(False)
             ax_fixed.spines['bottom'].set_visible(False)
@@ -255,6 +263,7 @@ class DistillationModel:
             ax_fixed.set_xlim([0,1])
             ax_fixed.yaxis.set_ticks([])
             ax_fixed.yaxis.set_ticklabels([])
+
             
         # Disable x-axis labels for the main plots
         for ax in [ax1, ax2, ax3]:
@@ -266,3 +275,32 @@ class DistillationModel:
         axs[0, 2].set_title("Equilibrium and Operating Lines")
         
         return [ax1,ax2,ax3]
+
+def main():
+    Ben_A = 4.72583
+    Ben_B = 1660.652
+    Ben_C = -1.461
+
+    # Antoine Parameters for toluene
+    Tol_A = 4.07827
+    Tol_B = 1343.943
+    Tol_C = -53.773
+
+    P_sys = 1.0325
+    # Create Antoine equations for benzene and toluene
+    benzene_antoine = AntoineEquation(Ben_A, Ben_B, Ben_C)
+    toluene_antoine = AntoineEquation(Tol_A, Tol_B, Tol_C)
+
+    # Create a Raoult's law object
+    vle_model = RaoultsLawModel(2, P_sys, [benzene_antoine, toluene_antoine])
+    xF = np.array([0.5, 0.5])
+    xD = np.array([0.1, 0.9])
+    xB = np.array([0.9, 0.1])
+    R = 1
+    distillation_model = DistillationModel(vle_model, xF = xF, xD = xD, xB = xB, reflux = R)
+    fig, axs = plt.subplots(2, 3, figsize=(15, 5), gridspec_kw={'height_ratios': [40, 1]}, sharex='col')
+    axs = distillation_model.plot_distil_binary(axs = axs)
+    plt.subplots_adjust(hspace=0)
+        
+if __name__ == "__main__":
+    main()
