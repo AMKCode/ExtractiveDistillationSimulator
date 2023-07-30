@@ -169,8 +169,10 @@ class DistillationModel:
         while (x1 > self.xB[0]):  
             x_pts.append(x1)
             N += 1 
-            solution = self.thermo_model.convert_y_to_x([y1, 1-y1]) # Problematic line: step to x value on equib curve
-            x2 = solution[0]
+
+            # Problematic line (I think): step to x value on equib curve
+            x2 = self.thermo_model.convert_y_to_x(np.array([y1, 1-y1]))[0][0] 
+
             #Step to y value on operating line
             yr = self.rectifying_step_xtoy(x2)
             ys = self.stripping_step_xtoy(x2)
@@ -238,9 +240,9 @@ class DistillationModel:
         #print(intersection_counter)
 
 
-        '''       
-        Currently causes infinite runtime!     
-        x_equib = self.compute_equib_stages(2)
+        '''
+        #Currently causes infinite runtime!     
+        x_equib = self.compute_equib_stages_binary(2)
         print(x_equib)
         '''
 
