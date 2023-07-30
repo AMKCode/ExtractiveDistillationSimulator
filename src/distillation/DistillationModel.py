@@ -47,11 +47,11 @@ class DistillationModel:
     def rectifying_step_xtoy(self, x_r_j):
         # Fidkowski and Malone, eqn 3b
         r = self.reflux
-        return ((r/(r+1))*x_r_j)+((1/(r+1))*self.xD)
+        return ((r/(r+1))*x_r_j)+((1/(r+1))*self.xD[0])
 
     def rectifying_step_ytox(self, y_r_j):
         r = self.reflux
-        return (((r+1)/r)*y_r_j - (self.xD/r))
+        return (((r+1)/r)*y_r_j - (self.xD[0]/r))
     
     def stripping_step_ytox(self, y_s_j):
         boil_up = self.boil_up
@@ -276,6 +276,10 @@ class DistillationModel:
         
         return [ax1,ax2,ax3]
 
+    def plot_distil_ternary(self):
+        if self.num_comp != 3:
+            raise ValueError("This method can only be used for binary distillation.")
+        
 def main():
     Ben_A = 4.72583
     Ben_B = 1660.652
