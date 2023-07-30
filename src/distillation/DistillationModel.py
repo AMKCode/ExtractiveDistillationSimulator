@@ -155,6 +155,40 @@ class DistillationModel:
             # Update a to be the current b for the next partition
             a = b
         return x0_values, y0_values
+    
+    def compute_equib_stages_binary(self, ax_num):
+
+        ## ADD POINTS TO X AXIS TO REPRESENT NUMBER OF EQUILIBRIA ##
+
+        if self.num_comp != 2:
+            raise ValueError("This method can only be used for binary distillation.")
+        
+        N = 0 #track number of equib stages
+        x1, x2, y1, y2 = self.xD[0], self.xD[0], self.xD[0], self.xD[0]
+        x_pts = []
+        while (x1 > self.xB[0]):  
+            x_pts.append(x1)
+            N += 1 
+            solution = self.thermo_model.convert_y_to_x([y1, 1-y1]) # Problematic line: step to x value on equib curve
+            x2 = solution[0]
+            #Step to y value on operating line
+            yr = self.rectifying_step_xtoy(x2)
+            ys = self.stripping_step_xtoy(x2)
+            y2 = min(yr, ys)
+            x1 = x2
+            #Begin next iteration at the corresponding operating line
+            if (ax_num == 1):
+                y1 = ys
+            elif (ax_num == 2):
+                y1 = yr
+            elif (ax_num == 3):
+                y1 = y2 
+            else:
+                raise ValueError("This method only accepts ax_num = 1,2,3.")
+        #print(N)
+        return x_pts
+        
+
 
         
     def plot_distil_binary(self, axs, pbar=None):
@@ -202,22 +236,12 @@ class DistillationModel:
                     op_color = 'red'  
                 break
         #print(intersection_counter)
-                    
-        '''
-        ## ADD POINTS TO X AXIS TO REPRESENT NUMBER OF EQUILIBRIA ##
-        N = 0
-        x1, x2, y1, y2 = self.xD[0], self.xD[0], self.xD[0], self.xD[0]
-        x_pts = []
-        while (x1 > self.xB[0]):
-            x_pts.append(x1)
-            N += 1
-            solution = self.thermo_model.convert_y_to_x([y1, 1-y1])
-            x2 = solution[0]
-            y2 = self.rectifying_step_ytox(x2)
-            x1 = x2
-            y1 = y2 
-        x_zero = np.zeros(N)       
-        ax2.scatter(x_pts, x_zero)
+
+
+        '''       
+        Currently causes infinite runtime!     
+        x_equib = self.compute_equib_stages(2)
+        print(x_equib)
         '''
 
 
