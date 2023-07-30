@@ -191,14 +191,17 @@ class DistillationModel:
         y_s = self.stripping_step_xtoy(x1_space)
         
         op_color = 'green'
-        for i in range(len(x1_space)):
-            if ((abs((y_r[i]) - y_array[i]) <= 0.001) & (y_r[i] < y_s[i])):
-                op_color = 'black'
-            elif (abs((y_r[i]) - y_s[i]) <= 0.001):
-                if (y_r[i] < y_array[i,0]):
-                    op_color = 'green'
-                else:
+        intersection_counter = 0
+        for i in range(len(x1_space)-1, 0, -1):
+            if (abs((y_r[i]) - y_array[i,0]) <= 0.001): #rectifying line intersects equib
+                intersection_counter += 1
+            if (abs((y_r[i]) - y_s[i]) <= 0.001): # operating lines interect
+                if ((y_r[i] < y_array[i,0]) & (intersection_counter > 1)):
+                    op_color = 'black'
+                if (y_r[i] >= y_array[i,0]):
                     op_color = 'red'  
+                break
+        #print(intersection_counter)
                     
         '''
         ## ADD POINTS TO X AXIS TO REPRESENT NUMBER OF EQUILIBRIA ##
