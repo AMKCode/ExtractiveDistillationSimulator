@@ -18,7 +18,6 @@ import utils.AntoineEquation as AE
 import matplotlib.pyplot as plt 
 import random as rand
 
-
 class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
     def setUp(self) -> None:
         # Antoine Parameters for benzene
@@ -42,6 +41,10 @@ class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
     # def testPlot(self):
     #     # Use Raoult's law to plot the Txy
     #     self.TolBenSys.plot_binary_Txy(100,0)
+    
+    def testValueFromDistillationModel(self):
+        y_array = np.array([0.95, 0.05])
+        print(self.TolBenSys.convert_y_to_x(y_array=y_array)[0])
         
     def testRandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
         rand.seed(0)

@@ -157,38 +157,59 @@ class DistillationModel:
         return x0_values, y0_values
     
     def compute_equib_stages_binary(self, ax_num):
-
         ## ADD POINTS TO X AXIS TO REPRESENT NUMBER OF EQUILIBRIA ##
-
         if self.num_comp != 2:
             raise ValueError("This method can only be used for binary distillation.")
         
         N = 0 #track number of equib stages
-        x1, x2, y1, y2 = self.xD[0], self.xD[0], self.xD[0], self.xD[0]
-        x_pts = []
+        x1= self.xD[0]
+        y1 = self.rectifying_step_xtoy(x1)
+        x2 = 1
+        y2 = 1
+        
+        print("x1:",x1, "y1:", y1)
+        x_comp = []
+        y_comp = []
+        counter = 0
+        
         while (x1 > self.xB[0]):  
-            x_pts.append(x1)
+            if x1 > 1 or y1 > 1 or x2 > 1 or y2 > 1:
+                print("too big")
+                return x_comp, y_comp
+            
+            if counter > 30:
+                print("too many times")
+                return x_comp, y_comp
+            #Appending stripping/rectifying points
+            x_comp.append(x1)
+            y_comp.append(y1)
             N += 1 
 
             # Problematic line (I think): step to x value on equib curve
             x2 = self.thermo_model.convert_y_to_x(np.array([y1, 1-y1]))[0][0] 
+            print("N:",N, "x2", ":", x2)
+            x_comp.append(x2)
+            y_comp.append(y1)
 
             #Step to y value on operating line
             yr = self.rectifying_step_xtoy(x2)
             ys = self.stripping_step_xtoy(x2)
             y2 = min(yr, ys)
             x1 = x2
+            counter = counter + 1
+            
             #Begin next iteration at the corresponding operating line
-            if (ax_num == 1):
+            if (ax_num == 0):
                 y1 = ys
-            elif (ax_num == 2):
+            elif (ax_num == 1):
                 y1 = yr
-            elif (ax_num == 3):
+            elif (ax_num == 2):
                 y1 = y2 
             else:
                 raise ValueError("This method only accepts ax_num = 1,2,3.")
-        #print(N)
-        return x_pts
+            print("y1:", y1)
+        print(N)
+        return x_comp, y_comp
         
 
 
@@ -254,6 +275,15 @@ class DistillationModel:
         
         x_r_0, y_r_0  = self.find_rect_fixedpoints_binary(n=30)
         x_s_0, y_s_0 = self.find_strip_fixedpoints_binary(n=30)
+        
+        #Compute the stage-wise composition
+        x_ax1, y_ax1 = self.compute_equib_stages_binary(0)
+        x_ax2, y_ax2 = self.compute_equib_stages_binary(1)
+        x_ax3, y_ax3= self.compute_equib_stages_binary(2)
+        
+        ax1.plot(x_ax1, y_ax1, linestyle='--', color='black', alpha = 0.3)
+        ax2.plot(x_ax2, y_ax2, linestyle='--', color='black', alpha = 0.3)
+        ax3.plot(x_ax3, y_ax3, linestyle='--', color='black', alpha = 0.3)
         
         # Scatter plots
         ax3.scatter(x_r_0, y_r_0, s=50, c="red")
@@ -336,6 +366,7 @@ def main():
     fig, axs = plt.subplots(2, 3, figsize=(15, 5), gridspec_kw={'height_ratios': [40, 1]}, sharex='col')
     axs = distillation_model.plot_distil_binary(axs = axs)
     plt.subplots_adjust(hspace=0)
+    plt.show()
         
 if __name__ == "__main__":
     main()
