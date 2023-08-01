@@ -20,7 +20,7 @@ from thermo_models.RaoultsLawModel import *
 #Notes:
 #Conditions for a feasible column, profiles match at the feed stage  + no pinch point in between xB and xD
 class DistillationModel:
-    def __init__(self, thermo_model:VLEModel, xF, xD, xB, reflux = None, boil_up = None, q = 1, feed_stage = None) -> None:
+    def __init__(self, thermo_model:VLEModel, xF: np.ndarray, xD: np.ndarray, xB: np.ndarray, reflux = None, boil_up = None, q = 1, feed_stage = None) -> None:
         self.thermo_model = thermo_model
         self.num_comp = thermo_model.num_comp
         self.xF = xF
@@ -44,12 +44,12 @@ class DistillationModel:
         else:
             raise ValueError("Underspecification or overspecification: only 2 variables between reflux, boil up, and q can be provided")
     
-    def rectifying_step_xtoy(self, x_r_j):
+    def rectifying_step_xtoy(self, x_r_j:np.ndarray) -> np.ndarray:
         # Fidkowski and Malone, eqn 3b
         r = self.reflux
         return ((r/(r+1))*x_r_j)+((1/(r+1))*self.xD[0])
 
-    def rectifying_step_ytox(self, y_r_j):
+    def rectifying_step_ytox(self, y_r_j:np.ndarray) -> np.ndarray:
         r = self.reflux
         return (((r+1)/r)*y_r_j - (self.xD[0]/r))
     

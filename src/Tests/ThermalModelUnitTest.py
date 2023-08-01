@@ -17,6 +17,50 @@ from thermo_models.VanLaarModel import VanLaarModel
 import utils.AntoineEquation as AE
 import matplotlib.pyplot as plt 
 import random as rand
+class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
+        def setUp(self) -> None:
+        #Wilson Constants (Aij) for the Ethanol-Water-Acetone Mixture from Slack
+        #1: Ethanol, 2: Water, 3: Acetone
+            P_sys = 1.0325
+            num_comp = 3
+            Lambdas = {
+                (1,1) : 1,
+                (1,2) : 0.1782,
+                (1,3) : 0.692,
+                (2,1) : 0.8966,
+                (2,2) : 1,
+                (2,3) : 0.492,
+                (3,1) : 0.726,
+                (3,2) : 0.066,
+                (3,3) : 1
+                }
+            
+            #Antoine parameters for Ethanol
+            EtOH_A = 23.5807
+            EtOH_B = -3673.81
+            EtOH_C = -46.681
+
+            #Antoine parameters for Methyl Acetate
+            H2O_A = 23.2256
+            H2O_B = -3835.18
+            H2O_C = -45.343
+
+            #Antoine parameters for Methanol
+            Me_A = 23.4832
+            Me_B = -3634.01
+            Me_C = -33.768
+
+            #Antoine Equations 
+            EtOH_antoine = AE.AntoineEquation(EtOH_A, EtOH_B, EtOH_C)
+            H2O_antoine = AE.AntoineEquation(H2O_A, H2O_B, H2O_C)
+            Methanol_antoine = AE.AntoineEquation(Me_A, Me_B, Me_C)
+
+            # Create a Wilson's Model object
+            self.TernarySys = WilsonModel(num_comp,P_sys,Lambdas,[EtOH_antoine, H2O_antoine, Methanol_antoine])
+        def testPlot(self):
+        # Use Wilson Model to plot the Txy
+            self.TernarySys.plot_ternary_txy(100,0)
+            
 
 class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
     def setUp(self) -> None:
