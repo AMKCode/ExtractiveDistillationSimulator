@@ -156,103 +156,77 @@ class DistillationModel:
             a = b
         return x0_values, y0_values
     
-    def compute_equib_stages_binary(self, ax_num):
+    def compute_equib_stages_binary(self, ax_num, fixed_points = []):
         ## ADD POINTS TO X AXIS TO REPRESENT NUMBER OF EQUILIBRIA ##
         if self.num_comp != 2:
             raise ValueError("This method can only be used for binary distillation.")
-        
-        if (ax_num == 0):
-            N = 0 #track number of equib stages
+
+        x_comp, y_comp = [], []  # Initialize composition lists
+        counter = 0
+
+        if ax_num == 0:
+            N = 0  # Track number of equib stages
             x1 = self.xB[0]
             y1 = self.stripping_step_xtoy(x1)
-            x2 = 0
-            y2 = 0
 
-            print("x1:",x1, "y1:", y1)
-            x_comp = []
-            y_comp = []
-            counter = 0
-            
-            while (x1 < self.xD[0]):  
-                if x1 > 1 or y1 > 1 or x2 > 1 or y2 > 1 or x1 < 0 or y1 < 0 or x2 < 0 or y2 < 0:
-                    print("Out of range")
-                    return x_comp, y_comp
-                
-                if counter > 30:
-                    print("too many times")
-                    return x_comp, y_comp
-                #Appending stripping/rectifying points
+            while x1 < self.xD[0]:
+                if x1 > 1 or y1 > 1 or x1 < 0 or y1 < 0:
+                    raise ValueError("Components out of range")
+
+                if np.isclose(x1, fixed_points, atol=0.001).any():
+                    return x_comp, y_comp, "Infinite Stages"
+                    
+                counter += 1   
+                if counter > 200:
+                    return x_comp, y_comp, "Too many iterations > 200"
+
                 x_comp.append(x1)
                 y_comp.append(y1)
-                N += 1 
+                N += 1
 
-                y2 = self.thermo_model.convert_x_to_y(np.array([x1, 1-x1]))[0][0] 
-                
+                y2 = self.thermo_model.convert_x_to_y(np.array([x1, 1-x1]))[0][0]
                 x_comp.append(x1)
                 y_comp.append(y2)
 
-                #Step to x value on operating line
-                x2 = self.stripping_step_ytox(y2)
-                counter = counter + 1
-                print("N:",N, "x2", ":", x2)   
-                x1 = x2
-                y1 = y2
-                print("y1:", y1)
-        
-        elif (ax_num == 1 or ax_num == 2):     
-            N = 0 #track number of equib stages
+                x2 = self.stripping_step_ytox(y2)  # Step to x value on operating line
+                x1, y1 = x2, y2
+
+        elif ax_num in [1, 2]:
+            N = 0  # Track number of equib stages
             x1 = self.xD[0]
             y1 = self.rectifying_step_xtoy(x1)
-            x2 = 1
-            y2 = 1
-            
-            print("x1:",x1, "y1:", y1)
-            x_comp = []
-            y_comp = []
-            counter = 0
-            
-            while (x1 > self.xB[0]):  
-                if x1 > 1 or y1 > 1 or x2 > 1 or y2 > 1:
-                    print("too big")
-                    return x_comp, y_comp
-                
-                if counter > 30:
-                    print("too many times")
-                    return x_comp, y_comp
-                #Appending stripping/rectifying points
+
+            while x1 > self.xB[0]:
+                if x1 > 1 or y1 > 1 or x1 < 0 or y1 < 0:
+                    raise ValueError("Components out of range")
+                counter += 1
+                if np.isclose(x1, fixed_points, atol=0.001).any():
+                    return x_comp, y_comp, "Infinite Stages"
+                if counter > 200:
+                    return x_comp, y_comp, "Too many iterations > 200"
+
                 x_comp.append(x1)
                 y_comp.append(y1)
-                N += 1 
+                N += 1
 
-                # Problematic line (I think): step to x value on equib curve
-                x2 = self.thermo_model.convert_y_to_x(np.array([y1, 1-y1]))[0][0] 
-                print("N:",N, "x2", ":", x2)
+                x2 = self.thermo_model.convert_y_to_x(np.array([y1, 1-y1]))[0][0]
                 x_comp.append(x2)
                 y_comp.append(y1)
 
-                #Step to y value on operating line
                 yr = self.rectifying_step_xtoy(x2)
                 ys = self.stripping_step_xtoy(x2)
                 y2 = min(yr, ys)
                 x1 = x2
-                counter = counter + 1
-                
-                #Begin next iteration at the corresponding operating line
-                if (ax_num == 1):
-                    y1 = yr
-                elif (ax_num == 2):
-                    y1 = y2 
-                print("y1:", y1)
-     
+                counter += 1
+
+                y1 = yr if ax_num == 1 else y2
         else:
             raise ValueError("This method only accepts ax_num = 0,1,2.")
-            
-        print(N)
-        return x_comp, y_comp
-    
 
+
+        return x_comp, y_comp, N
         
-    def plot_distil_binary(self, axs, pbar=None):
+    def plot_distil_binary(self, axs, pbar = None):
         if self.num_comp != 2:
             raise ValueError("This method can only be used for binary distillation.")
             
@@ -337,9 +311,9 @@ class DistillationModel:
         x_s_0, y_s_0 = self.find_strip_fixedpoints_binary(n=30)
         
         #Compute the stage-wise composition
-        x_ax1, y_ax1 = self.compute_equib_stages_binary(0)
-        x_ax2, y_ax2 = self.compute_equib_stages_binary(1)
-        x_ax3, y_ax3 = self.compute_equib_stages_binary(2)
+        x_ax1, y_ax1, N_1 = self.compute_equib_stages_binary(0, x_s_0)
+        x_ax2, y_ax2, N_2 = self.compute_equib_stages_binary(1, x_r_0)
+        x_ax3, y_ax3, N_3 = self.compute_equib_stages_binary(2, x_r_0 + x_s_0)
         
         ax1.plot(x_ax1, y_ax1, linestyle='--', color='black', alpha = 0.3)
         ax2.plot(x_ax2, y_ax2, linestyle='--', color='black', alpha = 0.3)
@@ -360,6 +334,11 @@ class DistillationModel:
         ax1_fixed.xaxis.set_label_coords(0.5, -0.05)
         ax2_fixed.xaxis.set_label_coords(0.5, -0.05)
         ax3_fixed.xaxis.set_label_coords(0.5, -0.05)
+        
+        # Add descriptive text under the fixed graphs
+        ax1_fixed.text(0.5, -5, f"Number of Stages: {N_1}", ha='center', va='center', transform=ax1_fixed.transAxes)
+        ax2_fixed.text(0.5, -5, f"Number of Stages: {N_2}", ha='center', va='center', transform=ax2_fixed.transAxes)
+        ax3_fixed.text(0.5, -5, f"Number of Stages: {N_3}", ha='center', va='center', transform=ax3_fixed.transAxes)
 
         # Disable y-axis for secondary plots
         ax1_fixed.yaxis.set_ticks([])
@@ -401,32 +380,32 @@ class DistillationModel:
         if self.num_comp != 3:
             raise ValueError("This method can only be used for binary distillation.")
         
-def main():
-    Ben_A = 4.72583
-    Ben_B = 1660.652
-    Ben_C = -1.461
+# def main():
+#     Ben_A = 4.72583
+#     Ben_B = 1660.652
+#     Ben_C = -1.461
 
-    # Antoine Parameters for toluene
-    Tol_A = 4.07827
-    Tol_B = 1343.943
-    Tol_C = -53.773
+#     # Antoine Parameters for toluene
+#     Tol_A = 4.07827
+#     Tol_B = 1343.943
+#     Tol_C = -53.773
 
-    P_sys = 1.0325
-    # Create Antoine equations for benzene and toluene
-    benzene_antoine = AntoineEquation(Ben_A, Ben_B, Ben_C)
-    toluene_antoine = AntoineEquation(Tol_A, Tol_B, Tol_C)
+#     P_sys = 1.0325
+#     # Create Antoine equations for benzene and toluene
+#     benzene_antoine = AntoineEquation(Ben_A, Ben_B, Ben_C)
+#     toluene_antoine = AntoineEquation(Tol_A, Tol_B, Tol_C)
 
-    # Create a Raoult's law object
-    vle_model = RaoultsLawModel(2, P_sys, [benzene_antoine, toluene_antoine])
-    xF = np.array([0.5, 0.5])
-    xD = np.array([0.1, 0.9])
-    xB = np.array([0.9, 0.1])
-    R = 1
-    distillation_model = DistillationModel(vle_model, xF = xF, xD = xD, xB = xB, reflux = R)
-    fig, axs = plt.subplots(2, 3, figsize=(15, 5), gridspec_kw={'height_ratios': [40, 1]}, sharex='col')
-    axs = distillation_model.plot_distil_binary(axs = axs)
-    plt.subplots_adjust(hspace=0)
-    plt.show()
+#     # Create a Raoult's law object
+#     vle_model = RaoultsLawModel(2, P_sys, [benzene_antoine, toluene_antoine])
+#     xF = np.array([0.5, 0.5])
+#     xD = np.array([0.1, 0.9])
+#     xB = np.array([0.9, 0.1])
+#     R = 1
+#     distillation_model = DistillationModel(vle_model, xF = xF, xD = xD, xB = xB, reflux = R)
+#     fig, axs = plt.subplots(2, 3, figsize=(15, 5), gridspec_kw={'height_ratios': [40, 1]}, sharex='col')
+#     axs = distillation_model.plot_distil_binary(axs = axs)
+#     plt.subplots_adjust(hspace=0)
+#     plt.show()
         
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

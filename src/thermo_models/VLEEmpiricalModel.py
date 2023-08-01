@@ -29,7 +29,7 @@ class VLEEmpiricalModelBinary(VLEModel):
         self.func_xtoy = func_xtoy
         self.num_comp = 2
 
-    def convert_x_to_y(self, x_array: float):
+    def convert_x_to_y(self, x_array: np.ndarray):
         """Converts x to y using the provided function.
 
         Args:
@@ -39,10 +39,11 @@ class VLEEmpiricalModelBinary(VLEModel):
             solution (float): Mole fraction in the vapor phase.
             message (str): Informational message.
         """
+        x = x_array[0]
         solution = self.func_xtoy(x_array)
         return solution, "Does not use a solver"
     
-    def convert_y_to_x(self, y: float, x_guess: float = None):
+    def convert_y_to_x(self, y_array: np.ndarray, x_guess: float = None):
         """Converts y to x by solving the provided function.
 
         Args:
@@ -57,6 +58,8 @@ class VLEEmpiricalModelBinary(VLEModel):
             ValueError: If fsolve does not find a solution or solution is not between 0 and 1.
         """
         # Define a function that needs to be solved
+        
+        y = y_array[0]
         def func(x):
             return self.func_xtoy(x) - y
 
