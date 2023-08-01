@@ -315,6 +315,15 @@ class DistillationModel:
         x_ax2, y_ax2, N_2 = self.compute_equib_stages_binary(1, x_r_0)
         x_ax3, y_ax3, N_3 = self.compute_equib_stages_binary(2, x_r_0 + x_s_0)
         
+        #Plot the stage-wise composition on the second graphs
+        ax1_fixed.scatter(x_ax1, [0]*len(x_ax1), marker='x', color='red')
+        ax2_fixed.scatter(x_ax2, [0]*len(x_ax2), marker='x', color='green')
+        
+        #CHANGE THIS
+        ax3_fixed.scatter(x_ax3, [0]*len(x_ax3), marker='x', color='red')
+
+        
+        
         ax1.plot(x_ax1, y_ax1, linestyle='--', color='black', alpha = 0.3)
         ax2.plot(x_ax2, y_ax2, linestyle='--', color='black', alpha = 0.3)
         ax3.plot(x_ax3, y_ax3, linestyle='--', color='black', alpha = 0.3)
