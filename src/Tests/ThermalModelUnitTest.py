@@ -21,7 +21,9 @@ class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
         def setUp(self) -> None:
         #Wilson Constants (Aij) for the Ethanol-Water-Acetone Mixture from Slack
         #1: Ethanol, 2: Water, 3: Acetone
-            P_sys = 1.0325
+        #Note that the paper uses the e base form of antoine equation with different signs for the addition term (see appendix of paper)
+        #Hence, we changed the B term of the antoine constant to its negative
+            P_sys = 101325 #1 atm in pascals
             num_comp = 3
             Lambdas = {
                 (1,1) : 1,
@@ -37,29 +39,54 @@ class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
             
             #Antoine parameters for Ethanol
             EtOH_A = 23.5807
-            EtOH_B = -3673.81
+            EtOH_B = 3673.81
             EtOH_C = -46.681
 
             #Antoine parameters for Methyl Acetate
             H2O_A = 23.2256
-            H2O_B = -3835.18
+            H2O_B = 3835.18
             H2O_C = -45.343
 
             #Antoine parameters for Methanol
             Me_A = 23.4832
-            Me_B = -3634.01
+            Me_B = 3634.01
             Me_C = -33.768
 
             #Antoine Equations 
-            EtOH_antoine = AE.AntoineEquation(EtOH_A, EtOH_B, EtOH_C)
-            H2O_antoine = AE.AntoineEquation(H2O_A, H2O_B, H2O_C)
-            Methanol_antoine = AE.AntoineEquation(Me_A, Me_B, Me_C)
+            EtOH_antoine = AE.AntoineEquationBaseE(EtOH_A, EtOH_B, EtOH_C)
+            H2O_antoine = AE.AntoineEquationBaseE(H2O_A, H2O_B, H2O_C)
+            Methanol_antoine = AE.AntoineEquationBaseE(Me_A, Me_B, Me_C)
 
             # Create a Wilson's Model object
             self.TernarySys = WilsonModel(num_comp,P_sys,Lambdas,[EtOH_antoine, H2O_antoine, Methanol_antoine])
-        def testPlot(self):
-        # Use Wilson Model to plot the Txy
-            self.TernarySys.plot_ternary_txy(100,0)
+        def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
+            rand.seed(0)
+            for i in range(100):
+                x1 = rand.uniform(0,1)
+                x2 = rand.uniform(0,1 - x1)
+                x3 = 1 - (x1 + x2)
+                
+                solution = (self.TernarySys.convert_x_to_y(np.array([x1, x2, x3])))[0]
+                y_array_sol = solution[:-1]
+                temp_sol = solution[-1]
+                np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), self.TernarySys.convert_y_to_x(y_array=y_array_sol)[0], atol=1e-4)
+                
+        def test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case(self):
+            rand.seed(0)
+            for i in range(100):
+                y1 = rand.uniform(0,1)
+                y2 = rand.uniform(0,1 - y1)
+                y3 = 1 - (y1 + y2)
+                
+                solution = (self.TernarySys.convert_y_to_x(np.array([y1, y2, y3])))[0]
+                x_array_sol = solution[:-1]
+                temp_sol = solution[-1]
+                np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), self.TernarySys.convert_x_to_y(x_array=x_array_sol)[0], atol=1e-4)
+        # def testPlot(self):
+        # # Use Wilson Model to plot the Txy
+        #     boiling_points = [eq.get_boiling_point(self.TernarySys.P_sys) for eq in self.TernarySys.partial_pressure_eqs]
+        #     print(boiling_points)
+        #     self.TernarySys.plot_ternary_txy(100,0)
             
 
 class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
@@ -76,8 +103,8 @@ class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
         
         P_sys = 1.0325
         # Create Antoine equations for benzene and toluene
-        benzene_antoine = AE.AntoineEquation(Ben_A, Ben_B, Ben_C)
-        toluene_antoine = AE.AntoineEquation(Tol_A, Tol_B, Tol_C)
+        benzene_antoine = AE.AntoineEquationBase10(Ben_A, Ben_B, Ben_C)
+        toluene_antoine = AE.AntoineEquationBase10(Tol_A, Tol_B, Tol_C)
 
         # Create a Raoult's law object
         self.TolBenSys = RaoultsLawModel(2,P_sys,[benzene_antoine, toluene_antoine])

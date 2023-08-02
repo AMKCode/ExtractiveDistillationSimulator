@@ -25,7 +25,7 @@ class RaoultsLawModel(VLEModel):
         partial_pressure_eqs (AntoineEquation): The Antoine equations for each component.
     """
     
-    def __init__(self, num_comp: int, P_sys: float, partial_pressure_eqs: AntoineEquation):
+    def __init__(self, num_comp: int, P_sys: float, partial_pressure_eqs: AntoineEquationBase10):
         """
         Initializes the RaoultsLawModel with the number of components, system pressure, 
         and Antoine equations for each component.

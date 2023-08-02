@@ -21,7 +21,7 @@ class MargulesModel(VLEModel):
     """
 
     #CONSTRUCTOR 
-    def __init__(self, num_comp:int, P_sys:float, A_:dict, partial_pressure_eqs: AntoineEquation):
+    def __init__(self, num_comp:int, P_sys:float, A_:dict, partial_pressure_eqs: AntoineEquationBase10):
         self.num_comp = num_comp
         self.P_sys = P_sys
         self.A_ = A_

@@ -21,7 +21,7 @@ class VanLaarModel(VLEModel):
         convert_y_to_x(y, psat, A, B):
             Convert vapor mole fraction to liquid mole fraction based on Van Laar.
     """
-    def __init__(self, num_comp: int, P_sys: float, partial_pressure_eqs: AntoineEquation, A, B):
+    def __init__(self, num_comp: int, P_sys: float, partial_pressure_eqs: AntoineEquationBase10, A, B):
         super().__init__(num_comp, P_sys)
         self.partial_pressure_eqs = partial_pressure_eqs
         self.A = A
