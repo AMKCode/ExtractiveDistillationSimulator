@@ -29,6 +29,8 @@ class DistillationModel:
         self.q = q
         self.feed_stage = feed_stage
         
+        #check this reflux and boilup cannot be indepndently set
+        
         if reflux is not None and boil_up is not None and q is None:
             self.boil_up = boil_up
             self.reflux = reflux
@@ -44,12 +46,12 @@ class DistillationModel:
         else:
             raise ValueError("Underspecification or overspecification: only 2 variables between reflux, boil up, and q can be provided")
     
-    def rectifying_step_xtoy(self, x_r_j:np.ndarray) -> np.ndarray:
+    def rectifying_step_xtoy(self, x_r_j:np.ndarray):
         # Fidkowski and Malone, eqn 3b
         r = self.reflux
         return ((r/(r+1))*x_r_j)+((1/(r+1))*self.xD[0])
 
-    def rectifying_step_ytox(self, y_r_j:np.ndarray) -> np.ndarray:
+    def rectifying_step_ytox(self, y_r_j):
         r = self.reflux
         return (((r+1)/r)*y_r_j - (self.xD[0]/r))
     
@@ -226,7 +228,7 @@ class DistillationModel:
 
         return x_comp, y_comp, N
         
-    def plot_distil_binary(self, axs, pbar = None):
+    def plot_distil_binary(self, axs):
         if self.num_comp != 2:
             raise ValueError("This method can only be used for binary distillation.")
             
@@ -247,8 +249,6 @@ class DistillationModel:
             solution = self.thermo_model.convert_x_to_y(x)[0]
             y_array.append(solution[:-1])
             t_evaluated.append(solution[-1])
-            if pbar:
-                pbar.update(1)  # Increment the progress bar
         y_array = np.array(y_array)
 
         # Plotting main plots
@@ -388,33 +388,108 @@ class DistillationModel:
     def plot_distil_ternary(self):
         if self.num_comp != 3:
             raise ValueError("This method can only be used for binary distillation.")
+
+    def plot_distil_strip(self, ax1, ax1_fixed):
+        # Set limits for all main plots
+        ax1.set_xlim([0,1])
+        ax1.set_ylim([0,1])
         
-# def main():
-#     Ben_A = 4.72583
-#     Ben_B = 1660.652
-#     Ben_C = -1.461
-
-#     # Antoine Parameters for toluene
-#     Tol_A = 4.07827
-#     Tol_B = 1343.943
-#     Tol_C = -53.773
-
-#     P_sys = 1.0325
-#     # Create Antoine equations for benzene and toluene
-#     benzene_antoine = AntoineEquation(Ben_A, Ben_B, Ben_C)
-#     toluene_antoine = AntoineEquation(Tol_A, Tol_B, Tol_C)
-
-#     # Create a Raoult's law object
-#     vle_model = RaoultsLawModel(2, P_sys, [benzene_antoine, toluene_antoine])
-#     xF = np.array([0.5, 0.5])
-#     xD = np.array([0.1, 0.9])
-#     xB = np.array([0.9, 0.1])
-#     R = 1
-#     distillation_model = DistillationModel(vle_model, xF = xF, xD = xD, xB = xB, reflux = R)
-#     fig, axs = plt.subplots(2, 3, figsize=(15, 5), gridspec_kw={'height_ratios': [40, 1]}, sharex='col')
-#     axs = distillation_model.plot_distil_binary(axs = axs)
-#     plt.subplots_adjust(hspace=0)
-#     plt.show()
+        x1_space = np.linspace(0, 1, 1000)
+        x_array = np.column_stack([x1_space, 1 - x1_space])
+        y_array, t_evaluated = [], []
         
-# if __name__ == "__main__":
-#     main()
+        for x in x_array:
+            solution = self.thermo_model.convert_x_to_y(x)[0]
+            y_array.append(solution[:-1])
+            t_evaluated.append(solution[-1])
+
+        y_array = np.array(y_array)
+
+        ax1.plot(x_array[:,0], y_array[:,0])
+        ax1.plot([0,1], [0,1], linestyle='dashed')
+        y_s = self.stripping_step_xtoy(x1_space)
+        ax1.plot(x1_space, y_s, color = 'green')
+
+        x_s_0, y_s_0 = self.find_strip_fixedpoints_binary(n=30)
+
+        x_ax1, y_ax1, N_1 = self.compute_equib_stages_binary(0, x_s_0)
+
+        ax1_fixed.scatter(x_ax1, [0]*len(x_ax1), marker='x', color='red')
+        ax1.plot(x_ax1, y_ax1, linestyle='--', color='black', alpha = 0.3)
+        
+        ax1.scatter(x_s_0, y_s_0, s=50, c="red")
+
+        ax1_fixed.set_xlabel('$x_{1}$')
+        ax1_fixed.xaxis.set_label_coords(0.5, -0.05)
+        ax1_fixed.text(0.5, -5, f"Number of Stages: {N_1}", ha='center', va='center', transform=ax1_fixed.transAxes)
+        ax1_fixed.yaxis.set_ticks([])
+
+        ax1.set_aspect('equal', adjustable='box')
+
+        ax1_fixed.scatter(x_s_0, [0]*len(x_s_0), marker='x', color='black')
+        ax1_fixed.spines['top'].set_visible(False)
+        ax1_fixed.spines['right'].set_visible(False)
+        ax1_fixed.spines['bottom'].set_visible(False)
+        ax1_fixed.spines['left'].set_visible(False)
+        ax1_fixed.axhline(0, color='black')  # y=0 line
+        ax1_fixed.set_xlim([0,1])
+        ax1_fixed.yaxis.set_ticks([])
+        ax1_fixed.yaxis.set_ticklabels([])
+
+        ax1.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+        plt.setp(ax1.get_xticklabels(), visible=False)
+
+        return ax1
+
+    def plot_distil_rect(self, ax2, ax2_fixed, pbar=None):
+        if self.num_comp != 2:
+            raise ValueError("This method can only be used for binary distillation.")
+        
+        # Set limits for ax2
+        ax2.set_xlim([0,1])
+        ax2.set_ylim([0,1])
+        
+        x1_space = np.linspace(0, 1, 1000)
+        x_array = np.column_stack([x1_space, 1 - x1_space])
+        y_array, t_evaluated = [], []
+        
+        for x in x_array:
+            solution = self.thermo_model.convert_x_to_y(x)[0]
+            y_array.append(solution[:-1])
+            t_evaluated.append(solution[-1])
+            if pbar:
+                pbar.update(1)  # Increment the progress bar
+        y_array = np.array(y_array)
+
+        # Plotting ax2
+        ax2.plot(x_array[:,0], y_array[:,0])
+        ax2.plot([0,1], [0,1], linestyle='dashed')
+
+        y_r = self.rectifying_step_xtoy(x1_space)
+        ax2.plot(x1_space, y_r, color='green')
+
+        x_r_0, y_r_0 = self.find_rect_fixedpoints_binary(n=30)
+        x_ax2, y_ax2, N_2 = self.compute_equib_stages_binary(1, x_r_0)
+        ax2.plot(x_ax2, y_ax2, linestyle='--', color='black', alpha = 0.3)
+        ax2.scatter(x_r_0, y_r_0, s=50, c="red")
+
+        ax2_fixed.scatter(x_ax2, [0]*len(x_ax2), marker='x', color='green')
+        ax2_fixed.text(0.5, -5, f"Number of Stages: {N_2}", ha='center', va='center', transform=ax2_fixed.transAxes)
+        ax2_fixed.yaxis.set_ticks([])
+        ax2.set_aspect('equal', adjustable='box')
+
+        ax2_fixed.scatter(x_r_0, [0]*len(x_r_0), marker='x', color='black')
+        ax2_fixed.spines['top'].set_visible(False)
+        ax2_fixed.spines['right'].set_visible(False)
+        ax2_fixed.spines['bottom'].set_visible(False)
+        ax2_fixed.spines['left'].set_visible(False)
+        ax2_fixed.axhline(0, color='black')  # y=0 line
+        ax2_fixed.set_xlim([0,1])
+        ax2_fixed.yaxis.set_ticks([])
+        ax2_fixed.yaxis.set_ticklabels([])
+
+        ax2.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+        ax2.set_title("Equilibrium and Rectifying Line")
+
+        return ax2
+
