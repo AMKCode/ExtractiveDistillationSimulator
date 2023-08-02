@@ -42,7 +42,7 @@ class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
             EtOH_B = 3673.81
             EtOH_C = -46.681
 
-            #Antoine parameters for Methyl Acetate
+            #Antoine parameters for Water
             H2O_A = 23.2256
             H2O_B = 3835.18
             H2O_C = -45.343

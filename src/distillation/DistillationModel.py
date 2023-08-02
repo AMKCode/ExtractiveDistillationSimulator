@@ -20,17 +20,15 @@ from thermo_models.RaoultsLawModel import *
 #Notes:
 #Conditions for a feasible column, profiles match at the feed stage  + no pinch point in between xB and xD
 class DistillationModel:
-    def __init__(self, thermo_model:VLEModel, xF: np.ndarray, xD: np.ndarray, xB: np.ndarray, reflux = None, boil_up = None, q = 1, feed_stage = None) -> None:
+    def __init__(self, thermo_model:VLEModel, xF: np.ndarray, xD: np.ndarray, xB: np.ndarray, reflux = None, boil_up = None, q = 1) -> None:
         self.thermo_model = thermo_model
         self.num_comp = thermo_model.num_comp
         self.xF = xF
         self.xD = xD
         self.xB = xB
         self.q = q
-        self.feed_stage = feed_stage
         
         #check this reflux and boilup cannot be indepndently set
-        
         if reflux is not None and boil_up is not None and q is None:
             self.boil_up = boil_up
             self.reflux = reflux
