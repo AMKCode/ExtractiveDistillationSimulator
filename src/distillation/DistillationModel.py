@@ -57,13 +57,6 @@ class DistillationModel:
             self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1 #this one need 1 component
         else:
             raise ValueError("Underspecification or overspecification: only 2 variables between reflux, boil up, and q can be provided")
-<<<<<<< HEAD
-    
-    def change_r(self, new_r):
-        self.reflux = new_r
-        self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
-        return self
-=======
         self.x_array_equib, self.y_array_equib, self.t_array = self.compute_equib() 
         
         # Initialize numpy arrays
@@ -85,7 +78,6 @@ class DistillationModel:
         self.x_s_fixed = x_s_fixed
         self.y_s_fixed = y_s_fixed
         
->>>>>>> a7591fb295777a162a1b2d631d3bdbcca0a8121a
     def rectifying_step_xtoy(self, x_r_j:np.ndarray):
         """
         Method to calculate y in the rectifying section of the distillation column from given x.
