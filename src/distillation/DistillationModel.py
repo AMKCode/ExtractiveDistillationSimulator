@@ -44,6 +44,10 @@ class DistillationModel:
         else:
             raise ValueError("Underspecification or overspecification: only 2 variables between reflux, boil up, and q can be provided")
     
+    def change_r(self, new_r):
+        self.reflux = new_r
+        self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
+        return self
     def rectifying_step_xtoy(self, x_r_j:np.ndarray):
         # Fidkowski and Malone, eqn 3b
         r = self.reflux
