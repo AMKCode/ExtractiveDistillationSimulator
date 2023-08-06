@@ -82,11 +82,11 @@ class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
                 x_array_sol = solution[:-1]
                 temp_sol = solution[-1]
                 np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), self.TernarySys.convert_x_to_y(x_array=x_array_sol)[0], atol=1e-4)
-        # def testPlot(self):
-        # # Use Wilson Model to plot the Txy
-        #     boiling_points = [eq.get_boiling_point(self.TernarySys.P_sys) for eq in self.TernarySys.partial_pressure_eqs]
-        #     print(boiling_points)
-        #     self.TernarySys.plot_ternary_txy(100,0)
+        def testPlot(self):
+        # Use Wilson Model to plot the Txy
+            boiling_points = [eq.get_boiling_point(self.TernarySys.P_sys) for eq in self.TernarySys.partial_pressure_eqs]
+            print(boiling_points)
+            self.TernarySys.plot_ternary_txy(100,0)
             
 
 class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
