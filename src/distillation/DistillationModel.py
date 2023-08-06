@@ -572,3 +572,8 @@ class DistillationModel:
     def plot_distil_ternary(self):
         if self.num_comp != 3:
             raise ValueError("This method can only be used for binary distillation.")
+    
+    def change_r(self, new_r):
+        self.reflux = new_r
+        self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
+        return self
