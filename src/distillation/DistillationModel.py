@@ -265,8 +265,12 @@ class DistillationModel:
         #Plot the equilibrium curve
         ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
         
-        #Plot the stripping line
-        ax.plot(self.x_array_equib[:, 0], self.y_r_array[:, 0], color = 'green')
+        #Plot the rectifying line
+        xD_array = np.repeat(self.xD[0], 1000)
+        r_indices = np.where((self.y_r_array[:, 0] < self.y_array_equib[:, 0]) & (self.x_array_equib[:,0] <= xD_array[:]))[0]
+        # Create a subset of array1 using the indices
+        ax.plot(self.x_array_equib[r_indices, 0], self.y_r_array[r_indices, 0], color = 'green')
+       
         
         #Plot y = x line
         ax.plot([0,1], [0,1], linestyle='dashed')
@@ -367,6 +371,7 @@ class DistillationModel:
         return x_comp, y_comp, N
         
     def plot_distil_binary(self, ax, ax_fixed):
+        
         if self.num_comp != 2:
             raise ValueError("This method can only be used for binary distillation.")
         
@@ -379,13 +384,15 @@ class DistillationModel:
         y_s_array = np.zeros((self.x_array_equib[:, 0].size, 2))
 
         for i, x1 in enumerate(self.x_array_equib):
+            #if (self.rectifying_step_xtoy(i) < self.x_array_equib(i)):
             y_r_array[i] = self.rectifying_step_xtoy(x1)
+            #if (self.stripping_step_xtoy(i) < self.x_array_equib(i)):
             y_s_array[i] = self.stripping_step_xtoy(x1)
             
         #Plot the equilibrium curve
         ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
-        
-        #Plot the rectifying line
+    
+        #plot the rectifying line
         ax.plot(self.x_array_equib[:, 0], y_r_array[:, 0], color = 'green')
         
         #Plot the stripping line
@@ -422,6 +429,7 @@ class DistillationModel:
         return ax, ax_fixed
         
     def plot_distil_binary_og(self, axs):
+        x1_space = np.linspace(0,1,1000)
         if self.num_comp != 2:
             raise ValueError("This method can only be used for binary distillation.")
             
@@ -477,13 +485,6 @@ class DistillationModel:
                     op_color = 'red'  
                 break                        #Once the operating line intersect is found, the algorithm is complete
         #print(intersection_counter)
-
-
-        '''
-        #Currently causes infinite runtime!     
-        x_equib = self.compute_equib_stages_binary(2)
-        print(x_equib)
-        '''
 
 
         ax3.plot(x1_space, y_r, color = op_color)
