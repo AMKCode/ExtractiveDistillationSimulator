@@ -165,7 +165,7 @@ class DistillationModelBinary(DistillationModel):
         #Plot the equilibrium curve
         ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
         
-        #Plot the srectifying line
+        #Plot the rectifying line
         r_max_index = int(1000 * self.xD[0])
         for i in range(len(self.y_r_array)):
             if (self.y_r_array[i,0] < self.y_array_equib[i,0]):
@@ -289,12 +289,36 @@ class DistillationModelBinary(DistillationModel):
             
         #Plot the equilibrium curve
         ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
+
+        op_color = 'green'
+        intersection_counter = 0
+        for i in range(len(y_r_array)-1, 0, -1): #Iterate backwards starting at top of rectifying curve
+            if (abs((y_r_array[i,0]) - self.y_array_equib[i,0]) <= 0.001): #rectifying line intersects equib
+                intersection_counter += 1
+            if (abs((y_r_array[i,0]) - y_s_array[i,0]) <= 0.001): # operating lines interect
+                if ((y_r_array[i,0] < self.y_array_equib[i,0]) & (intersection_counter > 1)):
+                    op_color = 'black'
+                if (y_r_array[i,0] >= self.y_array_equib[i,0]): #intersection occurs above equilibrium curve
+                    op_color = 'red'  
+                break 
         
         #Plot the rectifying line
-        ax.plot(self.x_array_equib[:, 0], y_r_array[:, 0], color = 'green')
+        r_max_index = int(1000 * self.xD[0])
+        for i in range(len(self.y_r_array)):
+            if (self.y_r_array[i,0] < self.y_array_equib[i,0]):
+                r_min_index = i
+                break 
+        ax.plot(self.x_array_equib[r_min_index:r_max_index, 0], self.y_r_array[r_min_index:r_max_index, 0], color = op_color)
         
         #Plot the stripping line
-        ax.plot(self.x_array_equib[:, 0],y_s_array[:, 0], color = 'green' )
+        s_min_index = int(1000 * self.xB[0])
+        for i in range(len(self.y_s_array)):
+            if (self.y_s_array[i,0] > self.y_array_equib[i,0]):
+                s_max_index = i
+                break 
+
+        ax.plot(self.x_array_equib[s_min_index:s_max_index, 0], self.y_s_array[s_min_index:s_max_index, 0], color = op_color)
+        
         
         #Plot y = x line
         ax.plot([0,1], [0,1], linestyle='dashed')
