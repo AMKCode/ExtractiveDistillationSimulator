@@ -21,6 +21,19 @@ class DistillationModelBinary(DistillationModel):
     def __init__(self, thermo_model:VLEModel, xF: np.ndarray, xD: np.ndarray, xB: np.ndarray, reflux = None, boil_up = None, q = 1) -> None:
         super().__init__(thermo_model,xF,xD,xB,reflux,boil_up,q)
         
+        self.x_array_equib, self.y_array_equib, self.t_array = self.compute_equib() 
+        
+        # Initialize numpy arrays
+        y_s_array = np.zeros((self.x_array_equib[:, 0].size, self.thermo_model.num_comp))
+        y_r_array = np.zeros((self.x_array_equib[:, 0].size, self.thermo_model.num_comp))
+
+        for i, x1 in enumerate(self.x_array_equib):
+            y_s_array[i] = self.stripping_step_xtoy(x1)
+            y_r_array[i] = self.rectifying_step_xtoy(x1)
+        
+        self.y_s_array = y_s_array
+        self.y_r_array = y_r_array
+        
         x_r_fixed, y_r_fixed = self.find_rect_fixedpoints_binary(n=30)
         x_s_fixed, y_s_fixed = self.find_strip_fixedpoints_binary(n=30)
         
