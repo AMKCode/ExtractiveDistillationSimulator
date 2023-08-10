@@ -136,7 +136,7 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.xaxis.set_label_coords(0.5, -0.05)
         ax_fixed.text(0.5, -5, f"Number of Stages: {N_1}", ha='center', va='center', transform=ax_fixed.transAxes)
         ax_fixed.yaxis.set_ticks([])
-
+        ax_fixed.scatter(x_fixed, [0]*len(x_fixed), marker='x', color='red')
         ax.set_aspect('equal', adjustable='box')
 
         ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='x', color='black')
