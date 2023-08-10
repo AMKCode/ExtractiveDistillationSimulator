@@ -334,7 +334,8 @@ class DistillationModelBinary(DistillationModel):
 
         ax_fixed.scatter(x_stages, [0]*len(x_stages), marker='x', color='green')
         x_strip = self.compute_equib_stages_binary(0, x_r_0 + x_s_0)[0]
-        ax_fixed.scatter(x_strip, [0]*len(x_strip), marker = 'x', color = 'red')
+        if (op_color == 'red'):
+            ax_fixed.scatter(x_strip, [0]*len(x_strip), marker = 'x', color = 'red')
         ax_fixed.text(0.5, -5, f"Number of Stages: {N_2}", ha='center', va='center', transform=ax_fixed.transAxes)
         ax_fixed.yaxis.set_ticks([])
         ax.set_aspect('equal', adjustable='box')
