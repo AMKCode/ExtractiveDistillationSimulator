@@ -28,6 +28,19 @@ class DistillationModelBinary(DistillationModel):
         self.y_r_fixed = y_r_fixed
         self.x_s_fixed = x_s_fixed
         self.y_s_fixed = y_s_fixed
+
+        self.x_array_equib, self.y_array_equib, self.t_array = self.compute_equib() 
+        
+        # Initialize numpy arrays
+        y_s_array = np.zeros((self.x_array_equib[:, 0].size, self.thermo_model.num_comp))
+        y_r_array = np.zeros((self.x_array_equib[:, 0].size, self.thermo_model.num_comp))
+
+        for i, x1 in enumerate(self.x_array_equib):
+            y_s_array[i] = self.stripping_step_xtoy(x1)
+            y_r_array[i] = self.rectifying_step_xtoy(x1)
+        
+        self.y_s_array = y_s_array
+        self.y_r_array = y_r_array
         
     def find_rect_fixedpoints_binary(self, n):
         rand.seed(0)
@@ -99,7 +112,13 @@ class DistillationModelBinary(DistillationModel):
         ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
         
         #Plot the stripping line
-        ax.plot(self.x_array_equib[:, 0], self.y_s_array[:, 0], color = 'green')
+        s_min_index = int(1000 * self.xB[0])
+        for i in range(len(self.y_s_array)):
+            if (self.y_s_array[i,0] > self.y_array_equib[i,0]):
+                s_max_index = i
+                break 
+
+        ax.plot(self.x_array_equib[s_min_index:s_max_index, 0], self.y_s_array[s_min_index:s_max_index, 0], color = 'green')
         
         #Plot y = x line
         ax.plot([0,1], [0,1], linestyle='dashed')
@@ -117,7 +136,7 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.xaxis.set_label_coords(0.5, -0.05)
         ax_fixed.text(0.5, -5, f"Number of Stages: {N_1}", ha='center', va='center', transform=ax_fixed.transAxes)
         ax_fixed.yaxis.set_ticks([])
-
+        ax_fixed.scatter(x_fixed, [0]*len(x_fixed), marker='x', color='red')
         ax.set_aspect('equal', adjustable='box')
 
         ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='x', color='black')
@@ -132,6 +151,7 @@ class DistillationModelBinary(DistillationModel):
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
         plt.setp(ax.get_xticklabels(), visible=False)
+        ax.set_title("Equilibrium and Stripping Line")
 
         return ax, ax_fixed
     
@@ -146,8 +166,13 @@ class DistillationModelBinary(DistillationModel):
         #Plot the equilibrium curve
         ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
         
-        #Plot the stripping line
-        ax.plot(self.x_array_equib[:, 0], self.y_r_array[:, 0], color = 'green')
+        #Plot the rectifying line
+        r_max_index = int(1000 * self.xD[0])
+        for i in range(len(self.y_r_array)):
+            if (self.y_r_array[i,0] < self.y_array_equib[i,0]):
+                r_min_index = i
+                break 
+        ax.plot(self.x_array_equib[r_min_index:r_max_index, 0], self.y_r_array[r_min_index:r_max_index, 0], color = 'green')
         
         #Plot y = x line
         ax.plot([0,1], [0,1], linestyle='dashed')
@@ -265,12 +290,36 @@ class DistillationModelBinary(DistillationModel):
             
         #Plot the equilibrium curve
         ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
+
+        op_color = 'green'
+        intersection_counter = 0
+        for i in range(len(y_r_array)-1, 0, -1): #Iterate backwards starting at top of rectifying curve
+            if (abs((y_r_array[i,0]) - self.y_array_equib[i,0]) <= 0.001): #rectifying line intersects equib
+                intersection_counter += 1
+            if (abs((y_r_array[i,0]) - y_s_array[i,0]) <= 0.001): # operating lines interect
+                if ((y_r_array[i,0] < self.y_array_equib[i,0]) & (intersection_counter > 1)):
+                    op_color = 'black'
+                if (y_r_array[i,0] >= self.y_array_equib[i,0]): #intersection occurs above equilibrium curve
+                    op_color = 'red'  
+                break 
         
         #Plot the rectifying line
-        ax.plot(self.x_array_equib[:, 0], y_r_array[:, 0], color = 'green')
+        r_max_index = int(1000 * self.xD[0])
+        for i in range(len(self.y_r_array)):
+            if (self.y_r_array[i,0] < self.y_array_equib[i,0]):
+                r_min_index = i
+                break 
+        ax.plot(self.x_array_equib[r_min_index:r_max_index, 0], self.y_r_array[r_min_index:r_max_index, 0], color = op_color)
         
         #Plot the stripping line
-        ax.plot(self.x_array_equib[:, 0],y_s_array[:, 0], color = 'green' )
+        s_min_index = int(1000 * self.xB[0])
+        for i in range(len(self.y_s_array)):
+            if (self.y_s_array[i,0] > self.y_array_equib[i,0]):
+                s_max_index = i
+                break 
+
+        ax.plot(self.x_array_equib[s_min_index:s_max_index, 0], self.y_s_array[s_min_index:s_max_index, 0], color = op_color)
+        
         
         #Plot y = x line
         ax.plot([0,1], [0,1], linestyle='dashed')
@@ -284,6 +333,9 @@ class DistillationModelBinary(DistillationModel):
         ax.scatter(x_r_0 + x_s_0, y_r_0 + y_s_0, s=50, c="red")
 
         ax_fixed.scatter(x_stages, [0]*len(x_stages), marker='x', color='green')
+        x_strip = self.compute_equib_stages_binary(0, x_r_0 + x_s_0)[0]
+        if (op_color == 'red'):
+            ax_fixed.scatter(x_strip, [0]*len(x_strip), marker = 'x', color = 'red')
         ax_fixed.text(0.5, -5, f"Number of Stages: {N_2}", ha='center', va='center', transform=ax_fixed.transAxes)
         ax_fixed.yaxis.set_ticks([])
         ax.set_aspect('equal', adjustable='box')
@@ -298,6 +350,6 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.yaxis.set_ticklabels([])
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-        ax.set_title("Equilibrium and Rectifying Line")
+        ax.set_title("Equilibrium and Operating Lines")
 
         return ax, ax_fixed
