@@ -57,18 +57,7 @@ class DistillationModel:
             self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1 #this one need 1 component
         else:
             raise ValueError("Underspecification or overspecification: only 2 variables between reflux, boil up, and q can be provided")
-        # self.x_array_equib, self.y_array_equib, self.t_array = self.compute_equib() 
-        
-        # # Initialize numpy arrays
-        # y_s_array = np.zeros((self.x_array_equib[:, 0].size, self.thermo_model.num_comp))
-        # y_r_array = np.zeros((self.x_array_equib[:, 0].size, self.thermo_model.num_comp))
 
-        # for i, x1 in enumerate(self.x_array_equib):
-        #     y_s_array[i] = self.stripping_step_xtoy(x1)
-        #     y_r_array[i] = self.rectifying_step_xtoy(x1)
-        
-        # self.y_s_array = y_s_array
-        # self.y_r_array = y_r_array
         
     def rectifying_step_xtoy(self, x_r_j:np.ndarray):
         """
@@ -139,12 +128,9 @@ class DistillationModel:
             y_array[i] = solution[:-1]
             t_array[i] = solution[-1]
         return x_array, y_array, t_array
-        
-    def plot_distil_ternary(self):
-        if self.num_comp != 3:
-            raise ValueError("This method can only be used for binary distillation.")
     
     def change_r(self, new_r):
         self.reflux = new_r
         self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
         return self
+    
