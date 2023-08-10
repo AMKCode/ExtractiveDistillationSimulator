@@ -28,6 +28,19 @@ class DistillationModelBinary(DistillationModel):
         self.y_r_fixed = y_r_fixed
         self.x_s_fixed = x_s_fixed
         self.y_s_fixed = y_s_fixed
+
+        self.x_array_equib, self.y_array_equib, self.t_array = self.compute_equib() 
+        
+        # Initialize numpy arrays
+        y_s_array = np.zeros((self.x_array_equib[:, 0].size, self.thermo_model.num_comp))
+        y_r_array = np.zeros((self.x_array_equib[:, 0].size, self.thermo_model.num_comp))
+
+        for i, x1 in enumerate(self.x_array_equib):
+            y_s_array[i] = self.stripping_step_xtoy(x1)
+            y_r_array[i] = self.rectifying_step_xtoy(x1)
+        
+        self.y_s_array = y_s_array
+        self.y_r_array = y_r_array
         
     def find_rect_fixedpoints_binary(self, n):
         rand.seed(0)
@@ -99,7 +112,13 @@ class DistillationModelBinary(DistillationModel):
         ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
         
         #Plot the stripping line
-        ax.plot(self.x_array_equib[:, 0], self.y_s_array[:, 0], color = 'green')
+        s_min_index = int(1000 * self.xB[0])
+        for i in range(len(self.y_s_array)):
+            if (self.y_s_array[i,0] > self.y_array_equib[i,0]):
+                s_max_index = i
+                break 
+
+        ax.plot(self.x_array_equib[s_min_index:s_max_index, 0], self.y_s_array[s_min_index:s_max_index, 0], color = 'green')
         
         #Plot y = x line
         ax.plot([0,1], [0,1], linestyle='dashed')
@@ -146,8 +165,13 @@ class DistillationModelBinary(DistillationModel):
         #Plot the equilibrium curve
         ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
         
-        #Plot the stripping line
-        ax.plot(self.x_array_equib[:, 0], self.y_r_array[:, 0], color = 'green')
+        #Plot the srectifying line
+        r_max_index = int(1000 * self.xD[0])
+        for i in range(len(self.y_r_array)):
+            if (self.y_r_array[i,0] < self.y_array_equib[i,0]):
+                r_min_index = i
+                break 
+        ax.plot(self.x_array_equib[r_min_index:r_max_index, 0], self.y_r_array[r_min_index:r_max_index, 0], color = 'green')
         
         #Plot y = x line
         ax.plot([0,1], [0,1], linestyle='dashed')
