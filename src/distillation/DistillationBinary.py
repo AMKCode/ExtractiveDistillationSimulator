@@ -151,6 +151,7 @@ class DistillationModelBinary(DistillationModel):
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
         plt.setp(ax.get_xticklabels(), visible=False)
+        ax.set_title("Equilibrium and Stripping Line")
 
         return ax, ax_fixed
     
@@ -348,6 +349,6 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.yaxis.set_ticklabels([])
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-        ax.set_title("Equilibrium and Rectifying Line")
+        ax.set_title("Equilibrium and Operating Lines")
 
         return ax, ax_fixed
