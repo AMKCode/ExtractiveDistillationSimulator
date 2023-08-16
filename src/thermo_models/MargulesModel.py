@@ -72,6 +72,7 @@ class MargulesModelTernary(VLEModel):
                     gammas.append(result)
             except RuntimeWarning:
                 print(part1,part2,part3,Temp,result)
+                raise ValueError
         return np.array(gammas)
     
     def get_vapor_pressure(self, Temp)->np.ndarray:
