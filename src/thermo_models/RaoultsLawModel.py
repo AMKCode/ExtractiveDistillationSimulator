@@ -65,7 +65,7 @@ class RaoultsLawModel(VLEModel):
             vap_pressure_array.append(partial_pressure_eq.get_partial_pressure(Temp))
         return np.array(vap_pressure_array)
     
-    def get_activity_coefficient(self, x_array):
+    def get_activity_coefficient(self, x_array, Temp = None):
         """
         Computes the activity coefficient for each component. 
         For a system following Raoult's Law, the activity coefficient is 1.

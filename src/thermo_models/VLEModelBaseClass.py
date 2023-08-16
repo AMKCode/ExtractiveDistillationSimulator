@@ -38,7 +38,7 @@ class VLEModel:
         self.num_comp = num_comp
         self.P_sys = P_sys
         
-    def get_activity_coefficient(self, x_array=None)->np.ndarray:
+    def get_activity_coefficient(self, x_array, Temp = None)->np.ndarray:
         """
         Computes the activity coefficient for each component in the the model.
 
@@ -62,8 +62,6 @@ class VLEModel:
         """
         raise NotImplementedError
     
-
-
     def convert_x_to_y(self, x_array:np.ndarray, temp_guess = None)->np.ndarray:
         """
         Computes the conversion from liquid mole fraction to vapor mole fraction.
@@ -98,8 +96,6 @@ class VLEModel:
                 except:
                     continue
 
-
-    
     def convert_y_to_x(self, y_array:np.ndarray, temp_guess = None)->np.ndarray:
         """
         Computes the conversion from vapor mole fraction to liquid mole fraction.
@@ -151,9 +147,8 @@ class VLEModel:
         # Extract the vapor mole fractions and temperature from the vars array
         y_array = vars[:-1]
         Temp = vars[-1]
-
         # Compute the left-hand side of the equilibrium equations
-        lefths = x_array * self.get_activity_coefficient(x_array) * self.get_vapor_pressure(Temp)
+        lefths = x_array * self.get_activity_coefficient(x_array, Temp=Temp) * self.get_vapor_pressure(Temp)
 
         # Compute the right-hand side of the equilibrium equations
         righths = y_array * self.P_sys
@@ -186,7 +181,7 @@ class VLEModel:
         Temp = vars[-1]
 
         # Compute the left-hand side of the equilibrium equations
-        lhs = x_array * self.get_activity_coefficient(x_array) * self.get_vapor_pressure(Temp)
+        lhs = x_array * self.get_activity_coefficient(x_array, Temp=Temp) * self.get_vapor_pressure(Temp)
         
         # Compute the right-hand side of the equilibrium equations
         rhs = y_array * self.P_sys

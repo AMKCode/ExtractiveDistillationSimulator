@@ -27,7 +27,7 @@ class VanLaarModel(VLEModel):
         self.A = A
         self.B = B
 
-    def get_activity_coefficient(self, x_array):
+    def get_activity_coefficient(self, x_array, Temp = None):
 
         gamma1 = np.exp(self.A/(np.power(1+((self.A*x_array[0])/(self.B*x_array[1])), 2)))
         gamma2 = np.exp(self.B/(np.power(1+((self.B*x_array[1])/(self.A*x_array[0])), 2)))
