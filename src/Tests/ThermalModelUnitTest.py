@@ -12,11 +12,53 @@ sys.path.append(PROJECT_ROOT)
 
 from thermo_models.RaoultsLawModel import RaoultsLawModel
 from thermo_models.WilsonModel import WilsonModel
-from thermo_models.MargulesModel import MargulesModel
+from thermo_models.MargulesModel import *
 from thermo_models.VanLaarModel import VanLaarModel
 import utils.AntoineEquation as AE
 import matplotlib.pyplot as plt 
 import random as rand
+
+class TestTernaryMargulesAcetaldehydeMethanolWater(unittest.TestCase):
+    def setUp(self) -> None:
+        A_ = np.array([[0, -316.699, 350.100], [-384.657,0, 307.000],[290.200,143.00,0]])
+        P_sys = 1
+        
+        #Acetaldehyde
+        Acet_A = 3.68639
+        Acet_B = 822.894
+        Acet_C = -69.899
+        #Methanol
+        Me_A = 5.31301
+        Me_B = 1676.569
+        Me_C = -21.728
+        #Water
+        H2O_A = 3.55959
+        H2O_B = 643.748
+        H2O_C = -198.043
+        
+        #Antoine Equations 
+        Acet_antoine = AE.AntoineEquationBase10(Acet_A, Acet_B, Acet_C)
+        H2O_antoine = AE.AntoineEquationBase10(H2O_A, H2O_B, H2O_C)
+        Methanol_antoine = AE.AntoineEquationBase10(Me_A, Me_B, Me_C)
+        
+        self.vlemodel = MargulesModelTernary(3,P_sys,A_,[Acet_antoine,H2O_antoine, Methanol_antoine])
+        
+    # def testPlot(self):
+    #     boiling_points = [eq.get_boiling_point(self.vlemodel.P_sys) for eq in self.vlemodel.partial_pressure_eqs]
+    #     print(boiling_points)
+    #     self.vlemodel.plot_ternary_txy(100,0)
+    def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
+        rand.seed(0)
+        for i in range(1000):
+            x1 = rand.uniform(0,1)
+            x2 = rand.uniform(0,1 - x1)
+            x3 = 1 - (x1 + x2)
+            solution = (self.vlemodel.convert_x_to_y(np.array([x1, x2, x3])))[0]
+            y_array_sol = solution[:-1]
+            temp_sol = solution[-1]
+            np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), self.vlemodel.convert_y_to_x(y_array=y_array_sol)[0], atol=1e-4)
+
+"""
 class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
         def setUp(self) -> None:
         #Wilson Constants (Aij) for the Ethanol-Water-Acetone Mixture from Slack
@@ -87,7 +129,7 @@ class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
             boiling_points = [eq.get_boiling_point(self.TernarySys.P_sys) for eq in self.TernarySys.partial_pressure_eqs]
             print(boiling_points)
             self.TernarySys.plot_ternary_txy(100,0)
-            
+ """           
 
 class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
     def setUp(self) -> None:
@@ -134,61 +176,61 @@ class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
             solution = (self.TolBenSys.convert_y_to_x(np.array([y1,y2])))[0]
             x_array_sol = solution[:-1]
             np.testing.assert_allclose(np.array([y1,y2,solution[-1]]), self.TolBenSys.convert_x_to_y(x_array=x_array_sol)[0], atol = 1e-4)
-            
-"""        
-class TestMargulesModelBinary(unittest.TestCase):
-    # Test a Binary Mixture of Benzene and Toluene
-    # Benzene = 1
-    # Toluene = 2
-    # Constants obtained from Kassmann, et al. (1986)
-    def setUp(self) -> None:
-        P_sys = 1.0325
-        num_comp = 2
-        A_ = {
-            (1,2) : 0.0092,
-            (2,1) : -0.0090
-        }
+          
+  
+# class TestMargulesModelBinary(unittest.TestCase):
+#     # Test a Binary Mixture of Benzene and Toluene
+#     # Benzene = 1
+#     # Toluene = 2
+#     # Constants obtained from Kassmann, et al. (1986)
+#     def setUp(self) -> None:
+#         P_sys = 1.0325
+#         num_comp = 2
+#         A_ = {
+#             (1,2) : 0.0092,
+#             (2,1) : -0.0090
+#         }
 
-        # Antoine Parameters for benzene
-        Ben_A = 4.72583
-        Ben_B = 1660.652
-        Ben_C = -1.461
+#         # Antoine Parameters for benzene
+#         Ben_A = 4.72583
+#         Ben_B = 1660.652
+#         Ben_C = -1.461
 
-        #Antoine Parameters for toluene
-        Tol_A = 4.07827
-        Tol_B = 1343.943
-        Tol_C = -53.773
+#         #Antoine Parameters for toluene
+#         Tol_A = 4.07827
+#         Tol_B = 1343.943
+#         Tol_C = -53.773
         
-        # Create Antoine equations for benzene and toluene
-        benzene_antoine = AE.AntoineEquation(Ben_A, Ben_B, Ben_C)
-        toluene_antoine = AE.AntoineEquation(Tol_A, Tol_B, Tol_C)
+#         # Create Antoine equations for benzene and toluene
+#         benzene_antoine = AE.AntoineEquationBase10(Ben_A, Ben_B, Ben_C)
+#         toluene_antoine = AE.AntoineEquationBase10(Tol_A, Tol_B, Tol_C)
 
-        #Create a Margules' Model Object
-        self.MargulesSys = MargulesModel(num_comp, P_sys, A_, [benzene_antoine, toluene_antoine])
+#         #Create a Margules' Model Object
+#         self.MargulesSys = MargulesModel(num_comp, P_sys, A_, [benzene_antoine, toluene_antoine])
 
-#     # def testPlot(self):
-#     #     # Use Margules's law to plot the Txy
-#     #     self.MargulesSys.plot_binary_Txy(100,0)
+# #     # def testPlot(self):
+# #     #     # Use Margules's law to plot the Txy
+# #     #     self.MargulesSys.plot_binary_Txy(100,0)
         
-    def test_RandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
-        rand.seed(0)
-        for i in range(100):
-            x1 = rand.random()
-            x2 = 1 - x1
-            solution = (self.MargulesSys.convert_x_to_y(np.array([x1,x2])))[0]
-            y_array_sol = solution[:-1]
-            temp_sol = solution[-1]
-            np.testing.assert_allclose(np.array([x1,x2,temp_sol]), self.MargulesSys.convert_y_to_x(y_array=y_array_sol)[0],atol=1e-4)
+#     def test_RandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
+#         rand.seed(0)
+#         for i in range(100):
+#             x1 = rand.random()
+#             x2 = 1 - x1
+#             solution = (self.MargulesSys.convert_x_to_y(np.array([x1,x2])))[0]
+#             y_array_sol = solution[:-1]
+#             temp_sol = solution[-1]
+#             np.testing.assert_allclose(np.array([x1,x2,temp_sol]), self.MargulesSys.convert_y_to_x(y_array=y_array_sol)[0],atol=1e-4)
             
-    def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
-        rand.seed(0)
-        for i in range(100):
-            y1 = rand.random()
-            y2 = 1 - y1
-            solution = (self.MargulesSys.convert_y_to_x(np.array([y1,y2])))[0]
-            x_array_sol = solution[:-1]
-            np.testing.assert_allclose(np.array([y1,y2,solution[-1]]), self.MargulesSys.convert_x_to_y(x_array=x_array_sol)[0], atol = 1e-4)
-            
+#     def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
+#         rand.seed(0)
+#         for i in range(100):
+#             y1 = rand.random()
+#             y2 = 1 - y1
+#             solution = (self.MargulesSys.convert_y_to_x(np.array([y1,y2])))[0]
+#             x_array_sol = solution[:-1]
+#             np.testing.assert_allclose(np.array([y1,y2,solution[-1]]), self.MargulesSys.convert_x_to_y(x_array=x_array_sol)[0], atol = 1e-4)
+"""    
 class TestTernaryRaoults(unittest.TestCase):
     def setUp(self) -> None:
         # Antoine Parameters for benzene

@@ -53,8 +53,8 @@ class DistillationModelTernary(DistillationModel):
             x_comp.append(x1)
             y_comp.append(y1)
             counter += 1
-            
             x2 = self.thermo_model.convert_y_to_x(y1)[0][:-1]
+            
             y2 = self.rectifying_step_xtoy(x2)
             
             x_comp.append(x2)
@@ -63,7 +63,7 @@ class DistillationModelTernary(DistillationModel):
             if counter == 100:
                 print("counter rect:", counter)
                 return np.array(x_comp), np.array(y_comp)
-            if np.linalg.norm(x1 - x2) < 0.0000000001:
+            if np.linalg.norm(x1 - x2) < 0.0000001:
                 return np.array(x_comp), np.array(y_comp)
                 
             x1 = x2
