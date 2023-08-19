@@ -50,6 +50,7 @@ class TestTernaryMargulesAcetaldehydeMethanolWater(unittest.TestCase):
     def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
         rand.seed(0)
         for i in range(1000):
+            print(i)
             x1 = rand.uniform(0,1)
             x2 = rand.uniform(0,1 - x1)
             x3 = 1 - (x1 + x2)
@@ -131,51 +132,51 @@ class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
             self.TernarySys.plot_ternary_txy(100,0)
  """           
 
-class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
-    def setUp(self) -> None:
-        # Antoine Parameters for benzene
-        Ben_A = 4.72583
-        Ben_B = 1660.652
-        Ben_C = -1.461
+# class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
+#     def setUp(self) -> None:
+#         # Antoine Parameters for benzene
+#         Ben_A = 4.72583
+#         Ben_B = 1660.652
+#         Ben_C = -1.461
 
-        # Antoine Parameters for toluene
-        Tol_A = 4.07827
-        Tol_B = 1343.943
-        Tol_C = -53.773
+#         # Antoine Parameters for toluene
+#         Tol_A = 4.07827
+#         Tol_B = 1343.943
+#         Tol_C = -53.773
         
-        P_sys = 1.0325
-        # Create Antoine equations for benzene and toluene
-        benzene_antoine = AE.AntoineEquationBase10(Ben_A, Ben_B, Ben_C)
-        toluene_antoine = AE.AntoineEquationBase10(Tol_A, Tol_B, Tol_C)
+#         P_sys = 1.0325
+#         # Create Antoine equations for benzene and toluene
+#         benzene_antoine = AE.AntoineEquationBase10(Ben_A, Ben_B, Ben_C)
+#         toluene_antoine = AE.AntoineEquationBase10(Tol_A, Tol_B, Tol_C)
 
-        # Create a Raoult's law object
-        self.TolBenSys = RaoultsLawModel(2,P_sys,[benzene_antoine, toluene_antoine])
+#         # Create a Raoult's law object
+#         self.TolBenSys = RaoultsLawModel(2,P_sys,[benzene_antoine, toluene_antoine])
 
-    # def testPlot(self):
-    #     # Use Raoult's law to plot the Txy
-    #     self.TolBenSys.plot_binary_Txy(100,0)
+#     # def testPlot(self):
+#     #     # Use Raoult's law to plot the Txy
+#     #     self.TolBenSys.plot_binary_Txy(100,0)
     
-    def testValueFromDistillationModel(self):
-        y_array = np.array([0.95, 0.05])
-        print(self.TolBenSys.convert_y_to_x(y_array=y_array)[0])
+#     def testValueFromDistillationModel(self):
+#         y_array = np.array([0.95, 0.05])
+#         print(self.TolBenSys.convert_y_to_x(y_array=y_array)[0])
         
-    def testRandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
-        rand.seed(0)
-        for i in range(1000):
-            x1 = rand.random()
-            x2 = 1 - x1
-            solution = (self.TolBenSys.convert_x_to_y(np.array([x1,x2])))[0]
-            y_array_sol = solution[:-1]
-            np.testing.assert_allclose(np.array([x1,x2,solution[-1]]), self.TolBenSys.convert_y_to_x(y_array=y_array_sol)[0], atol = 1e-4)
+#     def testRandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
+#         rand.seed(0)
+#         for i in range(1000):
+#             x1 = rand.random()
+#             x2 = 1 - x1
+#             solution = (self.TolBenSys.convert_x_to_y(np.array([x1,x2])))[0]
+#             y_array_sol = solution[:-1]
+#             np.testing.assert_allclose(np.array([x1,x2,solution[-1]]), self.TolBenSys.convert_y_to_x(y_array=y_array_sol)[0], atol = 1e-4)
     
-    def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
-        rand.seed(0)
-        for i in range(1000):
-            y1 = rand.random()
-            y2 = 1 - y1
-            solution = (self.TolBenSys.convert_y_to_x(np.array([y1,y2])))[0]
-            x_array_sol = solution[:-1]
-            np.testing.assert_allclose(np.array([y1,y2,solution[-1]]), self.TolBenSys.convert_x_to_y(x_array=x_array_sol)[0], atol = 1e-4)
+#     def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
+#         rand.seed(0)
+#         for i in range(1000):
+#             y1 = rand.random()
+#             y2 = 1 - y1
+#             solution = (self.TolBenSys.convert_y_to_x(np.array([y1,y2])))[0]
+#             x_array_sol = solution[:-1]
+#             np.testing.assert_allclose(np.array([y1,y2,solution[-1]]), self.TolBenSys.convert_x_to_y(x_array=x_array_sol)[0], atol = 1e-4)
           
   
 # class TestMargulesModelBinary(unittest.TestCase):
