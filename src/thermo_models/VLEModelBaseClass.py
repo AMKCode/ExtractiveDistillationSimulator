@@ -109,6 +109,7 @@ class VLEModel:
         """
         #set seed for reproducibility
         np.random.seed(0)
+        rand.seed(0)
         
         # Compute the boiling points for each component
         boiling_points = [eq.get_boiling_point(self.P_sys) for eq in self.partial_pressure_eqs]

@@ -81,7 +81,29 @@ class DistillationModelBinary(DistillationModel):
                 pass
             # Update a to be the current b for the next partition
             a = b
+    #    Define the initial bracket
+    #     a = 0
+
+    #     # Generate a list of n points in the range [0, 1]
+    #     partition_points = np.linspace(0.0001, 0.9999, n+1)[1:]  # We start from the second point because the first is 0
+
+    #     for b in partition_points:
+    #         # Define various initial guesses
+    #         initial_guesses = [a, b, (a + b) / 2]  # You can add more if necessary
+
+    #         for guess in initial_guesses:
+    #             try:
+    #                 x_r_0 = fsolve(compute_rect_fixed, guess)[0]
+    #                 y_r_0 = self.thermo_model.convert_x_to_y(np.array([x_r_0, 1- x_r_0]))[0][0]
+    #                 x0_values.append(x_r_0)
+    #                 y0_values.append(y_r_0)
+    #                 break  # Break if a solution is found
+    #             except ValueError:
+    #                 pass
+    #             # Update a to be the current b for the next partition
+    #             a = b
         return x0_values, y0_values 
+    
     
     def find_strip_fixedpoints_binary(self, n):
         rand.seed(0)
