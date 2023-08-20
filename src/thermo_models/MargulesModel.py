@@ -64,7 +64,6 @@ class MargulesModelTernary(VLEModel):
             warnings.filterwarnings('error', category=RuntimeWarning)  # Turn warning into error
             try:
                 for k in range(3): # k = 0, 1, 2
-                    print(k)
                     part1 = np.sum(A_[k, :] * x_array**2)
                     part2 = 2 * np.sum(A_[:, k] * x_array * x_array[k])
                     part3 = 2 * np.sum(np.sum(A_ * x_array.reshape(-1, 1) * (x_array.reshape(1, -1) ** 2), axis=1))
@@ -73,7 +72,6 @@ class MargulesModelTernary(VLEModel):
                     gammas.append(result)
             except RuntimeWarning:
                 print(part1,part2,part3,Temp,result)
-                raise ValueError
         return np.array(gammas)
     
     def get_vapor_pressure(self, Temp)->np.ndarray:

@@ -90,7 +90,7 @@ class VLEModel:
                 try:
                     random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
                     new_guess = np.append(random_number/np.sum(random_number),temp_guess)
-                    solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-15)
+                    solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12)
                     if ier == 1:
                         return solution, mesg
                 except:
@@ -122,7 +122,7 @@ class VLEModel:
                 try:
                     random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
                     new_guess = np.append(random_number/np.sum(random_number), temp_guess)
-                    solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-15)
+                    solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12)
                     if ier == 1:
                         return solution, mesg
                 except:
