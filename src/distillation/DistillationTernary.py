@@ -40,7 +40,8 @@ class DistillationModelTernary(DistillationModel):
         pass
     
     def plot_distil_rect(self, ax, ax_fixed):
-        pass
+        x_rect_comp = self.compute_rectifying_stages()[0]
+    
     
     def compute_rectifying_stages(self):
         x_comp, y_comp = [], []  # Initialize composition lists
@@ -94,7 +95,7 @@ class DistillationModelTernary(DistillationModel):
             x1 = x2
             y1 = y2
 
-    def plot_rect_strip(self, ax: axes):
+    def plot_rect_strip_comp(self, ax: axes):
         x_rect_comp = self.compute_rectifying_stages()[0]
         x_strip_comp = self.compute_stripping_stages()[0]
         
