@@ -38,11 +38,24 @@ class DistillationModelTernary(DistillationModel):
     
     def plot_distil_strip(self, ax, ax_fixed):
         pass
-    
-    def plot_distil_rect(self, ax, ax_fixed):
+    def plot_distil_strip(self, ax, ax_fixed):
+        pass
+    def plot_rect_comp(self, ax):
         x_rect_comp = self.compute_rectifying_stages()[0]
-    
-    
+        
+        #Extract x1 and x2 from arrays
+        x1_rect = x_rect_comp[:, 0]
+        x2_rect = x_rect_comp[:, 1]
+
+        # Plot the line connecting the points
+        ax.plot(x1_rect, x2_rect, '-D', label='Rectifying Line', color = "red")  # '-o' means a line with circle markers at each data point
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_ylim([0, 1])
+        ax.set_xlim([0, 1])
+        ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        
+        ax.legend()
+        
     def compute_rectifying_stages(self):
         x_comp, y_comp = [], []  # Initialize composition lists
         counter = 0
