@@ -33,7 +33,7 @@ class AntoineEquationBase10:
         Returns:
             np.ndarray: The calculated saturation pressure(s).
         """
-        return np.power(10,(self.A - self.B/(Temp + self.C)))
+        return np.power(10,(self.A - (self.B/(Temp + self.C))))
 
     def get_temperature(self, partial_pressure: np.ndarray):
         """
@@ -51,6 +51,9 @@ class AntoineEquationBase10:
     def get_boiling_point(self, P_sys:float) -> float:
         return self.get_temperature(P_sys)
     
+    def get_dPsatdT(self, T):
+        return (np.log(10)*np.power(10, (self.A*(self.C+T)-self.B)/(self.C+T))*self.B)/(T+self.C)**2
+  
 class AntoineEquationBaseE:
     """
     A class that represents the Antoine equation for calculating the saturation pressure of pure components.
@@ -100,4 +103,3 @@ class AntoineEquationBaseE:
     
     def get_boiling_point(self, P_sys:float) -> float:
         return self.get_temperature(P_sys)
-  

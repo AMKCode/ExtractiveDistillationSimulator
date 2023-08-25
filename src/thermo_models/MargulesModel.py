@@ -71,7 +71,8 @@ class MargulesModelTernary(VLEModel):
                     result = np.exp((part1 + part2 - part3)/Temp)
                     gammas.append(result)
             except RuntimeWarning:
-                print(part1,part2,part3,Temp,result)
+                print(x_array)
+                print(Temp)
         return np.array(gammas)
     
     def get_vapor_pressure(self, Temp)->np.ndarray:
@@ -85,4 +86,32 @@ class MargulesModelTernary(VLEModel):
         for partial_pressure_eq in self.partial_pressure_eqs:
             vap_pressure_array.append(partial_pressure_eq.get_partial_pressure(Temp))
         return np.array(vap_pressure_array)
-        
+
+    def get_Psat_i(self, i, T):
+        return self.partial_pressure_eqs[i].get_partial_pressure(T)
+    
+    def get_dPsatdT_i(self, i, T):
+        return self.partial_pressure_eqs[i].get_dPsatdT(T)
+
+
+    # website to calculate the derivatives
+    # https://www.symbolab.com/solver/step-by-step/%5Cfrac%7B%5Cpartial%7D%7B%5Cpartial%20x%7D%5Cleft(exp%5Cleft(%5Cfrac%7B%5Cleft(Ay%5E%7B2%7D%2BBz%5E%7B2%7D%2B2%5Cleft(Cyx%2BEzx%5Cright)-2%5Cleft(Axy%5E%7B2%7D%2BBxz%5E%7B2%7D%2BCyx%5E%7B2%7D%2BDyz%5E%7B2%7D%2BEzx%5E%7B2%7D%2BMzy%5E%7B2%7D%5Cright)%5Cright)%7D%7BT%7D%5Cright)%5Cright)?or=input
+    def get_gamma_ders(self, uvec, l):
+        ders = np.empty((3,4))
+        gammas = self.get_activity_coefficient(uvec[:-1], uvec[-1])
+        for j in range(4):
+            B = sum([2*self.A_[k, j]*uvec[k]*uvec[j]+self.A_[j, k]*(uvec[k]**2) for k in range(3)]) if j != 3 else 0
+            for i in range(3):
+                if j == 3:
+                    ders[i, j] = gammas[i]*np.log(gammas[i])*(1/uvec[-1])
+                    continue
+                A = 0
+                if i == j:
+                    A = sum([self.A_[k, j]*uvec[k] for k in range(3)])
+                else:
+                    A = self.A_[i, j]*uvec[j] + self.A_[j, i]*uvec[i]
+                ders[i, j] = (gammas[i]*(2*A-2*B))/uvec[-1]
+        return ders # dgamma(i)/dx(j)
+    
+    def get_Psys(self):
+        return self.P_sys
