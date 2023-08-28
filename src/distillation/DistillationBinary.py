@@ -171,7 +171,7 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.xaxis.set_label_coords(0.5, -0.05)
         ax_fixed.text(0.5, -5, f"Number of Stages: {N_1}", ha='center', va='center', transform=ax_fixed.transAxes)
         ax_fixed.yaxis.set_ticks([])
-        ax_fixed.scatter(x_fixed, [0]*len(x_fixed), marker='x', color='red')
+        ax_fixed.scatter(x_fixed, [0]*len(x_fixed), marker='^', color='blue')
         ax.set_aspect('equal', adjustable='box')
 
         ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='x', color='black')
@@ -217,7 +217,7 @@ class DistillationModelBinary(DistillationModel):
         ax.plot(x_stages, y_stages, linestyle='--', color='black', alpha = 0.3)
         ax.scatter(self.x_r_fixed, self.y_r_fixed, s=50, c="red")
 
-        ax_fixed.scatter(x_stages, [0]*len(x_stages), marker='x', color='green')
+        ax_fixed.scatter(x_stages, [0]*len(x_stages), marker='o', color='blue')
         ax_fixed.text(0.5, -5, f"Number of Stages: {N_2}", ha='center', va='center', transform=ax_fixed.transAxes)
         ax_fixed.yaxis.set_ticks([])
         ax.set_aspect('equal', adjustable='box')
@@ -367,10 +367,10 @@ class DistillationModelBinary(DistillationModel):
         ax.plot(x_stages, y_stages, linestyle='--', color='black', alpha = 0.3)
         ax.scatter(x_r_0 + x_s_0, y_r_0 + y_s_0, s=50, c="red")
 
-        ax_fixed.scatter(x_stages, [0]*len(x_stages), marker='x', color='green')
+        x_rect = self.compute_equib_stages_binary(1, x_r_0 + x_s_0)[0]
+        ax_fixed.scatter(x_rect, [0]*len(x_rect), marker='o', color='blue')
         x_strip = self.compute_equib_stages_binary(0, x_r_0 + x_s_0)[0]
-        if (op_color == 'red'):
-            ax_fixed.scatter(x_strip, [0]*len(x_strip), marker = 'x', color = 'red')
+        ax_fixed.scatter(x_strip, [0]*len(x_strip), marker = '^', color = 'blue')
         ax_fixed.text(0.5, -5, f"Number of Stages: {N_2}", ha='center', va='center', transform=ax_fixed.transAxes)
         ax_fixed.yaxis.set_ticks([])
         ax.set_aspect('equal', adjustable='box')
