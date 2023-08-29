@@ -134,7 +134,12 @@ class DistillationModel:
         self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
         return self
     
-    def get_rectifying_fixed_points(self, ds, num_steps, x0, l0):
+    def track_fixed_points_branch(self, op_line, ds, num_steps, x0, l0):
+        if op_line == 's':
+            return self.track_fixed_points_branch_stripping(ds, num_steps, x0, l0)
+        elif op_line != 'r':
+            raise ValueError('Please enter either s (for stripping line)  or r (for rectifying line)')
+        
         def eqns(uvec, l):
             res = np.empty(self.num_comp+1)
             gammas = self.thermo_model.get_activity_coefficient(uvec[:-1], uvec[-1])
@@ -169,7 +174,114 @@ class DistillationModel:
                     else:
                         res[i,j] = ((Psat*uvec[i])/P)*gamma_ders[i,j]
                     res[i,self.num_comp] = (uvec[i]/P)*(Psat*gamma_ders[i,self.num_comp]+gammas[i]*dPsatdT)
-            res[3,:] = np.ones(self.num_comp+1)
+            res[self.num_comp,:] = np.concatenate((np.ones(self.num_comp), np.zeros(1)))
+            return res
+
+        def eqns_der(xvec, uvec, l):
+            res = np.empty(self.num_comp+2)
+
+            jac = jac_eqns(uvec, l)
+            dFidl = get_dFidl(uvec, l)
+
+            for i in range(self.num_comp+1):
+                res[i] = sum([jac[i,j]*xvec[j] for j in range(self.num_comp+1)])
+                res[i] += dFidl[i]*xvec[-1]
+
+            res[self.num_comp+1] = sum([xvec[i]**2 for i in range(self.num_comp+2)]) - 1
+
+            return res
+            
+        def eqns_aug(uvec, tau, ds, u0):
+            l         = uvec[-1]
+            res       = np.zeros_like(uvec)
+            res[:-1] = eqns(uvec[:-1], l)
+            res[-1] = sum([(uvec[i] - u0[i])*tau[i] for i in range(self.num_comp+2)]) - ds
+
+            return res
+
+        def jac_eqns_aug(uvec, der, ds, u0):
+            l = uvec[-1]
+            res = np.empty((self.num_comp+2,self.num_comp+2))
+
+            jac = jac_eqns(uvec[:-1], l)
+            dFidl = get_dFidl(uvec[:-1], l)
+
+            cp1 = self.num_comp+1
+            res[:cp1, :cp1] = jac
+            res[:cp1, cp1] = dFidl
+            res[cp1, :] = der
+                
+            return res
+        
+        res = np.empty((num_steps, self.num_comp+2))
+        lam_m1 = l0
+        old_sol_m1 = fsolve(eqns, x0=x0, fprime=jac_eqns, args=(lam_m1,))
+        lam_0 = lam_m1 + ds
+        old_sol = fsolve(eqns, x0=old_sol_m1, fprime=jac_eqns, args=(lam_0,))
+
+        for i in range(num_steps):
+            if i % 1000 == 0:
+                print('sol = ' + str(old_sol) + ', l = ' + str(lam_0))
+
+            # Solve for tangent vector
+            # del_s       = math.sqrt(np.linalg.norm(lam_0 - lam_m1)**2)
+            del_s = ds
+
+            # Approximation from eqn 8 of Laing
+            guess = np.array([(old_sol[i]-old_sol_m1[i])/del_s for i in range(self.num_comp+1)] + [(lam_0 - lam_m1)/del_s])
+            # guess = np.array([ (old_sol[0] - old_sol_m1[0])/del_s, (old_sol[1] - old_sol_m1[1])/del_s, (old_sol[2] - old_sol_m1[2])/del_s, (old_sol[3] - old_sol_m1[3])/del_s, (lam_0 - lam_m1)/del_s  ])
+            tau = fsolve(eqns_der, guess, args = (old_sol, lam_0))
+            
+            prev_sol    = np.concatenate((old_sol, np.array([lam_0])))
+            new_sol     = fsolve(eqns_aug, x0 = prev_sol + ds*tau, fprime=jac_eqns_aug, args = (tau, ds, prev_sol))
+            
+            # Edit the variables that hold the two prior solutions
+            lam_m1, lam_0 = lam_0, new_sol[-1]
+            old_sol_m1 = np.copy(old_sol)
+            old_sol    = np.copy(new_sol[:-1])
+
+            res[i, :] = np.concatenate((old_sol, np.array([lam_0])))
+        
+    def track_fixed_points_branch_stripping(self, ds, num_steps, x0, l0):
+        def s(r):
+            self.change_r(r)
+            return self.boil_up
+        
+        def eqns(uvec, l):
+            res = np.empty(self.num_comp+1)
+            gammas = self.thermo_model.get_activity_coefficient(uvec[:-1], uvec[-1])
+
+            for i in range(self.num_comp):
+                Psat = self.thermo_model.get_Psat_i(i, uvec[-1])
+                P = self.thermo_model.get_Psys()
+                res[i] = ((Psat*gammas[i]*uvec[i])/P)-(((s(l)+1)*uvec[i])/s(l))+(self.xB[i]/s(l))
+            res[3] = np.sum(uvec[:-1]) - 1
+
+            return res
+
+        def get_dFidl(uvec, l):
+            res = np.empty(self.num_comp+1)
+            for i in range(self.num_comp):
+                res[i] = (uvec[i]-self.xB[i])/s(l)**2
+            res[self.num_comp] = 0
+            return res
+
+        def jac_eqns(uvec, l):
+            gammas = self.thermo_model.get_activity_coefficient(uvec[:-1], uvec[-1])
+            gamma_ders = self.thermo_model.get_gamma_ders(uvec, l)
+            res = np.empty((self.num_comp+1,self.num_comp+1))
+            P = self.thermo_model.get_Psys()
+
+            for i in range(self.num_comp):
+                Psat = self.thermo_model.get_Psat_i(i, uvec[-1])
+                dPsatdT = self.thermo_model.get_dPsatdT_i(i, uvec[-1])
+                for j in range(self.num_comp):
+                    if i == j:
+                        res[i,j] = ((Psat/P)*(gammas[i] + uvec[i]*gamma_ders[i,j])) - ((s(l)+1)/s(l))
+                    else:
+                        res[i,j] = ((Psat*uvec[i])/P)*gamma_ders[i,j]
+                    res[i,self.num_comp] = (uvec[i]/P)*(Psat*gamma_ders[i,self.num_comp]+gammas[i]*dPsatdT)
+            res[self.num_comp,:] = np.concatenate((np.ones(self.num_comp), np.zeros(1)))
             return res
 
         def eqns_der(xvec, uvec, l):
@@ -202,21 +314,21 @@ class DistillationModel:
             dFidl = get_dFidl(uvec[:-1], l)
 
             cp1 = self.num_comp+1
-            res[0:cp1, 0:cp1] = jac
-            res[0:cp1, cp1] = dFidl
+            res[:cp1, :cp1] = jac
+            res[:cp1, cp1] = dFidl
             res[cp1, :] = der
-                
+
             return res
-        
+
         res = np.empty((num_steps, self.num_comp+2))
         lam_m1 = l0
-        old_sol_m1 = fsolve(eqns, x0=np.array(x0), fprime=jac_eqns, args=(lam_m1,))
+        old_sol_m1 = fsolve(eqns, x0=x0, fprime=jac_eqns, args=(lam_m1,))
         lam_0 = lam_m1 + ds
         old_sol = fsolve(eqns, x0=old_sol_m1, fprime=jac_eqns, args=(lam_0,))
 
         for i in range(num_steps):
             if i % 1000 == 0:
-                print('x1 x2 = ' + str(old_sol) + ', l = ' + str(lam_0))
+                print('sol = ' + str(old_sol) + ', l = ' + str(lam_0))
 
             # Solve for tangent vector
             # del_s       = math.sqrt(np.linalg.norm(lam_0 - lam_m1)**2)
@@ -224,10 +336,9 @@ class DistillationModel:
 
             # Approximation from eqn 8 of Laing
             guess = np.array([(old_sol[i]-old_sol_m1[i])/del_s for i in range(self.num_comp+1)] + [(lam_0 - lam_m1)/del_s])
-            # guess = np.array([ (old_sol[0] - old_sol_m1[0])/del_s, (old_sol[1] - old_sol_m1[1])/del_s, (old_sol[2] - old_sol_m1[2])/del_s, (old_sol[3] - old_sol_m1[3])/del_s, (lam_0 - lam_m1)/del_s  ])
-            tau = fsolve(eqns_der, guess, args = tuple(old_sol) + (lam_0,))
+            tau = fsolve(eqns_der, guess, args = (old_sol, lam_0))
             
-            prev_sol    = np.array(old_sol + [lam_0])
+            prev_sol    = np.concatenate((old_sol, np.array([lam_0])))
             new_sol     = fsolve(eqns_aug, x0 = prev_sol + ds*tau, fprime=jac_eqns_aug, args = (tau, ds, prev_sol))
             
             # Edit the variables that hold the two prior solutions
@@ -235,5 +346,4 @@ class DistillationModel:
             old_sol_m1 = np.copy(old_sol)
             old_sol    = np.copy(new_sol[:-1])
 
-            res[i, :] = old_sol + [lam_0]
-            
+            res[i, :] = np.concatenate((old_sol, np.array([lam_0])))
