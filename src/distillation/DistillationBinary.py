@@ -187,6 +187,8 @@ class DistillationModelBinary(DistillationModel):
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
         plt.setp(ax.get_xticklabels(), visible=False)
         ax.set_title("Equilibrium and Stripping Line")
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=35)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
 
         return ax, ax_fixed
     
@@ -241,7 +243,10 @@ class DistillationModelBinary(DistillationModel):
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
         ax.set_title("Equilibrium and Rectifying Line")
-
+        ax.set_xlabel(self.thermo_model.comp_names[0])
+        ax.set_xlabel(self.thermo_model.comp_names[1])
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=35)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         return ax, ax_fixed
     
     def compute_equib_stages_binary(self, ax_num, fixed_points = []):
@@ -393,5 +398,7 @@ class DistillationModelBinary(DistillationModel):
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
         ax.set_title("Equilibrium and Operating Lines")
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=35)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
 
         return ax, ax_fixed

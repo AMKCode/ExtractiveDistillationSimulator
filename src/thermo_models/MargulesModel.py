@@ -56,6 +56,7 @@ class MargulesModelTernary(VLEModel):
         self.P_sys = P_sys
         self.A_ = A_
         self.partial_pressure_eqs = partial_pressure_eqs
+        # self.jacobian = 
         
     def get_activity_coefficient(self, x_array:np.ndarray, Temp: float):
         A_ = self.A_
