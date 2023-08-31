@@ -120,4 +120,6 @@ class residue_curve():
         ax.set_ylim([0, 1])
         ax.set_xlim([0, 1])
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
