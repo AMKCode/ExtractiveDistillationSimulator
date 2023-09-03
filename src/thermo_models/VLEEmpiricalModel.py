@@ -20,7 +20,7 @@ PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir
 sys.path.append(PROJECT_ROOT) 
 
 class VLEEmpiricalModelBinary(VLEModel):
-    def __init__(self, func_xtoy: Callable[[float], float]) -> None:
+    def __init__(self, func_xtoy: Callable[[float], float], comp_names) -> None:
         """Initialize the VLE empirical model.
 
         Args:
@@ -28,6 +28,7 @@ class VLEEmpiricalModelBinary(VLEModel):
         """
         self.func_xtoy = func_xtoy
         self.num_comp = 2
+        self.comp_names = comp_names
 
     def convert_x_to_y(self, x_array: np.ndarray):
         """Converts x to y using the provided function.

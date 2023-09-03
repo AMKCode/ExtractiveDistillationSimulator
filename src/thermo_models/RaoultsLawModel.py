@@ -25,7 +25,7 @@ class RaoultsLawModel(VLEModel):
         partial_pressure_eqs (AntoineEquation): The Antoine equations for each component.
     """
     
-    def __init__(self, num_comp: int, P_sys: float, partial_pressure_eqs: AntoineEquationBase10):
+    def __init__(self, num_comp: int, P_sys: float,comp_names, partial_pressure_eqs: AntoineEquationBase10):
         """
         Initializes the RaoultsLawModel with the number of components, system pressure, 
         and Antoine equations for each component.
@@ -35,7 +35,7 @@ class RaoultsLawModel(VLEModel):
             P_sys (float): The total pressure of the system.
             partial_pressure_eqs (AntoineEquation): The Antoine equations for each component.
         """
-        super().__init__(num_comp, P_sys)
+        super().__init__(num_comp, P_sys, comp_names)
         self.partial_pressure_eqs = partial_pressure_eqs
         
     def compute_gas_partial_fugacity(self,y_i:np.ndarray) -> np.ndarray:

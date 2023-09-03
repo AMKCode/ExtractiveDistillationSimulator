@@ -20,14 +20,6 @@ class DistillationModelTernary(DistillationModel):
     def __init__(self, thermo_model:VLEModel, xF: np.ndarray, xD: np.ndarray, xB: np.ndarray, reflux = None, boil_up = None, q = 1) -> None:
         super().__init__(thermo_model,xF,xD,xB,reflux,boil_up,q)
         
-        # x_r_fixed, y_r_fixed = self.find_rect_fixedpoints(n=30)
-        # x_s_fixed, y_s_fixed = self.find_strip_fixedpoints(n=30)
-        
-        # self.x_r_fixed = x_r_fixed
-        # self.y_r_fixed = y_r_fixed
-        # self.x_s_fixed = x_s_fixed
-        # self.y_s_fixed = y_s_fixed
-        
     def find_rect_fixedpoints(self, n):
         pass
     
@@ -54,7 +46,8 @@ class DistillationModelTernary(DistillationModel):
         ax.set_ylim([0, 1])
         ax.set_xlim([0, 1])
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
-        
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         ax.legend()
         
     def compute_rectifying_stages(self):
@@ -132,6 +125,9 @@ class DistillationModelTernary(DistillationModel):
         ax.set_ylim([0, 1])
         ax.set_xlim([0, 1])
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
         ax.legend()
         

@@ -187,16 +187,22 @@ class DistillationModelBinary(DistillationModel):
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
         plt.setp(ax.get_xticklabels(), visible=False)
         ax.set_title("Equilibrium and Stripping Line")
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=35)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
 
         return ax, ax_fixed
     
-    def plot_distil_rect_binary(self, ax, ax_fixed):
+    def plot_distil_rect_binary(self, ax, ax_fixed, zoom_factor=0):
         if self.num_comp != 2:
             raise ValueError("This method can only be used for binary distillation.")
         
         # Set limits for ax
-        ax.set_xlim([0,1])
-        ax.set_ylim([0,1])
+        if (zoom_factor == 0):
+            ax.set_xlim([0,1])
+            ax.set_ylim([0,1])
+        else:
+            ax.set_xlim([0.72,0.82])
+            ax.set_ylim([0.80,0.90])
 
         #Plot the equilibrium curve
         ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
@@ -228,13 +234,19 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.spines['bottom'].set_visible(False)
         ax_fixed.spines['left'].set_visible(False)
         ax_fixed.axhline(0, color='black')  # y=0 line
-        ax_fixed.set_xlim([0,1])
+        if zoom_factor == 0:
+            ax_fixed.set_xlim([0,1])
+        else:
+            ax_fixed.set_xlim([0.72,0.82])
         ax_fixed.yaxis.set_ticks([])
         ax_fixed.yaxis.set_ticklabels([])
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
         ax.set_title("Equilibrium and Rectifying Line")
-
+        ax.set_xlabel(self.thermo_model.comp_names[0])
+        ax.set_xlabel(self.thermo_model.comp_names[1])
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=35)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         return ax, ax_fixed
     
     def compute_equib_stages_binary(self, ax_num, fixed_points = []):
@@ -386,5 +398,7 @@ class DistillationModelBinary(DistillationModel):
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
         ax.set_title("Equilibrium and Operating Lines")
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=35)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
 
         return ax, ax_fixed

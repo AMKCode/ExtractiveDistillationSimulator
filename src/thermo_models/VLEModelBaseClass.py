@@ -34,9 +34,11 @@ class VLEModel:
     plot_binary_Txy(data_points:int, comp_index:int):
         Plots the T-x-y diagram for a binary mixture.
     """
-    def __init__(self,num_comp:int,P_sys:float):
+    def __init__(self,num_comp:int,P_sys:float,comp_names):
         self.num_comp = num_comp
         self.P_sys = P_sys
+        self.jacobian = None
+        self.comp_names = comp_names
         
     def get_activity_coefficient(self, x_array, Temp = None)->np.ndarray:
         """
@@ -91,7 +93,10 @@ class VLEModel:
                 try:
                     random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
                     new_guess = np.append(random_number/np.sum(random_number),temp_guess)
-                    solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12)
+                    if self.jacobian == None:
+                        solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12)
+                    else:
+                        solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=self.jacobian)
                     if ier == 1:
                         return solution, mesg
                 except:
