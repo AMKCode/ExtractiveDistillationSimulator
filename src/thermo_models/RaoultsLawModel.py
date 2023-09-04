@@ -37,6 +37,7 @@ class RaoultsLawModel(VLEModel):
         """
         super().__init__(num_comp, P_sys, comp_names)
         self.partial_pressure_eqs = partial_pressure_eqs
+        self.use_jacobian = False
         
     def compute_gas_partial_fugacity(self,y_i:np.ndarray) -> np.ndarray:
         """

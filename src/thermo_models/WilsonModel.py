@@ -39,6 +39,7 @@ class WilsonModel(VLEModel):
         self.P_sys = P_sys
         self.Lambdas = Lambdas
         self.partial_pressure_eqs = partial_pressure_eqs
+        self.use_jacobian = False
 
     def get_activity_coefficient(self, x_, Temp = None):
         #From Equation 15 in Prausnitz, the gamma values are computed

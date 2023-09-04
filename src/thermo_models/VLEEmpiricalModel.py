@@ -29,6 +29,7 @@ class VLEEmpiricalModelBinary(VLEModel):
         self.func_xtoy = func_xtoy
         self.num_comp = 2
         self.comp_names = comp_names
+        self.use_jacobian = False
 
     def convert_x_to_y(self, x_array: np.ndarray):
         """Converts x to y using the provided function.

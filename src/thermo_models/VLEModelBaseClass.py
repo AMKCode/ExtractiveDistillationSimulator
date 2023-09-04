@@ -37,8 +37,8 @@ class VLEModel:
     def __init__(self,num_comp:int,P_sys:float,comp_names):
         self.num_comp = num_comp
         self.P_sys = P_sys
-        self.jacobian = None
         self.comp_names = comp_names
+        self.use_jacobian = False
         
     def get_activity_coefficient(self, x_array, Temp = None)->np.ndarray:
         """
@@ -65,6 +65,7 @@ class VLEModel:
         raise NotImplementedError
     
     def convert_x_to_y(self, x_array:np.ndarray, temp_guess = None)->np.ndarray:
+        # print('here')
         """
         Computes the conversion from liquid mole fraction to vapor mole fraction.
 
@@ -86,19 +87,27 @@ class VLEModel:
             temp_guess = rand.uniform(np.amax(boiling_points), np.amin(boiling_points))
 
         # Use fsolve to find the vapor mole fractions and system temperature that satisfy the equilibrium conditions
-        
+        # print('ere')
         ier = 0
         if ier != 1:
             while True:
                 try:
+                    # print('ewq')
                     random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
                     new_guess = np.append(random_number/np.sum(random_number),temp_guess)
-                    if self.jacobian == None:
-                        solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12)
+                    
+                    if self.use_jacobian:
+                        solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_x_to_y)
+                        if ier == 1:
+                            return solution, mesg
                     else:
-                        solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=self.jacobian)
-                    if ier == 1:
-                        return solution, mesg
+                        solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=None)
+                        if ier == 1:
+                            return solution, mesg
+                    # solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, 
+                    #                                     fprime=self.jacobian_x_to_y)
+                    # if ier == 1:
+                    #     return solution, mesg
                 except:
                     continue
 
@@ -129,9 +138,18 @@ class VLEModel:
                 try:
                     random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
                     new_guess = np.append(random_number/np.sum(random_number), temp_guess)
-                    solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12)
-                    if ier == 1:
-                        return solution, mesg
+                    
+                    if self.use_jacobian:
+                        solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_y_to_x)
+                        if ier == 1:
+                            return solution, mesg
+                    else:
+                        solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=None)
+                        if ier == 1:
+                            return solution, mesg
+                    # solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_y_to_x)
+                    # if ier == 1:
+                    #     return solution, mesg
                 except:
                     continue
         
@@ -412,6 +430,49 @@ class VLEModel:
         plt.grid(True)
         plt.show()
         
+    # group of functions used for jacobian calculations
+    def jacobian_x_to_y(self, uvec, xvec):
+        gammas_ders = self.get_gamma_ders(np.concatenate((xvec, np.array([uvec[-1]]))), l=0) # l is dummy value
+        gammas = self.get_activity_coefficient(xvec, uvec[-1])
+        jac = np.empty((self.num_comp+1, self.num_comp+1))
+        for i in range(self.num_comp):
+            for j in range(self.num_comp+1):
+                if j == self.num_comp:
+                    jac[i,j] = xvec[i]*self.get_Psat_i(i, uvec[-1])*gammas_ders[i,-1] + xvec[i]*gammas[i]*self.get_dPsatdT_i(i, uvec[-1])
+                elif i == j:
+                    jac[i,j] = -self.get_Psys()
+                else:
+                    jac[i,j] = 0
+        jac[self.num_comp, :] = np.concatenate((np.ones(self.num_comp), np.zeros(1)))
+        return jac
+
+
+    def jacobian_y_to_x(self, uvec, yvec):
+        gammas_ders = self.get_gamma_ders(uvec, l=0) # l is dummy value
+        gammas = self.get_activity_coefficient(uvec[:-1], uvec[-1])
+        jac = np.empty((self.num_comp+1, self.num_comp+1))
+        for i in range(self.num_comp):
+            for j in range(self.num_comp+1):
+                if j == self.num_comp:
+                    jac[i,j] = uvec[i]*gammas_ders[i, -1]*self.get_Psat_i(i, uvec[-1]) + uvec[i]*gammas[i]*self.get_dPsatdT_i(i, uvec[-1])
+                elif i == j:
+                    jac[i,j] = gammas[i]*self.get_Psat_i(i, uvec[-1]) + uvec[i]*gammas_ders[i,j]*self.get_Psat_i(i, uvec[-1])
+                else:
+                    jac[i,j] = uvec[i]*gammas_ders[i,j]*self.get_Psat_i(i, uvec[-1])
+        jac[self.num_comp, :] = np.concatenate((np.ones(self.num_comp), np.zeros(1)))
+        return jac
+
+    def get_Psat_i(self, i, T):
+        return self.partial_pressure_eqs[i].get_partial_pressure(T)
+    def get_dPsatdT_i(self, i, T):
+        return self.partial_pressure_eqs[i].get_dPsatdT(T)
+    def get_Psys(self):
+        return self.P_sys
+    def get_gamma_ders(self, uvec, l):
+        raise NotImplementedError('Jacobian not available for this model')
+
+        
+
         
         
    

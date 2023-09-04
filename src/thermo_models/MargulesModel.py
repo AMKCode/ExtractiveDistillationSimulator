@@ -27,6 +27,7 @@ class MargulesModel(VLEModel):
         self.P_sys = P_sys
         self.A_ = A_
         self.partial_pressure_eqs = partial_pressure_eqs
+        self.use_jacobian = True
     
     def get_activity_coefficient(self, x_):
         #For binary mixtures, the Activity coefficients will be returned 
@@ -56,7 +57,7 @@ class MargulesModelTernary(VLEModel):
         self.P_sys = P_sys
         self.A_ = A_
         self.partial_pressure_eqs = partial_pressure_eqs
-        # self.jacobian = 
+        self.use_jacobian = True
         
     def get_activity_coefficient(self, x_array:np.ndarray, Temp: float):
         A_ = self.A_
@@ -88,13 +89,6 @@ class MargulesModelTernary(VLEModel):
             vap_pressure_array.append(partial_pressure_eq.get_partial_pressure(Temp))
         return np.array(vap_pressure_array)
 
-    def get_Psat_i(self, i, T):
-        return self.partial_pressure_eqs[i].get_partial_pressure(T)
-    
-    def get_dPsatdT_i(self, i, T):
-        return self.partial_pressure_eqs[i].get_dPsatdT(T)
-
-
     # website to calculate the derivatives
     # https://www.symbolab.com/solver/step-by-step/%5Cfrac%7B%5Cpartial%7D%7B%5Cpartial%20x%7D%5Cleft(exp%5Cleft(%5Cfrac%7B%5Cleft(Ay%5E%7B2%7D%2BBz%5E%7B2%7D%2B2%5Cleft(Cyx%2BEzx%5Cright)-2%5Cleft(Axy%5E%7B2%7D%2BBxz%5E%7B2%7D%2BCyx%5E%7B2%7D%2BDyz%5E%7B2%7D%2BEzx%5E%7B2%7D%2BMzy%5E%7B2%7D%5Cright)%5Cright)%7D%7BT%7D%5Cright)%5Cright)?or=input
     def get_gamma_ders(self, uvec, l):
@@ -113,6 +107,5 @@ class MargulesModelTernary(VLEModel):
                     A = self.A_[i, j]*uvec[j] + self.A_[j, i]*uvec[i]
                 ders[i, j] = (gammas[i]*(2*A-2*B))/uvec[-1]
         return ders # dgamma(i)/dx(j)
-    
-    def get_Psys(self):
-        return self.P_sys
+
+

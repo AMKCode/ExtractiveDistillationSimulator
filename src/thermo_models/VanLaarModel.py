@@ -26,6 +26,7 @@ class VanLaarModel(VLEModel):
         self.partial_pressure_eqs = partial_pressure_eqs
         self.A = A
         self.B = B
+        self.use_jacobian = False
 
     def get_activity_coefficient(self, x_array, Temp = None):
 
