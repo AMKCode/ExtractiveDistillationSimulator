@@ -195,7 +195,7 @@ class DistillationModelBinary(DistillationModel):
 
         return ax, ax_fixed
     
-    def plot_distil_rect_binary(self, ax, ax_fixed, zoom_factor=0):
+    def plot_distil_rect_binary(self, ax, ax_fixed, zoom_factor=0, rect_title = "Equilibrium and Rectifying Line"):
         if self.num_comp != 2:
             raise ValueError("This method can only be used for binary distillation.")
         
@@ -245,7 +245,7 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.yaxis.set_ticklabels([])
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-        ax.set_title("Equilibrium and Rectifying Line")
+        ax.set_title(rect_title)
         species = self.thermo_model.comp_names[0]
         x_label = '$x_{' + species + '}$'
         y_label = '$y_{' + species + '}$'
