@@ -169,9 +169,9 @@ class DistillationModelBinary(DistillationModel):
 
         ax_fixed.set_xlabel('$x_{1}$')
         ax_fixed.xaxis.set_label_coords(0.5, -0.05)
-        ax_fixed.text(0.5, -5, f"Number of Stages: {N_1}", ha='center', va='center', transform=ax_fixed.transAxes)
+        #ax_fixed.text(0.5, -5, f"Number of Stages: {N_1}", ha='center', va='center', transform=ax_fixed.transAxes)
         ax_fixed.yaxis.set_ticks([])
-        ax_fixed.scatter(x_fixed, [0]*len(x_fixed), marker='^', color='blue')
+        ax_fixed.scatter(x_fixed, [0]*len(x_fixed), marker='^', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75)
         ax.set_aspect('equal', adjustable='box')
 
         ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='x', color='black')
@@ -223,8 +223,8 @@ class DistillationModelBinary(DistillationModel):
         ax.plot(x_stages, y_stages, linestyle='--', color='black', alpha = 0.3)
         ax.scatter(self.x_r_fixed, self.y_r_fixed, s=50, c="red")
 
-        ax_fixed.scatter(x_stages, [0]*len(x_stages), marker='o', color='blue')
-        ax_fixed.text(0.5, -5, f"Number of Stages: {N_2}", ha='center', va='center', transform=ax_fixed.transAxes)
+        ax_fixed.scatter(x_stages, [0]*len(x_stages), marker='o', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75)
+        #ax_fixed.text(0.5, -5, f"Number of Stages: {N_2}", ha='center', va='center', transform=ax_fixed.transAxes)
         ax_fixed.yaxis.set_ticks([])
         ax.set_aspect('equal', adjustable='box')
 
@@ -349,23 +349,34 @@ class DistillationModelBinary(DistillationModel):
                 if (y_r_array[i,0] >= self.y_array_equib[i,0]): #intersection occurs above equilibrium curve
                     op_color = 'red'  
                 break 
-        
+               
         #Plot the rectifying line
         r_max_index = int(1000 * self.xD[0])
         for i in range(len(self.y_r_array)):
-            if (self.y_r_array[i,0] < self.y_array_equib[i,0]):
+            if (self.y_r_array[i,0] < self.y_array_equib[i,0]): #set min index where the rectifying line intersects operating line
                 r_min_index = i
                 break 
-        ax.plot(self.x_array_equib[r_min_index:r_max_index, 0], self.y_r_array[r_min_index:r_max_index, 0], color = op_color)
+        
         
         #Plot the stripping line
         s_min_index = int(1000 * self.xB[0])
-        for i in range(len(self.y_s_array)):
+        for i in range(len(self.y_s_array)): #set max index where stripping line intersects equib curve
             if (self.y_s_array[i,0] > self.y_array_equib[i,0]):
                 s_max_index = i
                 break 
 
-        ax.plot(self.x_array_equib[s_min_index:s_max_index, 0], self.y_s_array[s_min_index:s_max_index, 0], color = op_color)
+        if (op_color == 'green'):
+            for i in range(len(self.y_r_array)):
+                if (self.y_r_array[i,0] < self.y_s_array[i,0]): #find index where operating lines intersect
+                    op_intersect_index = i
+                    break 
+            ax.plot(self.x_array_equib[op_intersect_index:r_max_index, 0], self.y_r_array[op_intersect_index:r_max_index, 0], color = op_color)
+            ax.plot(self.x_array_equib[s_min_index:op_intersect_index, 0], self.y_s_array[s_min_index:op_intersect_index, 0], color = op_color)  
+            ax.plot(self.x_array_equib[op_intersect_index:s_max_index, 0], self.y_s_array[op_intersect_index:s_max_index, 0], color = op_color, alpha = 0.5)
+            ax.plot(self.x_array_equib[r_min_index:op_intersect_index, 0], self.y_r_array[r_min_index:op_intersect_index, 0], color = op_color, alpha = 0.5)         
+        else:
+            ax.plot(self.x_array_equib[r_min_index:r_max_index, 0], self.y_r_array[r_min_index:r_max_index, 0], color = op_color)
+            ax.plot(self.x_array_equib[s_min_index:s_max_index, 0], self.y_s_array[s_min_index:s_max_index, 0], color = op_color)
         
         
         #Plot y = x line
@@ -375,14 +386,21 @@ class DistillationModelBinary(DistillationModel):
         x_s_0, y_s_0 = self.find_strip_fixedpoints_binary(n=30)
         
         x_stages, y_stages, N_2 = self.compute_equib_stages_binary(2, x_r_0 + x_s_0)
-        
-        ax.plot(x_stages, y_stages, linestyle='--', color='black', alpha = 0.3)
+        if (op_color == 'green'):
+            ax.plot(x_stages, y_stages, linestyle='--', color='black', alpha = 0.3)
+        else:
+            xr_stages, yr_stages, N_r = self.compute_equib_stages_binary(1, self.x_r_fixed)
+            ax.plot(xr_stages, yr_stages, linestyle='--', color='black', alpha = 0.3)
+            xs_stages, ys_stages, N_s = self.compute_equib_stages_binary(0, self.x_s_fixed)
+            ax.plot(xs_stages, ys_stages, linestyle='--', color='black', alpha = 0.3)
+
+
         ax.scatter(x_r_0 + x_s_0, y_r_0 + y_s_0, s=50, c="red")
 
         x_rect = self.compute_equib_stages_binary(1, x_r_0 + x_s_0)[0]
-        ax_fixed.scatter(x_rect, [0]*len(x_rect), marker='o', color='blue')
+        ax_fixed.scatter(x_rect, [0]*len(x_rect), marker='o', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75)
         x_strip = self.compute_equib_stages_binary(0, x_r_0 + x_s_0)[0]
-        ax_fixed.scatter(x_strip, [0]*len(x_strip), marker = '^', color = 'blue')
+        ax_fixed.scatter(x_strip, [0]*len(x_strip), marker = '^', color = 'blue', facecolors='none', edgecolors='blue', linewidths = 0.75)
         ax_fixed.text(0.5, -5, f"Number of Stages: {N_2}", ha='center', va='center', transform=ax_fixed.transAxes)
         ax_fixed.yaxis.set_ticks([])
         ax.set_aspect('equal', adjustable='box')
