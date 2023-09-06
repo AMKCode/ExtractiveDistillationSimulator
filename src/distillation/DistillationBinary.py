@@ -187,8 +187,11 @@ class DistillationModelBinary(DistillationModel):
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
         plt.setp(ax.get_xticklabels(), visible=False)
         ax.set_title("Equilibrium and Stripping Line")
-        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=35)
-        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
+        species = self.thermo_model.comp_names[0]
+        x_label = '$x_{' + species + '}$'
+        y_label = '$y_{' + species + '}$'
+        ax.set_xlabel(x_label, labelpad=35)
+        ax.set_ylabel(y_label, labelpad = 10)
 
         return ax, ax_fixed
     
@@ -243,10 +246,11 @@ class DistillationModelBinary(DistillationModel):
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
         ax.set_title("Equilibrium and Rectifying Line")
-        ax.set_xlabel(self.thermo_model.comp_names[0])
-        ax.set_xlabel(self.thermo_model.comp_names[1])
-        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=35)
-        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
+        species = self.thermo_model.comp_names[0]
+        x_label = '$x_{' + species + '}$'
+        y_label = '$y_{' + species + '}$'
+        ax.set_xlabel(x_label, labelpad=35)
+        ax.set_ylabel(y_label, labelpad = 10)
         return ax, ax_fixed
     
     def compute_equib_stages_binary(self, ax_num, fixed_points = []):
@@ -372,8 +376,8 @@ class DistillationModelBinary(DistillationModel):
                     break 
             ax.plot(self.x_array_equib[op_intersect_index:r_max_index, 0], self.y_r_array[op_intersect_index:r_max_index, 0], color = op_color)
             ax.plot(self.x_array_equib[s_min_index:op_intersect_index, 0], self.y_s_array[s_min_index:op_intersect_index, 0], color = op_color)  
-            ax.plot(self.x_array_equib[op_intersect_index:s_max_index, 0], self.y_s_array[op_intersect_index:s_max_index, 0], color = op_color, alpha = 0.5)
-            ax.plot(self.x_array_equib[r_min_index:op_intersect_index, 0], self.y_r_array[r_min_index:op_intersect_index, 0], color = op_color, alpha = 0.5)         
+            ax.plot(self.x_array_equib[op_intersect_index:s_max_index, 0], self.y_s_array[op_intersect_index:s_max_index, 0], color = op_color, alpha = 0.3)
+            ax.plot(self.x_array_equib[r_min_index:op_intersect_index, 0], self.y_r_array[r_min_index:op_intersect_index, 0], color = op_color, alpha = 0.3)         
         else:
             ax.plot(self.x_array_equib[r_min_index:r_max_index, 0], self.y_r_array[r_min_index:r_max_index, 0], color = op_color)
             ax.plot(self.x_array_equib[s_min_index:s_max_index, 0], self.y_s_array[s_min_index:s_max_index, 0], color = op_color)
@@ -416,7 +420,10 @@ class DistillationModelBinary(DistillationModel):
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
         ax.set_title("Equilibrium and Operating Lines")
-        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=35)
-        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
+        species = self.thermo_model.comp_names[0]
+        x_label = '$x_{' + species + '}$'
+        y_label = '$y_{' + species + '}$'
+        ax.set_xlabel(x_label, labelpad=35)
+        ax.set_ylabel(y_label, labelpad = 10)
 
         return ax, ax_fixed
