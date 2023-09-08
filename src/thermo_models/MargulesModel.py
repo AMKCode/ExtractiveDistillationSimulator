@@ -52,12 +52,13 @@ class MargulesModel(VLEModel):
             
   
 class MargulesModelTernary(VLEModel):
-    def __init__(self, num_comp:int, P_sys:np.ndarray, A_:dict, partial_pressure_eqs: AntoineEquationBase10):
+    def __init__(self, num_comp:int, P_sys:np.ndarray, A_:dict, comp_names, partial_pressure_eqs: AntoineEquationBase10):
         self.num_comp = num_comp
         self.P_sys = P_sys
         self.A_ = A_
         self.partial_pressure_eqs = partial_pressure_eqs
         self.use_jacobian = True
+        self.comp_names = comp_names
         
     def get_activity_coefficient(self, x_array:np.ndarray, Temp: float):
         A_ = self.A_

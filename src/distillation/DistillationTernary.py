@@ -68,7 +68,7 @@ class DistillationModelTernary(DistillationModel):
             x_comp.append(x2)
             y_comp.append(y2)
             
-            if counter == 100:
+            if counter == 100000:
                 print("counter rect:", counter)
                 return np.array(x_comp), np.array(y_comp)
             if np.linalg.norm(x1 - x2) < 0.0000001:
