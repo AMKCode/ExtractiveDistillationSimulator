@@ -2,38 +2,9 @@ import numpy as np
 from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 import random as rand
-from scipy.optimize import root
+from utils.rand_comp_gen import *
 
 class VLEModel:
-    """
-    A class used to represent a Vapor-Liquid Equilibrium (VLE) model.
-
-    This base class provides methods for computing activity coefficients, vapor pressures, 
-    and converting between liquid and vapor mole fractions. Derived classes provide
-    specific calculation of activity coefficient and vapor pressure for different 
-    types of mixtures.
-    ...
-
-    Attributes
-    ----------
-    num_comp : int
-        The number of components in the mixture.
-    P_sys : float
-        The total pressure of the system.
-
-    Methods
-    -------
-    get_activity_coefficient(*args) -> np.ndarray:
-        Computes the activity coefficient for each component in the the model.
-    get_vapor_pressure(*args) -> np.ndarray:
-        Computes the vapor pressure for each component in the model.
-    convert_x_to_y(x_array:np.ndarray) -> np.ndarray:
-        Computes the conversion from liquid mole fraction to vapor mole fraction.
-    compute_Txy(vars:np.ndarray, x_array:np.ndarray) -> list:
-        Computes the system of equations for the T-x-y calculations.
-    plot_binary_Txy(data_points:int, comp_index:int):
-        Plots the T-x-y diagram for a binary mixture.
-    """
     def __init__(self,num_comp:int,P_sys:float,comp_names):
         self.num_comp = num_comp
         self.P_sys = P_sys
@@ -65,7 +36,6 @@ class VLEModel:
         raise NotImplementedError
     
     def convert_x_to_y(self, x_array:np.ndarray, temp_guess = None)->np.ndarray:
-        # print('here')
         """
         Computes the conversion from liquid mole fraction to vapor mole fraction.
 
@@ -75,9 +45,6 @@ class VLEModel:
         Returns:
             solution (np.ndarray): The solution from the fsolve function, which includes the vapor mole fractions and the system temperature.
         """
-        #set seed for reproducibility
-        np.random.seed(0)
-        rand.seed(0)
         
         # Compute the boiling points for each component
         boiling_points = [eq.get_boiling_point(self.P_sys) for eq in self.partial_pressure_eqs]
@@ -87,29 +54,23 @@ class VLEModel:
             temp_guess = rand.uniform(np.amax(boiling_points), np.amin(boiling_points))
 
         # Use fsolve to find the vapor mole fractions and system temperature that satisfy the equilibrium conditions
-        # print('ere')
         ier = 0
-        if ier != 1:
-            while True:
-                try:
-                    # print('ewq')
-                    random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
-                    new_guess = np.append(random_number/np.sum(random_number),temp_guess)
-                    
-                    if self.use_jacobian:
-                        solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_x_to_y)
-                        if ier == 1:
-                            return solution, mesg
-                    else:
-                        solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=None)
-                        if ier == 1:
-                            return solution, mesg
-                    # solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, 
-                    #                                     fprime=self.jacobian_x_to_y)
-                    # if ier == 1:
-                    #     return solution, mesg
-                except:
-                    continue
+        while True:
+            try:
+                random_number = generate_point_system_random_sum_to_one(self.num_comp)
+                new_guess = np.append(random_number,temp_guess)
+               
+                
+                if self.use_jacobian:
+                    solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_x_to_y)
+                    if ier == 1:
+                        return solution, mesg
+                else:
+                    solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=None)
+                    if ier == 1:
+                        return solution, mesg
+            except:
+                continue
 
     def convert_y_to_x(self, y_array:np.ndarray, temp_guess = None)->np.ndarray:
         """
@@ -121,9 +82,6 @@ class VLEModel:
         Returns:
             solution (np.ndarray): The solution from the fsolve function, which includes the liquid mole fractions and the system temperature.
         """
-        #set seed for reproducibility
-        np.random.seed(0)
-        rand.seed(0)
         
         # Compute the boiling points for each component
         boiling_points = [eq.get_boiling_point(self.P_sys) for eq in self.partial_pressure_eqs]
@@ -131,27 +89,23 @@ class VLEModel:
         #Provides a random guess for temp if no temp_guess was provided as a parameter
         if temp_guess == None:
             temp_guess = rand.uniform(np.amax(boiling_points), np.amin(boiling_points))
-            
-        ier = 0                  
-        if ier != 1:
-            while True:
-                try:
-                    random_number = np.random.uniform(low = 0.0, high = 1.0, size = self.num_comp)
-                    new_guess = np.append(random_number/np.sum(random_number), temp_guess)
-                    
-                    if self.use_jacobian:
-                        solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_y_to_x)
-                        if ier == 1:
-                            return solution, mesg
-                    else:
-                        solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=None)
-                        if ier == 1:
-                            return solution, mesg
-                    # solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_y_to_x)
-                    # if ier == 1:
-                    #     return solution, mesg
-                except:
-                    continue
+                          
+        ier = 0
+        while True:
+            try:
+                random_number = generate_point_system_random_sum_to_one(self.num_comp)
+                new_guess = np.append(random_number, temp_guess)
+                
+                if self.use_jacobian:
+                    solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_y_to_x)
+                    if ier == 1:
+                        return solution, mesg
+                else:
+                    solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=None)
+                    if ier == 1:
+                        return solution, mesg
+            except:
+                continue
         
     def compute_Txy(self, vars:np.ndarray, x_array:np.ndarray)->list:
         """
@@ -169,6 +123,7 @@ class VLEModel:
         Returns:
             eqs (list): A list of equations representing the equilibrium conditions.
         """
+        
         # Extract the vapor mole fractions and temperature from the vars array
         y_array = vars[:-1]
         Temp = vars[-1]

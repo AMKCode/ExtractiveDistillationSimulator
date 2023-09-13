@@ -57,7 +57,6 @@ class DistillationModel:
             self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1 #this one need 1 component
         else:
             raise ValueError("Underspecification or overspecification: only 2 variables between reflux, boil up, and q can be provided")
-
         
     def rectifying_step_xtoy(self, x_r_j:np.ndarray):
         """
