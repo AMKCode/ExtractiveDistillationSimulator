@@ -2,6 +2,15 @@ import numpy as np
 from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 import random as rand
+import os, sys
+#
+# Panwa: I'm not sure how else to import these properly
+#
+PROJECT_ROOT = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), 
+            os.pardir)
+)
+sys.path.append(PROJECT_ROOT) 
 from utils.rand_comp_gen import *
 
 class VLEModel:
@@ -63,10 +72,14 @@ class VLEModel:
                 
                 if self.use_jacobian:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_x_to_y)
+                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-12)):
+                        raise ValueError("Not converged")
                     if ier == 1:
                         return solution, mesg
                 else:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=None)
+                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-12)):
+                        raise ValueError("Not converged")
                     if ier == 1:
                         return solution, mesg
             except:
@@ -98,10 +111,14 @@ class VLEModel:
                 
                 if self.use_jacobian:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_y_to_x)
+                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-12)):
+                        raise ValueError("Not converged")
                     if ier == 1:
                         return solution, mesg
                 else:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=None)
+                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-12)):
+                        raise ValueError("Not converged")
                     if ier == 1:
                         return solution, mesg
             except:

@@ -22,13 +22,12 @@ class MargulesModel(VLEModel):
     """
 
     #CONSTRUCTOR 
-    def __init__(self, num_comp:int, P_sys:float, A_:dict, comp_names, partial_pressure_eqs: AntoineEquationBase10):
-        self.num_comp = num_comp
-        self.P_sys = P_sys
-        self.A_ = A_
-        self.partial_pressure_eqs = partial_pressure_eqs
-        self.use_jacobian = False
-        self.comp_names = comp_names
+    class MargulesModel(VLEModel):
+        def __init__(self, num_comp:int, P_sys:float, A_:dict, comp_names, partial_pressure_eqs):
+            super().__init__(num_comp, P_sys, comp_names)
+            self.A_ = A_
+            self.partial_pressure_eqs = partial_pressure_eqs
+            self.use_jacobian = False
         
     
     def get_activity_coefficient(self, x_):
@@ -55,13 +54,11 @@ class MargulesModel(VLEModel):
   
 class MargulesModelTernary(VLEModel):
     def __init__(self, num_comp:int, P_sys:np.ndarray, A_:dict, comp_names, partial_pressure_eqs: AntoineEquationBase10, use_jacob:bool):
-        self.num_comp = num_comp
-        self.P_sys = P_sys
+        super().__init__(num_comp, P_sys, comp_names)
         self.A_ = A_
         self.partial_pressure_eqs = partial_pressure_eqs
         self.use_jacobian = use_jacob
-        self.comp_names = comp_names
-        
+
     def get_activity_coefficient(self, x_array:np.ndarray, Temp: float):
         A_ = self.A_
         gammas = []

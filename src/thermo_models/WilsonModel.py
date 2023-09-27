@@ -34,12 +34,12 @@ class WilsonModel(VLEModel):
     """
 
     #CONSTRUCTOR 
-    def __init__(self, num_comp:int, P_sys:float, Lambdas:dict, partial_pressure_eqs:AE):
-        self.num_comp = num_comp
-        self.P_sys = P_sys
+    def __init__(self, num_comp:int, P_sys:float, Lambdas:dict, comp_names, partial_pressure_eqs, use_jacob:bool):
+        super().__init__(num_comp, P_sys, comp_names)  # Call parent constructor
         self.Lambdas = Lambdas
         self.partial_pressure_eqs = partial_pressure_eqs
-        self.use_jacobian = False
+        self.use_jacobian = use_jacob
+
 
     def get_activity_coefficient(self, x_, Temp = None):
         #From Equation 15 in Prausnitz, the gamma values are computed
