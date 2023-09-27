@@ -18,52 +18,58 @@ from thermo_models.VanLaarModel import *
 from utils.plot_csv_soln import *
   
 class TestVanLaar(unittest.TestCase):
-    #Test a binary mixture for vanlar of acetone and water based on
-    #https://en.wikipedia.org/wiki/Van_Laar_equation#cite_note-:0-3 
+
     def setUp(self) -> None:
-        A12 = 2.1041
-        A21 = 1.5555
-        #Referencing NIST website
-        Water_A = 3.55959
-        Water_B = 643.748
-        Water_C = -198.043
-        Acet_A = 4.42448
-        Acet_B = 1312.253
-        Acet_C = -32.445
+        #Refer to Table A.9 from Knapp Thesis Paper
+        A_ij = {
+            (1,1):0,
+            (1,2):182.0,
+            (1,3):795.0,
+            (2,1):196,
+            (2,2):0,
+            (2,3):332.6,
+            (3,1):490.0,
+            (3,2):163.80,
+            (3,3):0
+        }
+        Acet_A = 21.3099; Acet_B = -2801.53; Acet_C = -42.875
+        Meth_A = 23.4832; Meth_B = -3634.01; Meth_C = -33.768
+        
+        #Assuming P < 2 atm
+        Water_A = 23.2256; Water_B = -3835.18; Water_C = -45.343
+        
+        #Kanapp Thesis Figure 3.8 uses ln form of Antoine
+        AcetoneAntoine = AE.AntoineEquationBaseE(Acet_A,Acet_B,Acet_C)
+        MethanolAntoine = AE.AntoineEquationBaseE(Meth_A, Meth_B, Meth_C)
+        WaterAntoine = AE.AntoineEquationBaseE(Water_A,Water_B,Water_C)
+        
         
         P_sys = 1
-        WaterAntoine = AE.AntoineEquationBase10(Water_A,Water_B,Water_C)
-        AcetoneAntoine = AE.AntoineEquationBase10(Acet_A,Acet_B,Acet_C)
-        self.AcetWaterVanLaar = VanLaarModel(2,P_sys,[WaterAntoine,AcetoneAntoine],A12,A21)
-        
+        self.vle_model = VanLaarModel(3, P_sys= P_sys, A_coeff=A_ij,comp_names=["Ace","Meth","Water"], partial_pressure_eqs = [AcetoneAntoine, MethanolAntoine, WaterAntoine], A= None, B=None)
+        print("here")
     # def testPlot(self):
     #     self.AcetWaterVanLaar.plot_binary_Txy(100,0)
    
     
-    def test_RandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
-        rand.seed(0)
-        for i in range(100):
-            x1 = rand.random()
-            x2 = 1 - x1
-            solution = (self.AcetWaterVanLaar.convert_x_to_y(np.array([x1,x2])))[0]
+    def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
+        for i in range(10):
+            print(i)
+            x1,x2,x3 =  generate_point_system_random_sum_to_one(3)
+            
+            solution = (self.vle_model.convert_x_to_y(np.array([x1, x2, x3])))[0]
             y_array_sol = solution[:-1]
             temp_sol = solution[-1]
-            np.testing.assert_allclose(np.array([x1,x2,temp_sol]), self.AcetWaterVanLaar.convert_y_to_x(y_array=y_array_sol)[0],atol=1e-3)
-    
-    def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
-        rand.seed(0)
-        for i in range(1000):
-            y1 = rand.random()
-            y2 = 1 - y1
-            solution = (self.AcetWaterVanLaar.convert_y_to_x(np.array([y1,y2])))[0]
-            x_array_sol = solution[:-1]
+            np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), self.vle_model.convert_y_to_x(y_array=y_array_sol)[0], atol=1e-4)
             
-            expected_array = np.array([y1,y2,solution[-1]])
-            actual_array, mesg = self.AcetWaterVanLaar.convert_x_to_y(x_array=x_array_sol)
-            if not np.allclose(expected_array, actual_array, atol=1e-4):
-                print("\ntestRandomizedConvert_xtoy_from_convert_ytox_output_binary_case")
-                print(f"For iteration {i}: Expected array: {expected_array}, but got: {actual_array} with err\n, {mesg}")
-                raise ValueError
+    def test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case(self):
+        for i in range(10):
+            print(I)
+            y1, y2, y3 = generate_point_system_random_sum_to_one(3)
+            
+            solution = (self.vle_model.convert_y_to_x(np.array([y1, y2, y3])))[0]
+            x_array_sol = solution[:-1]
+            temp_sol = solution[-1]
+            np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), self.vle_model.convert_x_to_y(x_array=x_array_sol)[0], atol=1e-4)
 
 if __name__ == '__main__':
     unittest.main()
