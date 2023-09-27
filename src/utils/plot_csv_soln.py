@@ -12,19 +12,23 @@ PROJECT_ROOT = os.path.abspath(os.path.join(
 )
 sys.path.append(PROJECT_ROOT) 
 
-# Modified function to check if a file has a header
 def file_has_header(file_path):
     if not os.path.exists(file_path):
         return False
     try:
-        df = pd.read_csv(file_path, nrows=1)  # Read only the first row to check for header
+        df = pd.read_csv(file_path)  # Read only the first row to check for header
     except pd.errors.EmptyDataError:
+        print(file_path, "empty data error")
         return False
     return df.columns.size > 0  # Check if there are column names (header)
 
 def plot_csv_data(passed_csv_path, failed_csv_path, labels, plot_path):
     _, ax = plt.subplots()
     # Check headers for each file and inform which one lacks it
+    if not os.path.exists(passed_csv_path):
+        print("Passed csv doesnt exist")
+        return
+    
     if not file_has_header(passed_csv_path):
         print(f"The file '{passed_csv_path}' does not exist or lacks a header.")
         return
