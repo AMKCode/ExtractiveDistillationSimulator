@@ -11,7 +11,7 @@ class VanLaarModel(VLEModel):
 
     Args:
         P_sys (float): The system pressure in units compatible with the vapor pressures.
-
+ 
     Attributes:
         P_sys (float): The system pressure used in the calculations.
 
@@ -21,8 +21,8 @@ class VanLaarModel(VLEModel):
         convert_y_to_x(y, psat, A, B):
             Convert vapor mole fraction to liquid mole fraction based on Van Laar.
     """
-    def __init__(self, num_comp: int, P_sys: float, A_coeff:dict, partial_pressure_eqs: AntoineEquationBase10, A, B):
-        super().__init__(num_comp, P_sys)
+    def __init__(self, num_comp: int, P_sys: float, A_coeff:dict, comp_names, partial_pressure_eqs: AntoineEquationBase10, A = None, B= None):
+        super().__init__(num_comp, P_sys, comp_names)
         self.A_coeff = A_coeff
         self.partial_pressure_eqs = partial_pressure_eqs
         self.A = A
@@ -50,7 +50,7 @@ class VanLaarModel(VLEModel):
                         denom += (x_array[j-1])  # "If Aji / Aij = 0 / 0, set Aji / Aij = 1" -- Knapp
                     else:
                         denom += (x_array[j-1] * self.A_coeff[(j,i)] / self.A_coeff[(i,j)])
-                z_array.append((x_array[i] / denom))
+                z_array.append((x_array[i - 1] / denom))
             
             for k in range(1, self.num_comp+1):
                 term1 = 0 # summation of Aki * zi
@@ -58,14 +58,19 @@ class VanLaarModel(VLEModel):
                 term3 = 0 # The sum of sum of Aji * (Akj / Ajk) * zj * zi
                 for i in range(1, self.num_comp+1):
                     term1 += (self.A_coeff[(k,i)] * z_array[i-1])
-                    term2 += (self.A_coeff[(k,i)] * z_array[k-1] * z_array[i-1])
+                    term2 += (self.A_coeff[(k,i)] * z_array[k-1] * z_array[i-1]) 
                 for j in range(1, self.num_comp+1):
                     for i in range(1, self.num_comp+1):
-                        if (j == k): # "If Aji / Aij = 0 / 0, set Aji / Aij = 1" -- Knapp
-                            term3 += (self.A_coeff[(j,i)] * z_array[j-1] * z_array[i-1])
+                        if (j == k or i == k): # "If Aji / Aij = 0 / 0, set Aji / Aij = 1" -- Knapp
+                            pass
+                            # term3 += (self.A_coeff[(j,i)] * z_array[j-1] * z_array[i-1])
                         else:
+                            # if self.A_coeff[i, j] == 0 and self.A_coeff[i, j] == 0:
+                            #     term3 += (self.A_coeff[(j,i)]  * z_array[j-1] * z_array[i-1])
+                            # else:                        
                             term3 += (self.A_coeff[(j,i)] * self.A_coeff[(k,j)] / self.A_coeff[(j,k)] * z_array[j-1] * z_array[i-1])
-                gammas.append(np.exp((term1 - term2 - term3)/Temp))
+                gammas.append(math.exp((term1 - term2 - term3)/Temp))
+            # print(gammas)
             return gammas
 
     def get_vapor_pressure(self, Temp)->np.ndarray:

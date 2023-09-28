@@ -71,15 +71,15 @@ class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
                 temp_sol = solution[-1]
                 np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), self.TernarySys.convert_y_to_x(y_array=y_array_sol)[0], atol=1e-4)
                 
-        # def test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case(self):
-        #     rand.seed(0)
-        #     for i in range(1):
-        #         y1, y2, y3 = generate_point_system_random_sum_to_one(3)
+        def test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case(self):
+            rand.seed(0)
+            for i in range(100):
+                y1, y2, y3 = generate_point_system_random_sum_to_one(3)
                 
-        #         solution = (self.TernarySys.convert_y_to_x(np.array([y1, y2, y3])))[0]
-        #         x_array_sol = solution[:-1]
-        #         temp_sol = solution[-1]
-        #         np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), self.TernarySys.convert_x_to_y(x_array=x_array_sol)[0], atol=1e-4)
+                solution = (self.TernarySys.convert_y_to_x(np.array([y1, y2, y3])))[0]
+                x_array_sol = solution[:-1]
+                temp_sol = solution[-1]
+                np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), self.TernarySys.convert_x_to_y(x_array=x_array_sol)[0], atol=1e-4)
                 
         # def testPlot(self):
         # # Use Wilson Model to plot the Txy

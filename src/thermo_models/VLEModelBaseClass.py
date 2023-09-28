@@ -64,7 +64,10 @@ class VLEModel:
 
         # Use fsolve to find the vapor mole fractions and system temperature that satisfy the equilibrium conditions
         ier = 0
-        while True:
+        runs = 0
+        while runs < 500:
+            runs += 1
+            
             try:
                 random_number = generate_point_system_random_sum_to_one(self.num_comp)
                 new_guess = np.append(random_number,temp_guess)
@@ -72,18 +75,24 @@ class VLEModel:
                 
                 if self.use_jacobian:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_x_to_y)
-                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-12)):
+                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-10)):
+                        # print("convxtoy Runs:", runs, "fvec:", infodict["fvec"])
                         raise ValueError("Not converged")
                     if ier == 1:
+                        # print("convxtoy Runs:", runs, "fvec:", infodict["fvec"])
                         return solution, mesg
                 else:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=None)
-                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-12)):
+                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-10)):
+                        # print("convxtoy Runs:", runs, "fvec:", infodict["fvec"])
                         raise ValueError("Not converged")
                     if ier == 1:
+                        # print("convxtoy Runs:", runs, "fvec:", infodict["fvec"])
                         return solution, mesg
             except:
                 continue
+        print("convxtoy Runs:", runs, "fvec:", infodict["fvec"])
+        return solution, mesg
 
     def convert_y_to_x(self, y_array:np.ndarray, temp_guess = None)->np.ndarray:
         """
@@ -104,25 +113,33 @@ class VLEModel:
             temp_guess = rand.uniform(np.amax(boiling_points), np.amin(boiling_points))
                           
         ier = 0
-        while True:
+        runs = 0
+        while runs < 500:
+            runs += 1 
             try:
                 random_number = generate_point_system_random_sum_to_one(self.num_comp)
                 new_guess = np.append(random_number, temp_guess)
                 
                 if self.use_jacobian:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_y_to_x)
-                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-12)):
+                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-10)):
+                        # print("convytox Runs:", runs, "fvec:", infodict["fvec"])
                         raise ValueError("Not converged")
                     if ier == 1:
+                        # print("convytox Runs:", runs, "fvec:", infodict["fvec"])
                         return solution, mesg
                 else:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=None)
-                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-12)):
+                    if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-10)):
+                        # print("convytox Runs:", runs, "fvec:", infodict["fvec"])
                         raise ValueError("Not converged")
                     if ier == 1:
+                        # print("convytox Runs:", runs, "fvec:", infodict["fvec"])
                         return solution, mesg
             except:
                 continue
+        print("convytox Runs:", runs, "fvec:", infodict["fvec"])
+        return solution, mesg
         
     def compute_Txy(self, vars:np.ndarray, x_array:np.ndarray)->list:
         """
@@ -255,6 +272,7 @@ class VLEModel:
             y1s, y2s = np.zeros((data_points, data_points)), np.zeros((data_points, data_points))
 
             for i in range(data_points):
+                print(i)
                 for j in range(data_points):
                     if x1s[i, j] + x2s[i, j] > 1:
                         T[i, j] = float('nan')
