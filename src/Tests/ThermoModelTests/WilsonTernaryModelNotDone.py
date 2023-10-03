@@ -15,6 +15,7 @@ sys.path.append(PROJECT_ROOT)
 import utils.AntoineEquation as AE
 from utils.rand_comp_gen import *
 from thermo_models.WilsonModel import WilsonModel
+from utils.plot_csv_soln import *
 
 
 class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
@@ -58,29 +59,88 @@ class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
             Methanol_antoine = AE.AntoineEquationBaseE(Me_A, Me_B, Me_C)
 
             # Create a Wilson's Model object
-            self.TernarySys = WilsonModel(num_comp,P_sys,Lambdas,["Etoh", "H2O", "Meth"],[EtOH_antoine, H2O_antoine, Methanol_antoine],False)
+            self.vle_model = WilsonModel(num_comp,P_sys,Lambdas,["Etoh", "H2O", "Meth"],[EtOH_antoine, H2O_antoine, Methanol_antoine],False)
             
+
         def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
-            print("here")
-            for i in range(100):
-                print
-                x1, x2, x3 = generate_point_system_random_sum_to_one(3)
+            passed_path = './src/Tests/test_results/WilsonTernary/convert_ytox_from_convert_xtoy_passed.csv'
+            failed_path = './src/Tests/test_results/WilsonTernary/convert_ytox_from_convert_xtoy_failed.csv'
+            plot_path = './src/Tests/test_results/WilsonTernary/convert_ytox_from_convert_xtoy_graph.png'
+            
+            everfailed = False
+            with open(passed_path, 'w', newline='') as csvfile, \
+                open(failed_path, 'w', newline='') as failed_csvfile:
+                    
+                passedwriter = csv.writer(csvfile)
+                failedwriter = csv.writer(failed_csvfile)
                 
-                solution = (self.TernarySys.convert_x_to_y(np.array([x1, x2, x3])))[0]
-                y_array_sol = solution[:-1]
-                temp_sol = solution[-1]
-                np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), self.TernarySys.convert_y_to_x(y_array=y_array_sol)[0], atol=1e-4)
+                # Write the header row
+                passedwriter.writerow(['Iteration', 'x1', 'x2','x3', 'y1', 'y2','y3', 'Temp', 'Converted_y1', 'Converted_y2', 'Converted_y3', 'Converted_Temp'])
+                failedwriter.writerow(['Iteration', 'x1', 'x2','x3' ,'y1', 'y2','y3', 'Temp', 'Converted_y1', 'Converted_y2', 'Converted_y3', 'Converted_Temp'])
+        
+                for i in range(10000):
+                    
+                    x1,x2,x3 = generate_point_system_random_sum_to_one(self.vle_model.num_comp)
+                    print("1st:", i, "xvec:", x1,x2,x3)
+                    solution = (self.vle_model.convert_x_to_y(np.array([x1, x2, x3])))[0]
+                    y_array_sol = solution[:-1]
+                    temp_sol = solution[-1]
+                    
+                    converted_solution = self.vle_model.convert_y_to_x(y_array=y_array_sol)[0]
+                    converted_y = converted_solution[:-1]
+                    converted_temp = converted_solution[-1]
+
+                    try:
+                        np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), converted_solution, atol=1e-4)
+                        # Write the results to the CSV file
+                        passedwriter.writerow([i, x1, x2, x3, y_array_sol[0], y_array_sol[1],y_array_sol[2],temp_sol, converted_y[0], converted_y[1], converted_y[2], converted_temp])
+                    except:
+                        failedwriter.writerow([i, x1, x2, x3,y_array_sol[0], y_array_sol[1],y_array_sol[2], temp_sol, converted_y[0], converted_y[1], converted_y[2], converted_temp])
+                        everfailed = True
+            plot_csv_data(passed_csv_path=passed_path,failed_csv_path=failed_path, labels=["x1", "x2"],plot_path=plot_path)    
                 
+            if everfailed == True:
+                raise AssertionError
+
         def test_RandomConvert_xtoy_from_convert_ytox_output_ternary_case(self):
-            rand.seed(0)
-            for i in range(100):
-                y1, y2, y3 = generate_point_system_random_sum_to_one(3)
+            passed_path = './src/Tests/test_results/WilsonTernary/convert_xtoy_from_convert_ytox_passed.csv'
+            failed_path = './src/Tests/test_results/WilsonTernary/convert_xtoy_from_convert_ytox_failed.csv'
+            plot_path = './src/Tests/test_results/WilsonTernary/convert_xtoy_from_convert_ytox_graph.png'
+            
+            everfailed = False
+            with open(passed_path, 'w', newline='') as csvfile, \
+                open(failed_path, 'w', newline='') as failed_csvfile:
+                    
+                passedwriter = csv.writer(csvfile)
+                failedwriter = csv.writer(failed_csvfile)
                 
-                solution = (self.TernarySys.convert_y_to_x(np.array([y1, y2, y3])))[0]
-                x_array_sol = solution[:-1]
-                temp_sol = solution[-1]
-                np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), self.TernarySys.convert_x_to_y(x_array=x_array_sol)[0], atol=1e-4)
+                # Write the header row
+                passedwriter.writerow(['Iteration', 'x1', 'x2','x3', 'y1', 'y2','y3', 'Temp', 'Converted_y1', 'Converted_y2', 'Converted_y3', 'Converted_Temp'])
+                failedwriter.writerow(['Iteration', 'x1', 'x2','x3' ,'y1', 'y2','y3', 'Temp', 'Converted_y1', 'Converted_y2', 'Converted_y3', 'Converted_Temp'])
+            
+                for i in range(10000):
+                    
+                    y1,y2,y3 = generate_point_system_random_sum_to_one(self.vle_model.num_comp)
+                    print("2nd:", i, "input:", y1,y2,y3)
+                    solution = (self.vle_model.convert_y_to_x(np.array([y1, y2, y3])))[0]
+                    x_array_sol = solution[:-1]
+                    temp_sol = solution[-1]
+                    
+                    converted_solution = self.vle_model.convert_x_to_y(x_array=x_array_sol)[0]
+                    converted_y = converted_solution[:-1]
+                    converted_temp = converted_solution[-1]
+
+                    try:
+                        np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), converted_solution, atol=1e-4)
+                        # Write the results to the CSV file
+                        passedwriter.writerow([i,x_array_sol[0], x_array_sol[1],x_array_sol[2], y1, y2, y3, temp_sol, converted_y[0], converted_y[1], converted_y[2], converted_temp])
+                    except:
+                        failedwriter.writerow([i,x_array_sol[0], x_array_sol[1],x_array_sol[2], y1, y2, y3, temp_sol, converted_y[0], converted_y[1], converted_y[2], converted_temp])
+                        everfailed = True
+            plot_csv_data(passed_csv_path=passed_path,failed_csv_path=failed_path, labels=["y1", "y2"],plot_path=plot_path)    
                 
+            if everfailed == True:
+                raise AssertionError
         # def testPlot(self):
         # # Use Wilson Model to plot the Txy
         #     boiling_points = [eq.get_boiling_point(self.TernarySys.P_sys) for eq in self.TernarySys.partial_pressure_eqs]

@@ -33,6 +33,7 @@ class TestVanLaar(unittest.TestCase):
             (3,3):0
         }
         #Different definition of Antoine where we have to take the negative of B
+        #Not sure where these numbers are from
         Acet_A = 21.3099; Acet_B = 2801.53; Acet_C = -42.875
         Meth_A = 23.4832; Meth_B = 3634.01; Meth_C = -33.768
         
@@ -50,7 +51,7 @@ class TestVanLaar(unittest.TestCase):
         
     def testPlot(self):
         print('here')
-        self.vle_model.plot_ternary_txy(250,1)
+        self.vle_model.plot_ternary_txy(50,1)
    
     # def testConvertx_to_y(self):
     #     # x1,x2,x3 = generate_point_system_random_sum_to_one(3)
@@ -140,6 +141,5 @@ class TestVanLaar(unittest.TestCase):
               
         if everfailed == True:
             raise AssertionError
-
 if __name__ == '__main__':
     unittest.main()

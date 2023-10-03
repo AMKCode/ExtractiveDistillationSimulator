@@ -21,17 +21,19 @@ class residue_curve():
     def __init__(self, thermo_model:VLEModel):
         self.thermo_model = thermo_model    
         
-    def plot_residue_curve_og(self, ax, data_points: int):
-        init_comps = []
-        x1s, x2s = np.meshgrid(np.linspace(0, 1, data_points), 
-                                np.linspace(0, 1, data_points))
+    def plot_residue_curve_og(self, ax, data_points: int = 15, init_comps = None):
+        if init_comps ==  None:
+            init_comps = []
+            x1s, x2s = np.meshgrid(np.linspace(0, 1, data_points), 
+                                    np.linspace(0, 1, data_points))
 
-        for i in range(data_points):
-            for j in range(data_points):
-                if x1s[i, j] + x2s[i, j] > 1 or (x1s[i,j])**2 + (x2s[i,j])**2 < 0.4 or x1s[i, j] * x2s[i, j] * (1 - (x1s[i, j] + x2s[i, j])) < 1e-6:
-                    pass
-                else:
-                    init_comps.append(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))
+            for i in range(data_points):
+                for j in range(data_points):
+                    if x1s[i, j] + x2s[i, j] > 1 or (x1s[i,j])**2 + (x2s[i,j])**2 < 0.4 or x1s[i, j] * x2s[i, j] * (1 - (x1s[i, j] + x2s[i, j])) < 1e-6:
+                        pass
+                    else:
+                        init_comps.append(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))
+
 
         for init_comp in init_comps:
             def compute_residue_comp(init_comp):
@@ -165,17 +167,19 @@ class residue_curve():
         x_vals = np.array(x_vals)
         ax.plot(x_vals[:, 0], x_vals[:, 1],color = 'black')
         
-    def plot_residue_curve_int(self, ax, data_points: int):
-        init_comps = []
-        x1s, x2s = np.meshgrid(np.linspace(0, 1, data_points), 
-                                np.linspace(0, 1, data_points))
+    def plot_residue_curve_int(self, ax, data_points: int = 15, init_comps = None):
+        if init_comps ==  None:
+            init_comps = []
+            x1s, x2s = np.meshgrid(np.linspace(0, 1, data_points), 
+                                    np.linspace(0, 1, data_points))
 
-        for i in range(data_points):
-            for j in range(data_points):
-                if x1s[i, j] + x2s[i, j] > 1 or (x1s[i,j])**2 + (x2s[i,j])**2 < 0.40 or x1s[i, j] * x2s[i, j] * (1 - (x1s[i, j] + x2s[i, j])) < 1e-6:
-                    pass
-                else:
-                    init_comps.append(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))
+            for i in range(data_points):
+                for j in range(data_points):
+                    if x1s[i, j] + x2s[i, j] > 1 or (x1s[i,j])**2 + (x2s[i,j])**2 < 0.4 or x1s[i, j] * x2s[i, j] * (1 - (x1s[i, j] + x2s[i, j])) < 1e-6:
+                        pass
+                    else:
+                        init_comps.append(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))
+
         for init_comp in init_comps:
             self.res_curve(ax,init_comp)
         ax.set_aspect('equal', adjustable='box')

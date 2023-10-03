@@ -52,7 +52,14 @@ class TestVanLaar(unittest.TestCase):
     def testPlot(self):
         rcm = residue_curve(self.vle_model)
         fig, ax = plt.subplots(1,1,figsize= (7,7))
-        rcm.plot_residue_curve_int(ax, data_points = None, init_comps = [ np.array([0.4,0.4,0.2]) ])
+        rcm.plot_residue_curve_int(ax, data_points = None, 
+                                   init_comps = [ 
+                                                 np.array([0.4,0.4,0.2]),
+                                                 np.array([0.6,0.2,0.2]),
+                                                 np.array([0.6,0.1,0.3]),
+                                                 np.array([0.1,0.8,0.1]),
+                                                 np.array([0.1,0.1,0.8])
+                                                 ])
         plt.show()
         
 if __name__ == '__main__':

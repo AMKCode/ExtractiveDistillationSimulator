@@ -63,11 +63,7 @@ class VanLaarModel(VLEModel):
                     for i in range(1, self.num_comp+1):
                         if (j == k or i == k): # "If Aji / Aij = 0 / 0, set Aji / Aij = 1" -- Knapp
                             pass
-                            # term3 += (self.A_coeff[(j,i)] * z_array[j-1] * z_array[i-1])
-                        else:
-                            # if self.A_coeff[i, j] == 0 and self.A_coeff[i, j] == 0:
-                            #     term3 += (self.A_coeff[(j,i)]  * z_array[j-1] * z_array[i-1])
-                            # else:                        
+                        else:                      
                             term3 += (self.A_coeff[(j,i)] * self.A_coeff[(k,j)] / self.A_coeff[(j,k)] * z_array[j-1] * z_array[i-1])
                 gammas.append(math.exp((term1 - term2 - term3)/Temp))
             # print(gammas)
