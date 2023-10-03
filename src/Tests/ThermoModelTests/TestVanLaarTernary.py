@@ -50,7 +50,6 @@ class TestVanLaar(unittest.TestCase):
         self.vle_model = VanLaarModel(3, P_sys= P_sys, A_coeff=A_ij,comp_names=["Ace","Meth","Water"], partial_pressure_eqs = [AcetoneAntoine, MethanolAntoine, WaterAntoine], A= None, B=None)
         
     def testPlot(self):
-        print('here')
         self.vle_model.plot_ternary_txy(50,1)
    
     # def testConvertx_to_y(self):
@@ -91,7 +90,7 @@ class TestVanLaar(unittest.TestCase):
                 converted_temp = converted_solution[-1]
 
                 try:
-                    np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), converted_solution, atol=1e-4)
+                    np.testing.assert_allclose(np.array([x1, x2, x3, temp_sol]), converted_solution, atol=1e-6)
                     # Write the results to the CSV file
                     passedwriter.writerow([i, x1, x2, x3, y_array_sol[0], y_array_sol[1],y_array_sol[2],temp_sol, converted_y[0], converted_y[1], converted_y[2], converted_temp])
                 except:
@@ -131,7 +130,7 @@ class TestVanLaar(unittest.TestCase):
                 converted_temp = converted_solution[-1]
 
                 try:
-                    np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), converted_solution, atol=1e-4)
+                    np.testing.assert_allclose(np.array([y1, y2, y3, temp_sol]), converted_solution, atol=1e-6)
                     # Write the results to the CSV file
                     passedwriter.writerow([i,x_array_sol[0], x_array_sol[1],x_array_sol[2], y1, y2, y3, temp_sol, converted_y[0], converted_y[1], converted_y[2], converted_temp])
                 except:

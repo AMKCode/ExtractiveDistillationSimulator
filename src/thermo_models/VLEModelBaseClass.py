@@ -205,13 +205,15 @@ class VLEModel:
 
         return eqs
 
-    def plot_binary_Txy(self, data_points:int, comp_index:int):
+
+    def plot_binary_Txy(self, data_points:int, comp_index:int, ax):
         """
-        Plots the T-x-y diagram for a binary mixture.
+        Plots the T-x-y diagram for a binary mixture on the given ax object.
 
         Args:
             data_points (int): Number of data points to use in the plot.
             comp_index (int): Index of the component to plot.
+            ax (matplotlib.axes._axes.Axes): The matplotlib axis object to plot on.
 
         Raises:
             ValueError: If the number of components is not 2.
@@ -237,15 +239,14 @@ class VLEModel:
         # Convert the list of vapor mole fractions to a 2D numpy array
         y_array = np.array(y_array)
 
-        # Create the plot
-        plt.figure(figsize=(10, 6))
-        plt.plot(x_array[:, comp_index], t_evaluated, label="Liquid phase")
-        plt.plot(y_array[:, comp_index], t_evaluated, label="Vapor phase")
-        plt.title("T-x-y Diagram for"+ self.__class__.__name__)
-        plt.xlabel(f"Mole fraction of component {comp_index + 1}")
-        plt.ylabel("Temperature")
-        plt.legend()
-        plt.show()
+        # Use the passed ax object for plotting
+        ax.plot(x_array[:, comp_index], t_evaluated, label="Liquid phase")
+        ax.plot(y_array[:, comp_index], t_evaluated, label="Vapor phase")
+        ax.set_title("T-x-y Diagram for " + self.__class__.__name__)
+        ax.set_xlabel(f"Mole fraction of component {comp_index + 1}")
+        ax.set_ylabel("Temperature")
+        ax.legend()
+
     
     def plot_ternary_txy(self, data_points:int, keep_zero:int):
         """
