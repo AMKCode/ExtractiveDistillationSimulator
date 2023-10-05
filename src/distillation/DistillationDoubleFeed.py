@@ -26,12 +26,12 @@ class DistillationModelDoubleFeed(DistillationModel):
         # according to eqn 5.22
         boil_up = ((reflux+1)*D_B)+(FL_B*(Fr*(qU-1))+(qL-1))
 
-        # let self.xF = xFL; self.q = qL
-        super().__init__(thermo_model,xFL,xD,xB,reflux)
+        # let self.xF = zF; self.q = qL
+        super().__init__(thermo_model,zF,xD,xB,reflux)
         self.xFU = xFU # composition of entrainer fluid entering in upper feed
         self.qU = qU # quality of upper feed
         self.Fr = Fr # feed ratio = (entrainer flow rate)/(feed flow rate)
-        self.zF = zF
+        self.xFL = xFL
         self.boil_up = boil_up
         self.qL = qL
     
@@ -152,13 +152,19 @@ class DistillationModelDoubleFeed(DistillationModel):
             x1 = x2
             y1 = y2
     
-    def compute_middle_stages(self):
+    def compute_middle_stages(self, start_point:int):
         x_comp, y_comp = [], []  # Initialize composition lists
         counter = 0
-        
-        x1 = self.xB
-        y1 = self.middle_step_x_to_y(x1)
+        #Need to start from a set position on the stripping section; call it 'start_point' number of 
+        #stages into the stripping section.  Find the comp at that stage and use that as (x1, y1)
 
+        #Dont this is done correctly though
+        x_strip_comp = self.compute_stripping_stages()[0]
+        y_strip_comp = self.compute_stripping_stages()[1]
+        x1 = x_strip_comp[start_point, 0]
+        y1 = y_strip_comp[start_point, 0]
+
+        
         while True:
             x_comp.append(x1)
             y_comp.append(y1)
@@ -170,32 +176,39 @@ class DistillationModelDoubleFeed(DistillationModel):
             
             x2 = self.middle_step_y_to_x(y2)
             if counter == 100:
-                print("counter strip:", counter)
+                print("counter middle:", counter)
                 return np.array(x_comp), np.array(y_comp)
             if np.linalg.norm(x1 - x2) < 0.0000000001:
                 return np.array(x_comp), np.array(y_comp)
                 
             x1 = x2
             y1 = y2
+        
 
-    def plot_rect_strip_comp(self, ax: axes):
+    def plot_rect_strip_comp(self, ax: axes, middle_start):
         x_rect_comp = self.compute_rectifying_stages()[0]
         x_strip_comp = self.compute_stripping_stages()[0]
+        #x_middle_comp = self.compute_middle_stages(start_point = middle_start)[0]
         
         #Extract x1 and x2 from arrays
         x1_rect = x_rect_comp[:, 0]
         x2_rect = x_rect_comp[:, 1]
         x1_strip = x_strip_comp[:, 0]
         x2_strip = x_strip_comp[:, 1]
+        #x1_middle = x_middle_comp[:,0]
+        #x2_middle = x_middle_comp[:,1]
         
         # Plot the line connecting the points
         ax.plot(x1_rect, x2_rect, '-D', label='Rectifying Line', color = "red")  # '-o' means a line with circle markers at each data point
         ax.plot(x1_strip, x2_strip, '-s', label='Stripping Line', color = "blue")  # '-o' means a line with circle markers at each data point
+        #ax.plot(x1_middle, x2_middle, '-s', label='Entrainer', color = "green")  # '-o' means a line with circle markers at each data point
 
         # Mark special points
         ax.scatter(self.xF[0], self.xF[1], marker='x', color='orange', label='xF', s = 100)
         ax.scatter(self.xB[0], self.xB[1], marker='x', color='purple', label='xB', s = 100)
         ax.scatter(self.xD[0], self.xD[1], marker='x', color='green', label='xD', s = 100)
+        ax.scatter(self.xFL[0], self.xFL[1], marker='x', color='black', label='xFL', s = 100)
+        ax.scatter(self.xFU[0], self.xFU[1], marker='x', color='blue', label='xFU', s = 100)
         
         ax.set_aspect('equal', adjustable='box')
         ax.set_ylim([0, 1])
