@@ -188,6 +188,7 @@ class DistillationModelDoubleFeed(DistillationModel):
         
 
     def plot_rect_strip_comp(self, ax: axes, middle_start):
+        middle_start = (2*middle_start - 1) #This is just to make the indexing work
         x_rect_comp = self.compute_rectifying_stages()[0]
         x_strip_comp = self.compute_stripping_stages()[0]
         x_middle_comp = self.compute_middle_stages(start_point = middle_start)[0]
