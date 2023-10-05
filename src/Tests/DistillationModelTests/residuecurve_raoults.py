@@ -14,40 +14,39 @@ sys.path.append(PROJECT_ROOT)
 
 import utils.AntoineEquation as AE
 from utils.rand_comp_gen import *
-from thermo_models.VanLaarModel import *
+from thermo_models.RaoultsLawModel import *
 from utils.plot_csv_soln import *
 from distillation.residue_curves import *
-  
-class TestVanLaar(unittest.TestCase):
 
+class TestTernaryMargulesAcetaldehydeMethanolWater_no_jacob(unittest.TestCase):
+    
     def setUp(self) -> None:
-        #Refer to Table A.9 from Knapp Thesis Paper
-        A_ij = {
-            (1,1):0,
-            (1,2):182.0,
-            (1,3):795.0,
-            (2,1):196,
-            (2,2):0,
-            (2,3):332.6,
-            (3,1):490.0,
-            (3,2):163.80,
-            (3,3):0
-        }
-        #Different definition of Antoine where we have to take the negative of B
-        Acet_A = 21.3099; Acet_B = 2801.53; Acet_C = -42.875
-        Meth_A = 23.4832; Meth_B = 3634.01; Meth_C = -33.768
+        A_ = np.array([[0, -316.699, 350.100], [-384.657,0, 307.000],[290.200,143.00,0]])
+        P_sys = 1
         
-        #Assuming P < 2 atm
-        Water_A = 23.2256; Water_B = 3835.18; Water_C = -45.343
+        # Antoine Parameters for benzene
+        Ben_A = 4.72583
+        Ben_B = 1660.652
+        Ben_C = -1.461
+
+        # Antoine Parameters for toluene
+        Tol_A = 4.07827
+        Tol_B = 1343.943
+        Tol_C = -53.773
         
-        #Kanapp Thesis Figure 3.8 uses ln form of Antoine
-        AcetoneAntoine = AE.AntoineEquationBaseE(Acet_A,Acet_B,Acet_C)
-        MethanolAntoine = AE.AntoineEquationBaseE(Meth_A, Meth_B, Meth_C)
-        WaterAntoine = AE.AntoineEquationBaseE(Water_A,Water_B,Water_C)
+        # Antoine Parameters for Xylene
+        Xyl_A = 4.14553
+        Xyl_B = 1474.403
+        Xyl_C = -55.377
         
-        
-        P_sys = 101325
-        self.vle_model = VanLaarModel(3, P_sys= P_sys, A_coeff=A_ij,comp_names=["Ace","Meth","Water"], partial_pressure_eqs = [AcetoneAntoine, MethanolAntoine, WaterAntoine])
+        P_sys = 1.0325
+        # Create Antoine equations for benzene and toluene
+        benzene_antoine = AE.AntoineEquationBase10(Ben_A, Ben_B, Ben_C)
+        toluene_antoine = AE.AntoineEquationBase10(Tol_A, Tol_B, Tol_C)
+        xylene_antoine = AE.AntoineEquationBase10(Xyl_A, Xyl_B, Xyl_C)
+
+        # Create a Raoult's law object
+        self.vle_model = RaoultsLawModel(3,P_sys,["Ben","Tol","Xyl"],[benzene_antoine, toluene_antoine, xylene_antoine])
 
     def testPlot(self):
         rcm = residue_curve(self.vle_model)
@@ -64,4 +63,3 @@ class TestVanLaar(unittest.TestCase):
         
 if __name__ == '__main__':
     unittest.main()
-        

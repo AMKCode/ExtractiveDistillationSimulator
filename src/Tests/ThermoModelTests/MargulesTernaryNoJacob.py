@@ -20,9 +20,11 @@ from utils.plot_csv_soln import *
 class TestTernaryMargulesAcetaldehydeMethanolWater_no_jacob(unittest.TestCase):
     
     def setUp(self) -> None:
+        #Margules Parameters from Knapp Thesis
         A_ = np.array([[0, -316.699, 350.100], [-384.657,0, 307.000],[290.200,143.00,0]])
-        P_sys = 1
+        P_sys = 1.01325 #atm
         
+        #Antoine parameters from NIST (Kelvin, Bar)
         #Acetaldehyde
         Acet_A = 3.68639
         Acet_B = 822.894
@@ -43,11 +45,11 @@ class TestTernaryMargulesAcetaldehydeMethanolWater_no_jacob(unittest.TestCase):
         
         self.vlemodel = MargulesModelTernary(3,P_sys,A_,["Acet","MeOH","H2O"],[Acet_antoine, Methanol_antoine, H2O_antoine],False)
         
-    # def testPlot(self):
-    #     boiling_points = [eq.get_boiling_point(self.vlemodel.P_sys) for eq in self.vlemodel.partial_pressure_eqs]
-    #     print(boiling_points)
-    #     self.vlemodel.plot_ternary_txy(100,0)
-    
+    def testPlot(self):
+        boiling_points = [eq.get_boiling_point(self.vlemodel.P_sys) for eq in self.vlemodel.partial_pressure_eqs]
+        print(boiling_points)
+        self.vlemodel.plot_ternary_txy(100,0)
+
     def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
         passed_path = './src/Tests/test_results/Margules_acetMethanolWater_no_jacob/convert_ytox_from_convert_xtoy_passed.csv'
         failed_path = './src/Tests/test_results/Margules_acetMethanolWater_no_jacob/convert_ytox_from_convert_xtoy_failed.csv'
@@ -129,5 +131,6 @@ class TestTernaryMargulesAcetaldehydeMethanolWater_no_jacob(unittest.TestCase):
               
         if everfailed == True:
             raise AssertionError
+
 if __name__ == '__main__':
     unittest.main()

@@ -33,21 +33,22 @@ class TestVanLaar(unittest.TestCase):
             (3,3):0
         }
         #Different definition of Antoine where we have to take the negative of B
-        #Not sure where these numbers are from
+        #Page 269 in Knapp Thesis
         Acet_A = 21.3099; Acet_B = 2801.53; Acet_C = -42.875
         Meth_A = 23.4832; Meth_B = 3634.01; Meth_C = -33.768
         
-        #Assuming P < 2 atm
+        #Assuming P < 2 atm for
         Water_A = 23.2256; Water_B = 3835.18; Water_C = -45.343
         
-        #Kanapp Thesis Figure 3.8 uses ln form of Antoine
+        #Knapp Thesis Figure 3.8 uses ln form of Antoine 
+        #Refer to page 267 of Knapp Thesis to Check (Temperature in Kelvin and Pressure in Pascals)
         AcetoneAntoine = AE.AntoineEquationBaseE(Acet_A,Acet_B,Acet_C)
         MethanolAntoine = AE.AntoineEquationBaseE(Meth_A, Meth_B, Meth_C)
         WaterAntoine = AE.AntoineEquationBaseE(Water_A,Water_B,Water_C)
         
         
         P_sys = 101325
-        self.vle_model = VanLaarModel(3, P_sys= P_sys, A_coeff=A_ij,comp_names=["Ace","Meth","Water"], partial_pressure_eqs = [AcetoneAntoine, MethanolAntoine, WaterAntoine], A= None, B=None)
+        self.vle_model = VanLaarModel(3, P_sys= P_sys, A_coeff=A_ij,comp_names=["Ace","Meth","Water"], partial_pressure_eqs = [AcetoneAntoine, MethanolAntoine, WaterAntoine])
         
     def testPlot(self):
         self.vle_model.plot_ternary_txy(50,1)

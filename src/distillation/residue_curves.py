@@ -130,7 +130,7 @@ class residue_curve():
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
 
 
-    def res_curve(self, ax, initial):
+    def res_curve(self, ax, initial, t_span, num_points):
         def dxdt(t, x):
             try:
                 return x - self.thermo_model.convert_x_to_y(x_array=x)[0][:-1]
@@ -139,8 +139,6 @@ class residue_curve():
                 return None
 
         x0 = np.array(initial)
-        t_span = [0, 10]
-        num_points = 100
         dt = (t_span[1] - t_span[0]) / num_points
         t_eval = np.linspace(t_span[0], t_span[1], num_points)
         x_vals = [x0]
@@ -162,13 +160,21 @@ class residue_curve():
                 break
 
             x_vals.append(x)
-            if i % 7 == 0:  # Plot an arrow every 5 points
-                dx = x_vals[-1][0] - x_vals[-2][0]
-                dy = x_vals[-1][1] - x_vals[-2][1]
-                ax.arrow(x_vals[-2][0], x_vals[-2][1], dx, dy, head_width=0.02, head_length=0.02, fc='k', ec='k')
+            
+            if i % 7 == 0:  # Plot an arrow every 7 points
+                if dt > 0:
+                    dx = x_vals[-1][0] - x_vals[-2][0]
+                    dy = x_vals[-1][1] - x_vals[-2][1]
+                    ax.arrow(x_vals[-2][0], x_vals[-2][1], dx, dy, head_width=0.02, head_length=0.02, fc='k', ec='k')
+                else:
+                    dx = x_vals[-2][0] - x_vals[-1][0]
+                    dy = x_vals[-2][1] - x_vals[-1][1]
+                    ax.arrow(x_vals[-1][0], x_vals[-1][1], dx, dy, head_width=0.02, head_length=0.02, fc='k', ec='k')
+
 
         x_vals = np.array(x_vals)
         ax.plot(x_vals[:, 0], x_vals[:, 1],color = 'black')
+    
         
     def plot_residue_curve_int(self, ax, data_points: int = 15, init_comps = None):
         if init_comps ==  None:
@@ -184,7 +190,10 @@ class residue_curve():
                         init_comps.append(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))
 
         for init_comp in init_comps:
-            self.res_curve(ax,init_comp)
+            self.res_curve(ax,init_comp, [0,10], 100)
+            self.res_curve(ax, init_comp, [0, -10], 100)
+            
+            
         ax.set_aspect('equal', adjustable='box')
         ax.set_ylim([0, 1])
         ax.set_xlim([0, 1])

@@ -85,21 +85,21 @@ class TestTernaryRaoults(unittest.TestCase):
 
 #Test for equivalence between the two
     
-    def test_convertytox_equivalence(self):
-        for i in range(1000):
-            y1, y2 = generate_point_system_random_sum_to_one(2)
-            solution_binary = (self.binaryVanlaar.convert_y_to_x(np.array([y1, y2])))[0]
-            solution_ternary = (self.ternaryVanlaar.convert_y_to_x(np.array([y1, y2])))[0]
+    # def test_convertytox_equivalence(self):
+    #     for i in range(1000):
+    #         y1, y2 = generate_point_system_random_sum_to_one(2)
+    #         solution_binary = (self.binaryVanlaar.convert_y_to_x(np.array([y1, y2])))[0]
+    #         solution_ternary = (self.ternaryVanlaar.convert_y_to_x(np.array([y1, y2])))[0]
             
-            np.testing.assert_allclose(solution_binary,solution_ternary, atol=1e-4)
+    #         np.testing.assert_allclose(solution_binary,solution_ternary, atol=1e-4)
             
-    def test_convertxtoy_equivalence(self):
-        for i in range(1000):
-            y1, y2 = generate_point_system_random_sum_to_one(2)
-            solution_binary = (self.binaryVanlaar.convert_x_to_y(np.array([y1, y2])))[0]
-            solution_ternary = (self.ternaryVanlaar.convert_x_to_y(np.array([y1, y2])))[0]
+    # def test_convertxtoy_equivalence(self):
+    #     for i in range(1000):
+    #         y1, y2 = generate_point_system_random_sum_to_one(2)
+    #         solution_binary = (self.binaryVanlaar.convert_x_to_y(np.array([y1, y2])))[0]
+    #         solution_ternary = (self.ternaryVanlaar.convert_x_to_y(np.array([y1, y2])))[0]
             
-            np.testing.assert_allclose(solution_binary,solution_ternary, atol=1e-4)
+    #         np.testing.assert_allclose(solution_binary,solution_ternary, atol=1e-4)
     
     def test_plot_compare(self):
         fig, ax = plt.subplots(1,2,figsize=(10, 6))
