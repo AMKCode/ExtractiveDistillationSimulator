@@ -46,7 +46,7 @@ class DistillationModelDoubleFeed(DistillationModel):
         Returns:
             np.ndarray: Mole fraction of each component in the vapor phase in the rectifying section that corresponds to x_r_j.
         """
-        h = (self.Fr(self.xD[0]-self.xB[0]))/(self.Fr*(self.xFU[0]-self.xB[0])+self.xF[0]-self.xB[0])
+        h = (self.Fr*(self.xD[0]-self.xB[0]))/(self.Fr*(self.xFU[0]-self.xB[0])+self.xF[0]-self.xB[0])
         # x = block1 * y_m_k + block2 (eq 5.21a)
         block1 = (self.reflux+1+((self.qU-1)*h))/(self.reflux+(self.qU*h))
         block2 = (h*self.xFU-self.xD)/(self.reflux+self.qU*h)
@@ -63,7 +63,7 @@ class DistillationModelDoubleFeed(DistillationModel):
         Returns:
             np.ndarray: Mole fraction of each component in the vapor phase in the rectifying section that corresponds to x_r_j.
         """
-        h = (self.Fr(self.xD[0]-self.xB[0]))/(self.Fr*(self.xFU[0]-self.xB[0])+self.xF[0]-self.xB[0])
+        h = (self.Fr*(self.xD[0]-self.xB[0]))/(self.Fr*(self.xFU[0]-self.xB[0])+self.xF[0]-self.xB[0])
 
         block1 = (self.reflux+1+((self.qU-1)*h))/(self.reflux+(self.qU*h))
         block2 = (h*self.xFU-self.xD)/(self.reflux+self.qU*h)
@@ -158,12 +158,12 @@ class DistillationModelDoubleFeed(DistillationModel):
         #Need to start from a set position on the stripping section; call it 'start_point' number of 
         #stages into the stripping section.  Find the comp at that stage and use that as (x1, y1)
 
-        #Dont this is done correctly though
+        #this is not done correctly though
         x_strip_comp = self.compute_stripping_stages()[0]
-        y_strip_comp = self.compute_stripping_stages()[1]
-        x1 = x_strip_comp[start_point, 0]
-        y1 = y_strip_comp[start_point, 0]
+        x1 = x_strip_comp[start_point, :]
+        y1 = self.middle_step_x_to_y(x1)
 
+        #print(x1, y1) #debugging
         
         while True:
             x_comp.append(x1)
@@ -180,7 +180,9 @@ class DistillationModelDoubleFeed(DistillationModel):
                 return np.array(x_comp), np.array(y_comp)
             if np.linalg.norm(x1 - x2) < 0.0000000001:
                 return np.array(x_comp), np.array(y_comp)
-                
+            if (np.any(x2 < 0) or np.any(y2 < 0)):
+                return np.array(x_comp), np.array(y_comp)
+            #print(x2,  y2) #debugging
             x1 = x2
             y1 = y2
         
@@ -188,20 +190,21 @@ class DistillationModelDoubleFeed(DistillationModel):
     def plot_rect_strip_comp(self, ax: axes, middle_start):
         x_rect_comp = self.compute_rectifying_stages()[0]
         x_strip_comp = self.compute_stripping_stages()[0]
-        #x_middle_comp = self.compute_middle_stages(start_point = middle_start)[0]
-        
+        x_middle_comp = self.compute_middle_stages(start_point = middle_start)[0]
+
+
         #Extract x1 and x2 from arrays
         x1_rect = x_rect_comp[:, 0]
         x2_rect = x_rect_comp[:, 1]
         x1_strip = x_strip_comp[:, 0]
         x2_strip = x_strip_comp[:, 1]
-        #x1_middle = x_middle_comp[:,0]
-        #x2_middle = x_middle_comp[:,1]
+        x1_middle = x_middle_comp[:,0]
+        x2_middle = x_middle_comp[:,1]
         
         # Plot the line connecting the points
         ax.plot(x1_rect, x2_rect, '-D', label='Rectifying Line', color = "red")  # '-o' means a line with circle markers at each data point
         ax.plot(x1_strip, x2_strip, '-s', label='Stripping Line', color = "blue")  # '-o' means a line with circle markers at each data point
-        #ax.plot(x1_middle, x2_middle, '-s', label='Entrainer', color = "green")  # '-o' means a line with circle markers at each data point
+        ax.plot(x1_middle, x2_middle, '-s', label='Middle Section', color = "black")  # '-o' means a line with circle markers at each data point
 
         # Mark special points
         ax.scatter(self.xF[0], self.xF[1], marker='x', color='orange', label='xF', s = 100)
