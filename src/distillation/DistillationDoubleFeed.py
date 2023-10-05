@@ -27,11 +27,13 @@ class DistillationModelDoubleFeed(DistillationModel):
         boil_up = ((reflux+1)*D_B)+(FL_B*(Fr*(qU-1))+(qL-1))
 
         # let self.xF = xFL; self.q = qL
-        super().__init__(thermo_model,xFL,xD,xB,reflux,boil_up,qL)
+        super().__init__(thermo_model,xFL,xD,xB,reflux)
         self.xFU = xFU # composition of entrainer fluid entering in upper feed
         self.qU = qU # quality of upper feed
         self.Fr = Fr # feed ratio = (entrainer flow rate)/(feed flow rate)
         self.zF = zF
+        self.boil_up = boil_up
+        self.qL = qL
     
     
     def middle_step_y_to_x(self, y_m_j: np.ndarray):
