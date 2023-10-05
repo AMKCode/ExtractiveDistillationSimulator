@@ -176,7 +176,7 @@ class residue_curve():
         ax.plot(x_vals[:, 0], x_vals[:, 1],color = 'black')
     
         
-    def plot_residue_curve_int(self, ax, data_points: int = 15, init_comps = None):
+    def plot_residue_curve_int(self, ax, t_span, data_points: int = 15, init_comps = None):
         if init_comps ==  None:
             init_comps = []
             x1s, x2s = np.meshgrid(np.linspace(0, 1, data_points), 
@@ -190,8 +190,8 @@ class residue_curve():
                         init_comps.append(np.array([x1s[i, j], x2s[i, j], 1 - x1s[i, j] - x2s[i, j]]))
 
         for init_comp in init_comps:
-            self.res_curve(ax,init_comp, [0,10], 100)
-            self.res_curve(ax, init_comp, [0, -10], 100)
+            self.res_curve(ax,init_comp, t_span, data_points)
+            self.res_curve(ax, init_comp, [t_span[0],-t_span[1]], data_points)
             
             
         ax.set_aspect('equal', adjustable='box')

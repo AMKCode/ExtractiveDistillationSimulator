@@ -93,10 +93,10 @@ class DistillationModelTernary(DistillationModel):
             y_comp.append(y2)
             
             x2 = self.stripping_step_ytox(y2)
-            if counter == 100:
+            if counter == 5000:
                 print("counter strip:", counter)
                 return np.array(x_comp), np.array(y_comp)
-            if np.linalg.norm(x1 - x2) < 0.0000000001:
+            if np.linalg.norm(x1 - x2) < 1.0e-10:
                 return np.array(x_comp), np.array(y_comp)
                 
             x1 = x2
