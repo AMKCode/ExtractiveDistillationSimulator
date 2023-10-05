@@ -67,11 +67,14 @@ class residue_curve():
             x2s = x_residue_com[:, 1]
 
             # Plot the line connecting the points
-            ax.plot(x1s, x2s, '-', color = "red", linewidth = 0.2)
+            ax.plot(x1s, x2s, '-', color = "red", linewidth = 0.5)
         ax.set_aspect('equal', adjustable='box')
         ax.set_ylim([0, 1])
         ax.set_xlim([0, 1])
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        ax.set_title("Residue Curve - Acetone/Methanol/Water")
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
     def plot_residue_curve_mod(self, ax, data_points: int):
         init_comps = []
