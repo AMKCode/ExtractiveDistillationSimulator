@@ -67,7 +67,7 @@ class VLEModel:
         runs = 0
         while True:
             runs += 1
-            if runs % 10000 == 0:
+            if runs % 1000 == 0:
                 print("Current Run from convert_x_to_y:",runs)
             try:
                 random_number = generate_point_system_random_sum_to_one(self.num_comp) #generate random composition as intial guess
