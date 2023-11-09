@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 import os, sys
 import csv as csv
+import matplotlib.pyplot as plt
 #
 # Panwa: I'm not sure how else to import these properly
 #
@@ -36,19 +37,21 @@ class TestRaoultsLawAntoineBinaryPlotting(unittest.TestCase):
         # Create a Raoult's law object
         self.TolBenSys = RaoultsLawModel(2,P_sys, ["Ben", "Tol"],[benzene_antoine, toluene_antoine])
 
-    # def testPlot(self):
-    #     # Use Raoult's law to plot the Txy
-    #     self.TolBenSys.plot_binary_Txy(100,0)
+    def testPlot(self):
+        # Use Raoult's law to plot the Txy
+        fig, ax = plt.subplots(1,1)
+        self.TolBenSys.plot_binary_Txy(100,0,ax)
+        plt.show()
         
     def testRandomizedConvert_ytox_from_convert_xtoy_output_binary_case(self):
-        for i in range(1000):
+        for i in range(10000):
             x1, x2 = generate_point_system_random_sum_to_one(2)
             solution = (self.TolBenSys.convert_x_to_y(np.array([x1,x2])))[0]
             y_array_sol = solution[:-1]
             np.testing.assert_allclose(np.array([x1,x2,solution[-1]]), self.TolBenSys.convert_y_to_x(y_array=y_array_sol)[0], atol = 1e-4)
     
     def testRandomizedConvert_xtoy_from_convert_ytox_output_binary_case(self):
-        for i in range(1000):
+        for i in range(10000):
             y1, y2 = generate_point_system_random_sum_to_one(2)
             solution = (self.TolBenSys.convert_y_to_x(np.array([y1,y2])))[0]
             x_array_sol = solution[:-1]

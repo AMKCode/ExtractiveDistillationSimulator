@@ -1,8 +1,6 @@
 import numpy as np
 import os, sys
-#
-# Panwa: I'm not sure how else to import these properly
-#
+
 PROJECT_ROOT = os.path.abspath(os.path.join(
             os.path.dirname(__file__), 
             os.pardir)
@@ -22,22 +20,25 @@ class RaoultsLawModel(VLEModel):
     Attributes:
         num_comp (int): The number of components in the system.
         P_sys (float): The total pressure of the system.
+        comp_names (list): The names of the components in the system.
         partial_pressure_eqs (AntoineEquation): The Antoine equations for each component.
+        use_jacobian (bool): Flag to determine whether to use the Jacobian matrix in calculations.
     """
     
-    def __init__(self, num_comp: int, P_sys: float,comp_names, partial_pressure_eqs: AntoineEquationBase10):
+    def __init__(self, num_comp: int, P_sys: float, comp_names, partial_pressure_eqs, use_jacobian=False):
         """
         Initializes the RaoultsLawModel with the number of components, system pressure, 
-        and Antoine equations for each component.
+        component names, Antoine equations for each component, and a flag to use the Jacobian.
         
         Args:
             num_comp (int): The number of components in the system.
             P_sys (float): The total pressure of the system.
-            partial_pressure_eqs (AntoineEquation): The Antoine equations for each component.
+            comp_names (list): The names of the components in the system.
+            partial_pressure_eqs (AntoineEquationBase10): The Antoine equations for each component.
+            use_jacobian (bool): Flag to determine whether to use the Jacobian matrix in calculations. Defaults to False.
         """
-        super().__init__(num_comp, P_sys, comp_names)
-        self.partial_pressure_eqs = partial_pressure_eqs
-        self.use_jacobian = False
+        super().__init__(num_comp, P_sys, comp_names, partial_pressure_eqs, use_jacobian)
+
         
     def compute_gas_partial_fugacity(self,y_i:np.ndarray) -> np.ndarray:
         """
