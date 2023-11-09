@@ -68,7 +68,8 @@ class VLEModel:
         while True:
             runs += 1
             if runs % 1000 == 0:
-                print("Current Run from convert_x_to_y:",runs)
+                # print("Current Run from convert_x_to_y:",runs)
+                pass
             try:
                 random_number = generate_point_system_random_sum_to_one(self.num_comp)
                 new_guess = np.append(random_number,temp_guess)
