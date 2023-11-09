@@ -16,6 +16,9 @@ from scipy.optimize import brentq
 from utils.AntoineEquation import *
 from thermo_models.RaoultsLawModel import *
 from distillation.DistillationModel import DistillationModel
+#import seaborn as sns
+#sns.set_context("poster")
+#sns.set_style("ticks")
 
 class DistillationModelBinary(DistillationModel):
     def __init__(self, thermo_model:VLEModel, xF: np.ndarray, xD: np.ndarray, xB: np.ndarray, reflux = None, boil_up = None, q = 1) -> None:
@@ -167,11 +170,10 @@ class DistillationModelBinary(DistillationModel):
         
         ax.scatter(self.x_s_fixed, self.y_s_fixed, s=50, c="red")
 
-        ax_fixed.set_xlabel('$x_{1}$')
+        ax_fixed.set_xlabel('$x_{1}$', fontsize = 16 )
         ax_fixed.xaxis.set_label_coords(0.5, -0.05)
-        #ax_fixed.text(0.5, -5, f"Number of Stages: {N_1}", ha='center', va='center', transform=ax_fixed.transAxes)
         ax_fixed.yaxis.set_ticks([])
-        ax_fixed.scatter(x_fixed, [0]*len(x_fixed), marker='^', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75)
+        ax_fixed.scatter(x_fixed, [0]*len(x_fixed), marker='^', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 50)
         ax.set_aspect('equal', adjustable='box')
 
         ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='x', color='black')
@@ -181,17 +183,20 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.spines['left'].set_visible(False)
         ax_fixed.axhline(0, color='black')  # y=0 line
         ax_fixed.set_xlim([0,1])
+        ax_fixed.tick_params(axis='x', labelsize=14, width = 2, length = 4)
         ax_fixed.yaxis.set_ticks([])
         ax_fixed.yaxis.set_ticklabels([])
 
+
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+        ax.tick_params(axis='y', which='both', labelsize = 14, width = 2, length = 4)
         plt.setp(ax.get_xticklabels(), visible=False)
-        ax.set_title("Equilibrium and Stripping Line")
+        ax.set_title("Stripping Section", fontsize = 20)
         species = self.thermo_model.comp_names[0]
         x_label = '$x_{' + species + '}$'
         y_label = '$y_{' + species + '}$'
-        ax.set_xlabel(x_label, labelpad=35)
-        ax.set_ylabel(y_label, labelpad = 10)
+        ax.set_xlabel(x_label, labelpad = 35, fontsize = 20)
+        ax.set_ylabel(y_label, labelpad = 10, fontsize = 20)
 
         return ax, ax_fixed
     
