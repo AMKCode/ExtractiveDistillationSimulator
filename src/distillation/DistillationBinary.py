@@ -175,7 +175,7 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.scatter(x_fixed, [0]*len(x_fixed), marker='^', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
         ax.set_aspect('equal', adjustable='box')
 
-        ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='x', color='black')
+        ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='x', color='black', s = 75)
         ax_fixed.spines['top'].set_visible(False)
         ax_fixed.spines['right'].set_visible(False)
         ax_fixed.spines['bottom'].set_visible(False)
@@ -234,7 +234,7 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.yaxis.set_ticks([])
         ax.set_aspect('equal', adjustable='box')
 
-        ax_fixed.scatter(self.x_r_fixed, [0]*len(self.x_r_fixed), marker='x', color='black')
+        ax_fixed.scatter(self.x_r_fixed, [0]*len(self.x_r_fixed), marker='x', color='black', s = 75)
         ax_fixed.spines['top'].set_visible(False)
         ax_fixed.spines['right'].set_visible(False)
         ax_fixed.spines['bottom'].set_visible(False)
