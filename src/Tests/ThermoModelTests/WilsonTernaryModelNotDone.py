@@ -59,7 +59,7 @@ class TestWilsonModelEthanolWaterAcetone(unittest.TestCase):
             Methanol_antoine = AE.AntoineEquationBaseE(Me_A, Me_B, Me_C)
 
             # Create a Wilson's Model object
-            self.vle_model = WilsonModel(num_comp,P_sys,Lambdas,["Etoh", "H2O", "Meth"],[EtOH_antoine, H2O_antoine, Methanol_antoine],False)
+            self.vle_model = WilsonModel(num_comp=num_comp,P_sys=P_sys,Lambdas=Lambdas,comp_names=["Etoh", "H2O", "Meth"],partial_pressure_eqs=[EtOH_antoine, H2O_antoine, Methanol_antoine],use_jacob=False)
             
 
         def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):

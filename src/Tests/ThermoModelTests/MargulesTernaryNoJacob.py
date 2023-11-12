@@ -43,7 +43,7 @@ class TestTernaryMargulesAcetaldehydeMethanolWater_no_jacob(unittest.TestCase):
         H2O_antoine = AE.AntoineEquationBase10(H2O_A, H2O_B, H2O_C)
         Methanol_antoine = AE.AntoineEquationBase10(Me_A, Me_B, Me_C)
         
-        self.vlemodel = MargulesModelTernary(3,P_sys,A_,["Acet","MeOH","H2O"],[Acet_antoine, Methanol_antoine, H2O_antoine],False)
+        self.vlemodel = MargulesModelTernary(num_comp=3,P_sys=P_sys,A_=A_,comp_names=["Acet","MeOH","H2O"],partial_pressure_eqs=[Acet_antoine, Methanol_antoine, H2O_antoine],use_jacob=False)
         
     def testPlot(self):
         boiling_points = [eq.get_boiling_point(self.vlemodel.P_sys) for eq in self.vlemodel.partial_pressure_eqs]

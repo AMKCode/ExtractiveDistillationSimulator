@@ -62,6 +62,8 @@ class TestVanLaar(unittest.TestCase):
                                                  ])
         ax.set_title("Residue Curve")
         plt.show()
+
+    
         
 if __name__ == '__main__':
     unittest.main()

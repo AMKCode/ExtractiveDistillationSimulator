@@ -52,15 +52,6 @@ class TestVanLaar(unittest.TestCase):
         
     def testPlot(self):
         self.vle_model.plot_ternary_txy(50,1)
-   
-    # def testConvertx_to_y(self):
-    #     # x1,x2,x3 = generate_point_system_random_sum_to_one(3)
-    #     x1,x2,x3 = [0.00951773168919824, 0.9725560876952506, 0.017926180615551193]
-    #     print("x vector", x1,x2,x3)
-    #     print(self.vle_model.get_activity_coefficient(np.array([x1,x2,x3]), 283))
-        
-    #     solution = (self.vle_model.convert_x_to_y(np.array([x1, x2, x3])))[0]
-    #     print(solution)
 
     def test_RandomConvert_ytox_from_convert_xtoy_output_ternary_case(self):
         passed_path = './src/Tests/test_results/VanLaarTernary/convert_ytox_from_convert_xtoy_passed.csv'

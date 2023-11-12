@@ -3,9 +3,7 @@ from scipy.optimize import fsolve
 import matplotlib.pyplot as plt
 import random as rand
 import os, sys
-#
-# Panwa: I'm not sure how else to import these properly
-#
+
 PROJECT_ROOT = os.path.abspath(os.path.join(
             os.path.dirname(__file__), 
             os.pardir)
@@ -14,21 +12,22 @@ sys.path.append(PROJECT_ROOT)
 from utils.rand_comp_gen import *
 
 class VLEModel:
-    def __init__(self,num_comp:int,P_sys:float,comp_names):
+    def __init__(self, num_comp: int, P_sys: float, comp_names, partial_pressure_eqs, use_jacobian=False):
         self.num_comp = num_comp
         self.P_sys = P_sys
         self.comp_names = comp_names
-        self.use_jacobian = False
+        self.use_jacobian = use_jacobian
+        self.partial_pressure_eqs = partial_pressure_eqs
         
     def get_activity_coefficient(self, x_array, Temp = None)->np.ndarray:
         """
         Computes the activity coefficient for each component in the the model.
 
         Raises:
-            NotImplementedError: _description_
+            NotImplementedError: Not implemented for base class
 
         Returns:
-            np.ndarray: _description_
+            np.ndarray: activity coefficient of each component
         """
         raise NotImplementedError
     
@@ -37,10 +36,10 @@ class VLEModel:
         Compute the vapor pressure for each component in the model.
 
         Raises:
-            NotImplementedError: _description_
+            NotImplementedError: Not implemented for base class
 
         Returns:
-            np.ndarray: _description_
+            np.ndarray: vapor pressure of each component
         """
         raise NotImplementedError
     
@@ -50,6 +49,7 @@ class VLEModel:
 
         Args:
             x_array (np.ndarray): Liquid mole fraction of each component.
+            temp_guess (float): inital temperature guess for fsolve
 
         Returns:
             solution (np.ndarray): The solution from the fsolve function, which includes the vapor mole fractions and the system temperature.
@@ -58,38 +58,33 @@ class VLEModel:
         # Compute the boiling points for each component
         boiling_points = [eq.get_boiling_point(self.P_sys) for eq in self.partial_pressure_eqs]
 
-        # Estimate the system temperature as the average of the maximum and minimum boiling points
+        #Provides a random guess for temp if no temp_guess was provided as a parameter
         if temp_guess == None:
             temp_guess = rand.uniform(np.amax(boiling_points), np.amin(boiling_points))
 
         # Use fsolve to find the vapor mole fractions and system temperature that satisfy the equilibrium conditions
-        ier = 0
+        ier = 0 #fsolve results, 1 for convergence, else nonconvergence
         runs = 0
         while True:
             runs += 1
             if runs % 1000 == 0:
-                # print("Current Run from convert_x_to_y:",runs)
-                pass
+                print("Current Run from convert_x_to_y:",runs)
             try:
-                random_number = generate_point_system_random_sum_to_one(self.num_comp)
-                new_guess = np.append(random_number,temp_guess)
+                random_number = generate_point_system_random_sum_to_one(self.num_comp) #generate random composition as intial guess
+                new_guess = np.append(random_number,temp_guess) #create initial guess for composition and temperature
                
-                
-                if self.use_jacobian:
+                #use fsolve with jacobian if provided
+                if self.use_jacobian: 
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_x_to_y)
                     if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-8)):
-                        # print("convxtoy Runs:", runs, "fvec:", infodict["fvec"])
                         raise ValueError("Not converged")
                     if ier == 1:
-                        # print("convxtoy Runs:", runs, "fvec:", infodict["fvec"])
                         return solution, mesg
                 else:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy, new_guess, args=(x_array,), full_output=True, xtol=1e-12, fprime=None)
                     if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-8)):
-                        # print("convxtoy Runs:", runs, "fvec:", infodict["fvec"])
                         raise ValueError("Not converged")
                     if ier == 1:
-                        # print("convxtoy Runs:", runs, "fvec:", infodict["fvec"])
                         return solution, mesg
             except:
                 continue
@@ -100,6 +95,7 @@ class VLEModel:
 
         Args:
             y_array (np.ndarray): Vapor mole fraction of each component.
+            temp_guess (float): inital temperature guess for fsolve
 
         Returns:
             solution (np.ndarray): The solution from the fsolve function, which includes the liquid mole fractions and the system temperature.
@@ -111,13 +107,14 @@ class VLEModel:
         #Provides a random guess for temp if no temp_guess was provided as a parameter
         if temp_guess == None:
             temp_guess = rand.uniform(np.amax(boiling_points), np.amin(boiling_points))
-                          
+        
+        #Parallel to convert_x_to_y, refer to comments above        
         ier = 0
         runs = 0
         while True:
             runs += 1 
             try:
-                if runs % 1000 == 0:
+                if runs % 10000 == 0:
                     print("Current Run from convert_y_to_x:",runs)
                 random_number = generate_point_system_random_sum_to_one(self.num_comp)
                 new_guess = np.append(random_number, temp_guess)
@@ -125,18 +122,14 @@ class VLEModel:
                 if self.use_jacobian:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_y_to_x)
                     if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-8)):
-                        # print("convytox Runs:", runs, "fvec:", infodict["fvec"])
                         raise ValueError("Not converged")
                     if ier == 1:
-                        # print("convytox Runs:", runs, "fvec:", infodict["fvec"])
                         return solution, mesg
                 else:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=None)
                     if not np.all(np.isclose(infodict["fvec"],0,atol = 1e-8)):
-                        # print("convytox Runs:", runs, "fvec:", infodict["fvec"])
                         raise ValueError("Not converged")
                     if ier == 1:
-                        # print("convytox Runs:", runs, "fvec:", infodict["fvec"])
                         return solution, mesg
             except:
                 continue
@@ -155,7 +148,7 @@ class VLEModel:
             x_array (np.ndarray): A 1D array containing the liquid mole fractions.
 
         Returns:
-            eqs (list): A list of equations representing the equilibrium conditions.
+            eqs (list): A list of the residuals of the equilibrium equations
         """
         
         # Extract the vapor mole fractions and temperature from the vars array
@@ -187,7 +180,7 @@ class VLEModel:
             y_array (np.ndarray): A 1D array containing the vapor mole fractions.
 
         Returns:
-            eqs (list): A list of equations representing the equilibrium conditions.
+            eqs (list):  A list of the residuals of the equilibrium equations.
         """
         
         # Extract the liquid mole fractions and temperature from the vars array
@@ -273,7 +266,6 @@ class VLEModel:
             y1s, y2s = np.zeros((data_points, data_points)), np.zeros((data_points, data_points))
 
             for i in range(data_points):
-                print(i)
                 for j in range(data_points):
                     if x1s[i, j] + x2s[i, j] > 1:
                         T[i, j] = float('nan')
