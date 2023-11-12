@@ -34,6 +34,7 @@ class DistillationModelDoubleFeed(DistillationModel):
         self.xFL = xFL
         self.boil_up = boil_up
         self.qL = qL
+        self.zF = zF
     
     
     def middle_step_y_to_x(self, y_m_j: np.ndarray):
@@ -229,4 +230,11 @@ class DistillationModelDoubleFeed(DistillationModel):
         
     def plot_distil(self, ax, ax_fixed):
         pass
-   
+
+    def change_fr(self, new_fr):
+        self.Fr = new_fr
+        D_B = (self.zF[0]-self.xB[0])/(self.xD[0]-self.zF[0])
+        FL_B = (self.xD[0]-self.xB[0])/(self.Fr*(self.xD[0]-self.xFU[0])+self.xD[0]-self.xFL[0])
+        
+        self.boil_up = ((self.reflux+1)*D_B)+(FL_B*(self.Fr*(self.qU-1))+(self.qL-1))
+        return self
