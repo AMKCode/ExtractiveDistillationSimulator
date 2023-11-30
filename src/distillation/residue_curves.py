@@ -19,6 +19,8 @@ class phase_portraits():
         self.distil_model = distil_model
         self.thermo_model = thermo_model
     
+
+
     def plot_phase_vector_fields(self, ax, dxdt, grid_data_points=20):
         if self.distil_model is None:
             raise TypeError("Invalid operation")
@@ -29,39 +31,34 @@ class phase_portraits():
         vectors = np.zeros((len(x_array), 2))
         valid_points = []
 
-
         for i, x in enumerate(x_array):
             try:
                 vector = dxdt(None, x)
                 vectors[i] = vector[:2]
-                # After computing the vector, check if it's valid
                 if not (np.isinf(vectors[i]).any() or np.isnan(vectors[i]).any()):
                     valid_points.append(True)
                 else:
                     valid_points.append(False)
             except Exception as e:
-                # Handle the case where dxdt raises an exception
                 print(f"An error occurred at point {x}: {e}")
-                vectors[i] = np.nan  # Assign NaN to indicate an error at this point
+                vectors[i] = np.nan
                 valid_points.append(False)
 
-        # Now filter x_array using list comprehension with valid_points
-        
         valid_x_array = [x for i, x in enumerate(x_array) if valid_points[i]]
         valid_vectors = np.array([vectors[i] for i in range(len(vectors)) if valid_points[i]])
         
-
-        # Compute the magnitude of vectors for color mapping
         magnitudes = np.linalg.norm(valid_vectors, axis=1)
         norm = plt.Normalize(vmin=magnitudes.min(), vmax=magnitudes.max())
-        cmap = plt.cm.viridis  # Use a colormap of your choice
+        cmap = plt.cm.viridis
 
-        # Plot the vectors with colors based on their magnitude
+        # Scale the arrow size based on the number of grid points
+        arrow_scale = max(1, 200 / grid_data_points)
+
         for point, vector in zip(valid_x_array, valid_vectors):
             color = cmap(norm(np.linalg.norm(vector)))
-            ax.quiver(point[0], point[1], vector[0], vector[1], color=color)
+            ax.quiver(point[0], point[1], vector[0], vector[1], 
+                    color=color, scale=arrow_scale)
 
-        # Create a color bar
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
         ax.figure.colorbar(sm, ax=ax)
@@ -69,6 +66,7 @@ class phase_portraits():
         ax.set_xlim(0,1)
         ax.set_ylim(0,1)
         ax.set_title('Phase Vector Field with Magnitude Colored Arrows')
+
 
     def plot_vector_field_residue(self, ax, grid_data_points=20):
         def dxdt(t, x):
@@ -217,12 +215,18 @@ class phase_portraits():
     def int_plot_path(self, ax, initial, t_span, num_points, dxdt):
         # Generate the path data using int_path
         path_data = self.int_path(initial, t_span, num_points, dxdt)
+        # Determine the direction of time progression
+        time_direction = np.sign(t_span[1] - t_span[0])
 
         # Plot arrows every 7 points along the path
         for i in range(0, len(path_data)-1, 7):
             dx = path_data[i+1][0] - path_data[i][0]
             dy = path_data[i+1][1] - path_data[i][1]
+            # Reverse the arrow direction if time is going backwards
+            if time_direction < 0:
+                dx, dy = -dx, -dy
             ax.arrow(path_data[i][0], path_data[i][1], dx, dy, head_width=0.02, head_length=0.02, fc='k', ec='k')
+
 
         # Plot the path as a red line
         ax.plot(path_data[:, 0], path_data[:, 1], color='red')

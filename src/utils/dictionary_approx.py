@@ -69,4 +69,3 @@ def consolidate_dicts_with_source(dict_list, tolerance, save_path=None):
             
     return final_dict
 
-# Comments describing the structure of final_dict are included in the function documentation.
