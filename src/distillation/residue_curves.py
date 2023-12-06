@@ -13,6 +13,7 @@ from utils.AntoineEquation import *
 from distillation.DistillationModel import *
 from distillation.DistillationDoubleFeed import *
 from scipy.interpolate import griddata
+from mpl_toolkits.axes_grid1 import make_axes_locatable
    
 class phase_portraits():
     def __init__(self, thermo_model:VLEModel, distil_model:DistillationModel = None):
@@ -21,12 +22,7 @@ class phase_portraits():
     
 
 
-    def plot_phase_vector_fields(self, ax, dxdt, grid_data_points=20):
-        if self.distil_model is None:
-            raise TypeError("Invalid operation")
-        if not isinstance(self.distil_model, DistillationModelDoubleFeed):
-            raise TypeError("Invalid operation")
-        
+    def plot_phase_vector_fields(self, ax, dxdt, grid_data_points=20, title = 'Phase Vector Field with Magnitude Colored Arrows'):
         x_array = [np.array(point) for point in create_restricted_simplex_grid(3, grid_data_points)]
         vectors = np.zeros((len(x_array), 2))
         valid_points = []
@@ -51,22 +47,45 @@ class phase_portraits():
         norm = plt.Normalize(vmin=magnitudes.min(), vmax=magnitudes.max())
         cmap = plt.cm.viridis
 
-        # Scale the arrow size based on the number of grid points
-        arrow_scale = max(1, 200 / grid_data_points)
-
         for point, vector in zip(valid_x_array, valid_vectors):
-            color = cmap(norm(np.linalg.norm(vector)))
-            ax.quiver(point[0], point[1], vector[0], vector[1], 
-                    color=color, scale=arrow_scale)
+            # Correct color mapping for each vector
+            vector_magnitude = np.linalg.norm(vector)
+            color = cmap(norm(vector_magnitude))
+            ax.quiver(point[0], point[1], vector[0], vector[1], color=color)
 
+        # Create the ScalarMappable object for the colorbar
         sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
         sm.set_array([])
-        ax.figure.colorbar(sm, ax=ax)
 
-        ax.set_xlim(0,1)
-        ax.set_ylim(0,1)
-        ax.set_title('Phase Vector Field with Magnitude Colored Arrows')
+        # Create an inset axes for the colorbar
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
 
+        # Create and attach the colorbar to the inset axes
+        cb = plt.colorbar(sm, cax=cax)
+
+        # Set the limits and title for your plot
+        ax.set_xlim(0, 1)
+        ax.set_ylim(0, 1)
+        ax.set_title(title)
+        
+    def plot_vector_field_strip(self, ax, grid_data_points=20):
+        def dxdt(t, x):
+            try:
+                return self.distil_model.stripping_step_xtoy(x_s_j=x) - self.thermo_model.convert_x_to_y(x_array=x)[0][:-1]
+            except OverflowError:
+                print("Overflow occurred in dxdt.")
+                return None
+        self.plot_phase_vector_fields(ax,dxdt,grid_data_points, title = "Stripping Vector Field")
+        
+    def plot_vector_field_rect(self, ax, grid_data_points=20):
+        def dxdt(t, x):
+            try:
+                return x - self.distil_model.rectifying_step_ytox(self.thermo_model.convert_x_to_y(x)[0][:-1])
+            except OverflowError:
+                print("Overflow occurred in dxdt.")
+                return None
+        self.plot_phase_vector_fields(ax,dxdt,grid_data_points, title = "Rectifying Vector Field")
 
     def plot_vector_field_residue(self, ax, grid_data_points=20):
         def dxdt(t, x):
@@ -75,7 +94,7 @@ class phase_portraits():
             except OverflowError:
                 print("Overflow occurred in dxdt.")
                 return None
-        self.plot_phase_vector_fields(ax,dxdt,grid_data_points)
+        self.plot_phase_vector_fields(ax,dxdt,grid_data_points, title = "Residue Vector Field")
         
     def plot_vector_field_middle(self, ax, grid_data_points=20):
         if self.distil_model is None:
@@ -88,7 +107,7 @@ class phase_portraits():
             except OverflowError:
                 print("Overflow occurred in dxdt.")
                 return None
-        self.plot_phase_vector_fields(ax,dxdt,grid_data_points)
+        self.plot_phase_vector_fields(ax,dxdt,grid_data_points, title = "Middle Vector Field")
              
     def plot_residue_topography_curve_2D(self, ax, grid_data_points = 20, show_grid = True):
         # Generate the simplex grid
