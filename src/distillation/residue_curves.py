@@ -53,16 +53,16 @@ class phase_portraits():
             color = cmap(norm(vector_magnitude))
             ax.quiver(point[0], point[1], vector[0], vector[1], color=color)
 
-        # Create the ScalarMappable object for the colorbar
-        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-        sm.set_array([])
+        # # Create the ScalarMappable object for the colorbar
+        # sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        # sm.set_array([])
 
-        # Create an inset axes for the colorbar
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes("right", size="5%", pad=0.05)
+        # # Create an inset axes for the colorbar
+        # divider = make_axes_locatable(ax)
+        # cax = divider.append_axes("right", size="5%", pad=0.05)
 
-        # Create and attach the colorbar to the inset axes
-        cb = plt.colorbar(sm, cax=cax)
+        # # Create and attach the colorbar to the inset axes
+        # cb = plt.colorbar(sm, cax=cax)
 
         # Set the limits and title for your plot
         ax.set_xlim(0, 1)
