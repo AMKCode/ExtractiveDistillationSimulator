@@ -1,13 +1,10 @@
 import numpy as np
 import os, sys
-
 PROJECT_ROOT = os.path.abspath(os.path.join(
             os.path.dirname(__file__), 
             os.pardir)
 )
 sys.path.append(PROJECT_ROOT) 
-
-import utils.AntoineEquation as AE
 from thermo_models.VLEModelBaseClass import *
 
 
@@ -36,9 +33,6 @@ class WilsonModel(VLEModel):
         self.Lambdas = Lambdas
 
     def get_activity_coefficient(self, x_, Temp = None):
-        #From Equation 15 in Prausnitz, the gamma values are computed
-        #This will work for any number of components
-
         #Assert that Lambdas[(i,i)] = 1
         for i in range(1, self.num_comp+1):
             if (self.Lambdas[(i,i)] != 1):
