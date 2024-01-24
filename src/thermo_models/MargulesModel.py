@@ -1,5 +1,10 @@
 import numpy as np
-import warnings
+import os, sys
+PROJECT_ROOT = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), 
+            os.pardir)
+)
+sys.path.append(PROJECT_ROOT) 
 from utils.AntoineEquation import *
 from thermo_models.VLEModelBaseClass  import *
 
@@ -27,14 +32,22 @@ class MargulesModel(VLEModel):
         self.A_ = A_
         
     
-    def get_activity_coefficient(self, x_):
-        #For binary mixtures, the Activity coefficients will be returned 
+    def get_activity_coefficient(self, x_array:np.ndarray, Temp:float):
         if (self.num_comp == 2):
-            gamma1 = np.exp((self.A_[(1,2)] + 2*(self.A_[(2,1)] - self.A_[(1,2)])*x_[0]) * (x_[1]**2))
-            gamma2 = np.exp((self.A_[(2,1)] + 2*(self.A_[(1,2)] - self.A_[(2,1)])*x_[1]) * (x_[0]**2))     
+            gamma1 = np.exp((self.A_[(1,2)] + 2*(self.A_[(2,1)] - self.A_[(1,2)])*x_array[0]) * (x_array[1]**2))
+            gamma2 = np.exp((self.A_[(2,1)] + 2*(self.A_[(1,2)] - self.A_[(2,1)])*x_array[1]) * (x_array[0]**2))     
             return np.array([gamma1, gamma2])
         else:
-            print("Margules model only handles binary mixtures")
+            A_ = self.A_
+            gammas = []
+            for k in range(self.num_comp):
+                part1 = np.sum(A_[k, :] * x_array**2)
+                part2 = 2 * np.sum(A_[:, k] * x_array * x_array[k])
+                part3 = 2 * np.sum(np.sum(A_ * x_array.reshape(-1, 1) * (x_array.reshape(1, -1) ** 2), axis=1))
+                
+                result = np.exp((part1 + part2 - part3)/Temp)
+                gammas.append(result)
+            return np.array(gammas)
 
     def get_vapor_pressure(self, Temp)->np.ndarray:
         """
@@ -47,45 +60,7 @@ class MargulesModel(VLEModel):
         for partial_pressure_eq in self.partial_pressure_eqs:
             vap_pressure_array.append(partial_pressure_eq.get_partial_pressure(Temp))
         return np.array(vap_pressure_array)
-            
-  
-class MargulesModelTernary(VLEModel):
-    def __init__(self, num_comp:int, P_sys:np.ndarray, A_:dict, comp_names, partial_pressure_eqs: AntoineEquationBase10, use_jacob:bool):
-        super().__init__(num_comp, P_sys, comp_names,partial_pressure_eqs,use_jacob)
-        self.A_ = A_
-
-
-    def get_activity_coefficient(self, x_array:np.ndarray, Temp: float):
-        A_ = self.A_
-        gammas = []
-        with warnings.catch_warnings():
-            warnings.filterwarnings('error', category=RuntimeWarning)  # Turn warning into error
-            try:
-                for k in range(3): # k = 0, 1, 2
-                    part1 = np.sum(A_[k, :] * x_array**2)
-                    part2 = 2 * np.sum(A_[:, k] * x_array * x_array[k])
-                    part3 = 2 * np.sum(np.sum(A_ * x_array.reshape(-1, 1) * (x_array.reshape(1, -1) ** 2), axis=1))
-                    
-                    result = np.exp((part1 + part2 - part3)/Temp)
-                    gammas.append(result)
-            except RuntimeWarning:
-                raise ValueError
-        return np.array(gammas)
     
-    def get_vapor_pressure(self, Temp)->np.ndarray:
-        """
-        Args:
-            Temp (float): The temperature at which to compute the vapor pressure.      
-        Returns:
-            np.ndarray: The vapor pressure for each component.
-        """
-        vap_pressure_array = []
-        for partial_pressure_eq in self.partial_pressure_eqs:
-            vap_pressure_array.append(partial_pressure_eq.get_partial_pressure(Temp))
-        return np.array(vap_pressure_array)
-
-    # website to calculate the derivatives
-    # https://www.symbolab.com/solver/step-by-step/%5Cfrac%7B%5Cpartial%7D%7B%5Cpartial%20x%7D%5Cleft(exp%5Cleft(%5Cfrac%7B%5Cleft(Ay%5E%7B2%7D%2BBz%5E%7B2%7D%2B2%5Cleft(Cyx%2BEzx%5Cright)-2%5Cleft(Axy%5E%7B2%7D%2BBxz%5E%7B2%7D%2BCyx%5E%7B2%7D%2BDyz%5E%7B2%7D%2BEzx%5E%7B2%7D%2BMzy%5E%7B2%7D%5Cright)%5Cright)%7D%7BT%7D%5Cright)%5Cright)?or=input
     def get_gamma_ders(self, uvec, l):
         ders = np.empty((3,4))
         gammas = self.get_activity_coefficient(uvec[:-1], uvec[-1])
@@ -104,3 +79,4 @@ class MargulesModelTernary(VLEModel):
         return ders # dgamma(i)/dx(j)
 
 
+            
