@@ -175,28 +175,28 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.scatter(x_fixed, [0]*len(x_fixed), marker='^', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
         ax.set_aspect('equal', adjustable='box')
 
-        ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='x', color='black', s = 75)
+        ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='o', color='red', s = 50)
         ax_fixed.spines['top'].set_visible(False)
         ax_fixed.spines['right'].set_visible(False)
         ax_fixed.spines['bottom'].set_visible(False)
         ax_fixed.spines['left'].set_visible(False)
         ax_fixed.axhline(0, color='black')  # y=0 line
         ax_fixed.set_xlim([0,1])
-        ax_fixed.tick_params(axis='x', labelsize=14, width = 2, length = 4)
+        ax_fixed.tick_params(axis='x', labelsize=18, width = 2, length = 4)
+
         ax_fixed.yaxis.set_ticks([])
         ax_fixed.yaxis.set_ticklabels([])
 
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-        ax.tick_params(axis='y', which='both', labelsize = 14, width = 2, length = 4)
+        ax.tick_params(axis='y', which='both', labelsize = 18, width = 2, length = 4)
         plt.setp(ax.get_xticklabels(), visible=False)
         ax.set_title("Stripping Section", fontsize = 20)
         species = self.thermo_model.comp_names[0]
         x_label = '$x_{' + species + '}$'
         y_label = '$y_{' + species + '}$'
-        ax.set_xlabel(x_label, labelpad = 35, fontsize = 20)
-        ax.set_ylabel(y_label, labelpad = 10, fontsize = 20)
-
+        ax.set_xlabel(x_label, labelpad = 35, fontsize = 22)
+        ax.set_ylabel(y_label, labelpad = 10, fontsize = 22)
         return ax, ax_fixed
     
     def plot_distil_rect_binary(self, ax, ax_fixed, zoom_factor=0, rect_title = "Rectifying Section"):
@@ -234,7 +234,7 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.yaxis.set_ticks([])
         ax.set_aspect('equal', adjustable='box')
 
-        ax_fixed.scatter(self.x_r_fixed, [0]*len(self.x_r_fixed), marker='x', color='black', s = 75)
+        ax_fixed.scatter(self.x_r_fixed, [0]*len(self.x_r_fixed), marker='o', color='red', s = 50)
         ax_fixed.spines['top'].set_visible(False)
         ax_fixed.spines['right'].set_visible(False)
         ax_fixed.spines['bottom'].set_visible(False)
@@ -244,18 +244,18 @@ class DistillationModelBinary(DistillationModel):
             ax_fixed.set_xlim([0,1])
         else:
             ax_fixed.set_xlim([0.72,0.82])
-        ax_fixed.tick_params(axis='x', labelsize=14, width = 2, length = 4)
+        ax_fixed.tick_params(axis='x', labelsize=18, width = 2, length = 4)
         ax_fixed.yaxis.set_ticks([])
         ax_fixed.yaxis.set_ticklabels([])
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-        ax.tick_params(axis='y', which='both', labelsize = 14, width = 2, length = 4)
+        ax.tick_params(axis='y', which='both', labelsize = 18, width = 2, length = 4)
         ax.set_title(rect_title, fontsize = 20)
         species = self.thermo_model.comp_names[0]
         x_label = '$x_{' + species + '}$'
         y_label = '$y_{' + species + '}$'
-        ax.set_xlabel(x_label, labelpad = 35, fontsize = 20)
-        ax.set_ylabel(y_label, labelpad = 10, fontsize = 20)
+        ax.set_xlabel(x_label, labelpad = 35, fontsize = 22)
+        #ax.set_ylabel(y_label, labelpad = 10, fontsize = 22)
         return ax, ax_fixed
     
     def compute_equib_stages_binary(self, ax_num, fixed_points = []):
@@ -410,7 +410,7 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.scatter(x_rect, [0]*len(x_rect), marker='o', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
         x_strip = self.compute_equib_stages_binary(0, x_r_0 + x_s_0)[0]
         ax_fixed.scatter(x_strip, [0]*len(x_strip), marker = '^', color = 'blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
-        ax_fixed.text(0.5, -5, f"Number of Stages: {N_2}", ha='center', va='center', transform=ax_fixed.transAxes, fontsize = 12)
+        ax_fixed.text(0.5, -7, f"# Stages: {N_2}", ha='center', va='center', transform=ax_fixed.transAxes, fontsize = 16)
         ax_fixed.yaxis.set_ticks([])
         ax.set_aspect('equal', adjustable='box')
 
@@ -420,17 +420,20 @@ class DistillationModelBinary(DistillationModel):
         ax_fixed.spines['left'].set_visible(False)
         ax_fixed.axhline(0, color='black')  # y=0 line
         ax_fixed.set_xlim([0,1])
-        ax_fixed.tick_params(axis='x', labelsize=14, width = 2, length = 4)
+        ax_fixed.tick_params(axis='x', labelsize=18, width = 2, length = 4)
         ax_fixed.yaxis.set_ticks([])
         ax_fixed.yaxis.set_ticklabels([])
+        ax_fixed.scatter(self.x_r_fixed, [0]*len(self.x_r_fixed), marker='o', color='red', s = 50)
+        ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='o', color='red', s = 50)
+
 
         ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-        ax.tick_params(axis='y', which='both', labelsize = 14, width = 2, length = 4)
+        ax.tick_params(axis='y', which='both', labelsize = 18, width = 2, length = 4)
         ax.set_title("Full Column", fontsize = 20)
         species = self.thermo_model.comp_names[0]
         #x_label = '$x_{' + species + '}$'
         y_label = '$y_{' + species + '}$'
         #ax.set_xlabel(x_label, labelpad = 35, fontsize = 20)
-        ax.set_ylabel(y_label, labelpad = 10, fontsize = 20)
+        #ax.set_ylabel(y_label, labelpad = 10, fontsize = 22)
 
         return ax, ax_fixed
