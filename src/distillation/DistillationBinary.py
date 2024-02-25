@@ -13,13 +13,13 @@ from scipy.optimize import fsolve
 from scipy.optimize import brentq
 from utils.AntoineEquation import *
 from thermo_models.RaoultsLawModel import *
-from distillation.DistillationModel import DistillationModel
+from distillation.DistillationSingleFeed import DistillationModelSingleFeed
 
 import seaborn as sns
 sns.set_context("poster")
 sns.set_style("ticks")
 
-class DistillationModelBinary(DistillationModel):
+class DistillationModelBinary(DistillationModelSingleFeed):
 
     def __init__(self, thermo_model:VLEModel, xF: np.ndarray, xD: np.ndarray, xB: np.ndarray, reflux = None, boil_up = None, q = 1) -> None:
 
