@@ -38,6 +38,7 @@ class DistillationModel:
         """
         self.thermo_model = thermo_model
         self.num_comp = thermo_model.num_comp
+        
         self.xF = xF
         self.xD = xD
         self.xB = xB
@@ -115,6 +116,7 @@ class DistillationModel:
         return ((boil_up+1)/boil_up)*x_s_j - (xB/boil_up)
     
     def compute_equib(self):
+        
         x1_space = np.linspace(0, 1, 1000)
         y_array = np.zeros((x1_space.size, 2))
         t_array = np.zeros(x1_space.size)
@@ -122,24 +124,40 @@ class DistillationModel:
         # Initialize numpy arrays
         x_array = np.zeros((x1_space.size, 2))
         for i, x1 in enumerate(x1_space):
+
             x_array[i] = [x1, 1 - x1]  # Fill the x_array directly
             solution = self.thermo_model.convert_x_to_y(x_array[i])[0]
             y_array[i] = solution[:-1]
             t_array[i] = solution[-1]
+            
         return x_array, y_array, t_array
     
     def change_r(self, new_r):
+
         self.reflux = new_r
         self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
         return self
+        
+    def set_xD(self, xD_new):
+        self.xD = xD_new
     
+    def set_xB(self, xB_new):
+        self.xB = xB_new
+
+    def set_r(self, r_new):
+
+        self.reflux = r_new
+        self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
+
     def track_fixed_points_branch(self, op_line, ds, num_steps, x0, l0):
+
         if op_line == 's':
             return self.track_fixed_points_branch_stripping(ds, num_steps, x0, l0)
         elif op_line != 'r':
             raise ValueError('Please enter either s (for stripping line)  or r (for rectifying line)')
         
         def eqns(uvec, l):
+
             res = np.empty(self.num_comp+1)
             gammas = self.thermo_model.get_activity_coefficient(uvec[:-1], uvec[-1])
 
@@ -152,6 +170,7 @@ class DistillationModel:
             return res
 
         def get_dFidl(uvec, l):
+
             res = np.empty(self.num_comp+1)
             for i in range(self.num_comp):
                 res[i] = (uvec[i]/(l-1)**2) + (self.xD[i]/(l+1)**2)
@@ -159,6 +178,7 @@ class DistillationModel:
             return res
 
         def jac_eqns(uvec, l):
+            
             gammas = self.thermo_model.get_activity_coefficient(uvec[:-1], uvec[-1])
             gamma_ders = self.thermo_model.get_gamma_ders(uvec, l)
             res = np.empty((self.num_comp+1,self.num_comp+1))
@@ -283,6 +303,7 @@ class DistillationModel:
             res[self.num_comp,:] = np.concatenate((np.ones(self.num_comp), np.zeros(1)))
             return res
 
+        
         def eqns_der(xvec, uvec, l):
             res = np.empty(self.num_comp+2)
 
