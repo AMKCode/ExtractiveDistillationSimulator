@@ -1,4 +1,13 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+src/distillation/__pycache__/
+src/thermo_models/__pycache__/
+src/utils/__pycache__/
+__pycache__/*
+src/distillation/__pycache__/*
+src/thermo_models/__pycache__/*
+src/utils/__pycache__/*
+
 *.py[cod]
 *$py.class
+.ipynb_checkpoints/
