@@ -14,15 +14,19 @@ from distillation.DistillationModel import *
 from distillation.DistillationDoubleFeed import *
 from scipy.interpolate import griddata
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-   
-class phase_portraits():
+
+import seaborn as sns
+
+class PhasePortraits():
+
     def __init__(self, thermo_model:VLEModel, distil_model:DistillationModel = None):
+
         self.distil_model = distil_model
         self.thermo_model = thermo_model
-    
 
 
     def plot_phase_vector_fields(self, ax, dxdt, grid_data_points=20, title = 'Phase Vector Field with Magnitude Colored Arrows'):
+        
         x_array = [np.array(point) for point in create_restricted_simplex_grid(3, grid_data_points)]
         vectors = np.zeros((len(x_array), 2))
         valid_points = []
@@ -48,25 +52,19 @@ class phase_portraits():
         cmap = plt.cm.viridis
 
         for point, vector in zip(valid_x_array, valid_vectors):
+            
             # Correct color mapping for each vector
             vector_magnitude = np.linalg.norm(vector)
             color = cmap(norm(vector_magnitude))
             ax.quiver(point[0], point[1], vector[0], vector[1], color=color)
 
-        # # Create the ScalarMappable object for the colorbar
-        # sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-        # sm.set_array([])
-
-        # # Create an inset axes for the colorbar
-        # divider = make_axes_locatable(ax)
-        # cax = divider.append_axes("right", size="5%", pad=0.05)
-
-        # # Create and attach the colorbar to the inset axes
-        # cb = plt.colorbar(sm, cax=cax)
-
         # Set the limits and title for your plot
-        ax.set_xlim(0, 1)
-        ax.set_ylim(0, 1)
+        ax.set_xlim(-0.05, 1.05)
+        ax.set_ylim(-0.05, 1.05)
+
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad = 10)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
+        
         ax.set_title(title)
         
     def plot_vector_field_strip(self, ax, grid_data_points=20):
@@ -159,9 +157,15 @@ class phase_portraits():
             self.int_plot_path(ax, init_comp, [t_span[0],-t_span[1]], data_points, dxdt=dxdt)
             
         ax.set_aspect('equal', adjustable='box')
-        ax.set_ylim([0, 1])
-        ax.set_xlim([0, 1])
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_xlim([-0.05, 1.05])
+
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+
+        ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+
+
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         

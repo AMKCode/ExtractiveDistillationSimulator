@@ -19,22 +19,10 @@ class DistillationModelTernary(DistillationModelSingleFeed):
 
     def __init__(self, thermo_model:VLEModel, xF: np.ndarray, xD: np.ndarray, xB: np.ndarray, reflux = None, boil_up = None, q = 1) -> None:
         super().__init__(thermo_model,xF,xD,xB,reflux,boil_up,q)
-        
-    def find_rect_fixedpoints(self, n):
-        pass
-    
-    def find_strip_fixedpoints(self, n):
-        pass
-    
-    def plot_distil_strip(self, ax, ax_fixed):
-        pass
-    def plot_distil_strip(self, ax, ax_fixed):
-        pass
-
-
-    
+            
         
     def plot_rect_comp(self, ax):
+
         x_rect_comp = self.compute_rectifying_stages()[0]
         
         #Extract x1 and x2 from arrays
@@ -52,6 +40,7 @@ class DistillationModelTernary(DistillationModelSingleFeed):
         ax.legend()
         
     def compute_rectifying_stages(self):
+
         x_comp, y_comp = [], []  # Initialize composition lists
         counter = 0
         
@@ -59,6 +48,7 @@ class DistillationModelTernary(DistillationModelSingleFeed):
         y1 = self.rectifying_step_xtoy(x1)
 
         while True:
+
             x_comp.append(x1)
             y_comp.append(y1)
             counter += 1
@@ -70,14 +60,15 @@ class DistillationModelTernary(DistillationModelSingleFeed):
             y_comp.append(y2)
             
             if counter == 100000:
-                print("counter rect:", counter)
                 return np.array(x_comp), np.array(y_comp)
             if np.linalg.norm(x1 - x2) < 0.0000001:
                 return np.array(x_comp), np.array(y_comp)
                 
             x1 = x2
             y1 = y2
+
     def compute_stripping_stages(self):
+
         x_comp, y_comp = [], []  # Initialize composition lists
         counter = 0
         
@@ -95,7 +86,6 @@ class DistillationModelTernary(DistillationModelSingleFeed):
             
             x2 = self.stripping_step_ytox(y2)
             if counter == 5000:
-                print("counter strip:", counter)
                 return np.array(x_comp), np.array(y_comp)
             if np.linalg.norm(x1 - x2) < 1.0e-10:
                 return np.array(x_comp), np.array(y_comp)
@@ -104,10 +94,12 @@ class DistillationModelTernary(DistillationModelSingleFeed):
             y1 = y2
 
     def plot_rect_strip_comp(self, ax: axes):
-        x_rect_comp = self.compute_rectifying_stages()[0]
+
+        x_rect_comp  = self.compute_rectifying_stages()[0]
         x_strip_comp = self.compute_stripping_stages()[0]
         
         #Extract x1 and x2 from arrays
+        '''
         x1_rect = x_rect_comp[:-1, 0]
         x1_rect_final = x_rect_comp[-1, 0]
         x2_rect = x_rect_comp[:-1, 1]
@@ -116,12 +108,13 @@ class DistillationModelTernary(DistillationModelSingleFeed):
         x1_strip_final = x_strip_comp[-1, 0]
         x2_strip = x_strip_comp[:-1, 1]
         x2_strip_final = x_strip_comp[-1,1]
+        '''
         
         # Plot the line connecting the points
-        ax.plot(x1_rect, x2_rect, '-D', label='Rectifying Line', color = "red")  # '-D' means a line with diamond markers at each data point
-        ax.plot(x1_strip, x2_strip, '-s', label='Stripping Line', color = "blue")  # '-s' means a line with box markers at each data point
-        ax.plot(x1_rect_final, x2_rect_final, '*', label='Operating Section Terminus', color = "black", markersize = 15)  # '-*' means a line with a star marker at the endpoint
-        ax.plot(x1_strip_final, x2_strip_final, '*', color = "black", markersize = 15)  # '-*' means a line with a star marker at the endpoint
+        ax.plot(x_rect_comp[:-1, 0], x_rect_comp[:-1, 1], '-D', label='Rectifying Line', color = "red")  # '-D' means a line with diamond markers at each data point
+        ax.plot( x_strip_comp[:-1, 0],  x_strip_comp[:-1, 1], '-s', label='Stripping Line', color = "blue")  # '-s' means a line with box markers at each data point
+        ax.plot( x_rect_comp[-1, 0],  x_rect_comp[-1, 1], '*', label='Operating Section Terminus', color = "black", markersize = 15)  # '-*' means a line with a star marker at the endpoint
+        ax.plot( x_strip_comp[-1, 0],  x_strip_comp[-1, 1], '*', color = "black", markersize = 15)  # '-*' means a line with a star marker at the endpoint
 
         # Mark special points
         ax.scatter(self.xF[0], self.xF[1], marker='X', color='orange', label='xF', s = 100)
@@ -132,17 +125,61 @@ class DistillationModelTernary(DistillationModelSingleFeed):
         ax.set_ylim([-0.05, 1.05])
         ax.set_xlim([-0.05, 1.05])
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
-        ax.plot([0, 0], [0, 1], 'k--')  # dashed line
-        ax.plot([0, 0], [1, 0], 'k--')  # dashed line
+        ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
         
-        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad = 10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
         ax.legend()
+
+
+    def plot_strip_comp(self, ax: axes):
+
+        x_strip_comp = self.compute_stripping_stages()[0]
+                
+        ax.plot( x_strip_comp[:-1, 0],  x_strip_comp[:-1, 1], '-s', label='Stripping Line', color = "blue")  # '-s' means a line with box markers at each data point
+        ax.plot( x_strip_comp[-1, 0],  x_strip_comp[-1, 1], '*', color = "black", markersize = 15)  # '-*' means a line with a star marker at the endpoint
+
+        # Mark special points
+        ax.scatter(self.xF[0], self.xF[1], marker='X', color='orange', label='xF', s = 100)
+        ax.scatter(self.xB[0], self.xB[1], marker='X', color='purple', label='xB', s = 100)
+                
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_xlim([-0.05, 1.05])
+        ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
         
-    def compute_equib_stages(self, ax_num, fixed_points = []):
-        pass
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad = 10)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
-    def plot_distil(self, ax, ax_fixed):
-        pass
+        ax.legend()
+
+
+    def plot_rect_comp(self, ax: axes):
+
+        x_rect_comp  = self.compute_rectifying_stages()[0]
+                        
+        # Plot the line connecting the points
+        ax.plot(x_rect_comp[:-1, 0], x_rect_comp[:-1, 1], '-D', label='Rectifying Line', color = "red")  # '-D' means a line with diamond markers at each data point
+        ax.plot( x_rect_comp[-1, 0],  x_rect_comp[-1, 1], '*', label='Operating Section Terminus', color = "black", markersize = 15)  # '-*' means a line with a star marker at the endpoint
+        
+        # Mark special points
+        ax.scatter(self.xF[0], self.xF[1], marker='X', color='orange', label='xF', s = 100)
+        ax.scatter(self.xD[0], self.xD[1], marker='X', color='green',  label='xD', s = 100)
+        
+        ax.set_aspect('equal', adjustable='box')
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_xlim([-0.05, 1.05])
+        ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad = 10)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
+        
+        ax.legend()
+
    
