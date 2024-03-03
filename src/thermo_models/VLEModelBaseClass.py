@@ -89,6 +89,7 @@ class VLEModel:
             except:
                 continue
 
+            
     def convert_y_to_x(self, y_array:np.ndarray, temp_guess = None)->np.ndarray:
         """
         Computes the conversion from vapor mole fraction to liquid mole fraction.
@@ -112,12 +113,14 @@ class VLEModel:
         ier = 0
         runs = 0
         while True:
+
             runs += 1 
-            try:
-                if runs % 10000 == 0:
-                    print("Current Run from convert_y_to_x:",runs)
+
+            if runs % 10000 == 0:
+                print("Current Run from convert_y_to_x:",runs)
+            try:            
                 random_number = generate_point_system_random_sum_to_one(self.num_comp)
-                new_guess = np.append(random_number, temp_guess)
+                new_guess     = np.append(random_number, temp_guess)
                 
                 if self.use_jacobian:
                     solution, infodict, ier, mesg = fsolve(self.compute_Txy2, new_guess, args=(y_array,), full_output=True, xtol=1e-12, fprime=self.jacobian_y_to_x)
@@ -241,7 +244,8 @@ class VLEModel:
         ax.set_ylabel("Temperature")
         ax.legend()
 
-    
+
+    # Should this be removed ?
     def plot_ternary_txy(self, data_points:int, keep_zero:int):
         """
         Plots the surface plots for the ternary system, and also plots a T-x-y diagram

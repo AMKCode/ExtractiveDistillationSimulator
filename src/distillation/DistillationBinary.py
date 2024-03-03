@@ -95,133 +95,8 @@ class DistillationModelBinary(DistillationModelSingleFeed):
             a = b
 
         return x0_values, y0_values
-    
-    def plot_distil_strip_binary(self, ax, ax_fixed):
 
-        # Set limits for all main plots
-        ax.set_xlim([0,1])
-        ax.set_ylim([0,1])
-            
-        #Plot the equilibrium curve
-        ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
-        
-        for i, x1 in enumerate(self.x_array_equib):
-            self.y_s_array[i] = self.stripping_step_xtoy(x1)
-        
-        #Plot the stripping line
-        s_min_index = int(1000 * self.xB[0])
-        for i in range(len(self.y_s_array)):
-            if (self.y_s_array[i,0] > self.y_array_equib[i,0]):
-                s_max_index = i
-                break 
-    
-        ax.plot(self.x_array_equib[s_min_index:s_max_index, 0], self.y_s_array[s_min_index:s_max_index, 0], color = 'green')
-        
-        #Plot y = x line
-        ax.plot([0,1], [0,1], linestyle='dashed')
-        
-        #Plot the fixed points from stripping line
-        self.x_s_fixed, self.y_s_fixed = self.find_strip_fixedpoints_binary(n=30)
 
-        ax.scatter(self.x_s_fixed, self.y_s_fixed, s=50, c="red")
-        x_fixed, y_fixed, N_1 = self.compute_equib_stages_binary(0, self.x_s_fixed)
-
-        ax.plot(x_fixed, y_fixed, linestyle='--', color='black', alpha = 0.3)        
-        ax.scatter(self.x_s_fixed, self.y_s_fixed, s=50, c="red")
-
-        ax_fixed.xaxis.set_label_coords(0.5, -0.05)
-        ax_fixed.yaxis.set_ticks([])
-        ax_fixed.scatter(x_fixed, [0]*len(x_fixed), marker='^', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
-        ax.set_aspect('equal', adjustable='box')
-
-        ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='o', color='red', s = 50)
-        ax_fixed.spines['top'].set_visible(False)
-        ax_fixed.spines['right'].set_visible(False)
-        ax_fixed.spines['bottom'].set_visible(False)
-        ax_fixed.spines['left'].set_visible(False)
-        ax_fixed.axhline(0, color='black')  # y=0 line
-        ax_fixed.set_xlim([0,1])
-        ax_fixed.tick_params(axis='x', labelsize=18, width = 2, length = 4)
-
-        ax_fixed.yaxis.set_ticks([])
-        ax_fixed.yaxis.set_ticklabels([])
-
-        ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-        ax.tick_params(axis='y', which='both', labelsize = 18, width = 2, length = 4)
-        plt.setp(ax.get_xticklabels(), visible=False)
-        ax.set_title("Stripping Section", fontsize = 20)
-        species = self.thermo_model.comp_names[0]
-        x_label = '$x_{' + species + '}$'
-        y_label = '$y_{' + species + '}$'
-        ax.set_xlabel(x_label, labelpad = 35, fontsize = 22)
-        ax.set_ylabel(y_label, labelpad = 10, fontsize = 22)
-        return ax, ax_fixed
-    
-    def plot_distil_rect_binary(self, ax, ax_fixed, zoom_factor=0, rect_title = "Rectifying Section"):
-
-        if self.num_comp != 2:
-            raise ValueError("This method can only be used for binary distillation.")
-        
-        # Set limits for ax
-        if (zoom_factor == 0):
-            ax.set_xlim([0,1])
-            ax.set_ylim([0,1])
-        else:
-            ax.set_xlim([0.72,0.82])
-            ax.set_ylim([0.80,0.90])
-
-        #Plot the equilibrium curve
-        ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
-
-        for i, x1 in enumerate(self.x_array_equib):
-            self.y_r_array[i] = self.rectifying_step_xtoy(x1)
-        
-        #Plot the rectifying line
-        r_max_index = int(1000 * self.xD[0])
-        for i in range(len(self.y_r_array)):
-            if (self.y_r_array[i,0] < self.y_array_equib[i,0]):
-                r_min_index = i
-                break 
-        ax.plot(self.x_array_equib[r_min_index:r_max_index, 0], self.y_r_array[r_min_index:r_max_index, 0], color = 'green')
-        
-        #Plot y = x line
-        ax.plot([0,1], [0,1], linestyle='dashed')
-
-        #Plot the fixed points from stripping line
-        self.x_r_fixed, self.y_r_fixed = self.find_rect_fixedpoints_binary(n=30)
-        
-        x_stages, y_stages, N_2 = self.compute_equib_stages_binary(1, self.x_r_fixed)
-        ax.plot(x_stages, y_stages, linestyle='--', color='black', alpha = 0.3)
-        ax.scatter(self.x_r_fixed, self.y_r_fixed, s=50, c="red")
-
-        ax_fixed.scatter(x_stages, [0]*len(x_stages), marker='o', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
-        ax_fixed.yaxis.set_ticks([])
-        ax.set_aspect('equal', adjustable='box')
-
-        ax_fixed.scatter(self.x_r_fixed, [0]*len(self.x_r_fixed), marker='o', color='red', s = 50)
-        ax_fixed.spines['top'].set_visible(False)
-        ax_fixed.spines['right'].set_visible(False)
-        ax_fixed.spines['bottom'].set_visible(False)
-        ax_fixed.spines['left'].set_visible(False)
-        ax_fixed.axhline(0, color='black')  # y=0 line
-        if zoom_factor == 0:
-            ax_fixed.set_xlim([0,1])
-        else:
-            ax_fixed.set_xlim([0.72,0.82])
-        ax_fixed.tick_params(axis='x', labelsize=18, width = 2, length = 4)
-        ax_fixed.yaxis.set_ticks([])
-        ax_fixed.yaxis.set_ticklabels([])
-
-        ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
-        ax.tick_params(axis='y', which='both', labelsize = 18, width = 2, length = 4)
-        ax.set_title(rect_title, fontsize = 20)
-        species = self.thermo_model.comp_names[0]
-        x_label = '$x_{' + species + '}$'
-        y_label = '$y_{' + species + '}$'
-        ax.set_xlabel(x_label, labelpad = 35, fontsize = 22)
-        #ax.set_ylabel(y_label, labelpad = 10, fontsize = 22)
-        return ax, ax_fixed
-    
     def compute_equib_stages_binary(self, ax_num, fixed_points = []):
 
         ## ADD POINTS TO X AXIS TO REPRESENT NUMBER OF EQUILIBRIA ##
@@ -292,22 +167,148 @@ class DistillationModelBinary(DistillationModelSingleFeed):
 
 
         return x_comp, y_comp, N
+    
+    def plot_distil_strip_binary(self, ax):
+
+        # Set limits for all main plots
+        ax.set_xlim([0,1])
+        ax.set_ylim([-0.05,1.05])
+
+        # Plot the x - axis
+        ax.hlines(0, 0, 1, linewidth = 1, color = 'k', linestyle = 'dotted')
         
-    def plot_distil_binary(self, ax, ax_fixed):
+        #Plot the equilibrium curve
+        ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
+        
+        for i, x1 in enumerate(self.x_array_equib):
+            self.y_s_array[i] = self.stripping_step_xtoy(x1)
+        
+        #Plot the stripping line
+        s_min_index = int(1000 * self.xB[0])
+        for i in range(len(self.y_s_array)):
+            if (self.y_s_array[i,0] > self.y_array_equib[i,0]):
+                s_max_index = i
+                break 
+    
+        ax.plot(self.x_array_equib[s_min_index:s_max_index, 0], self.y_s_array[s_min_index:s_max_index, 0], color = 'green')
+
+        
+        #Plot y = x line
+        ax.plot([0,1], [0,1], linestyle='dashed')
+        
+        ax.vlines(self.xB[0], 0, self.xB[0], linestyles = 'dashed', colors = 'k')
+        
+        #Plot the fixed points from stripping line
+        self.x_s_fixed, self.y_s_fixed = self.find_strip_fixedpoints_binary(n=30)
+
+        ax.scatter(self.x_s_fixed, self.y_s_fixed, s=50, c="red")
+        x_fixed, y_fixed, N_1 = self.compute_equib_stages_binary(0, self.x_s_fixed)
+
+        ax.plot(x_fixed, y_fixed, linestyle='--', color='black', alpha = 0.3)        
+        ax.scatter(self.x_s_fixed, self.y_s_fixed, s=50, c="red")
+
+        # Plot fixed point along the x - axis and the stagewise composition
+        
+        ax.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='o', color='red', s = 100)
+        ax.scatter(x_fixed, [0]*len(x_fixed), marker='^', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
+        
+        ax.tick_params(axis='x', which='both', labelsize = 18, width = 2, length = 4)
+        ax.tick_params(axis='y', which='both', labelsize = 18, width = 2, length = 4)
+
+        ax.set_title("Stripping Section", fontsize = 20)
+        species = self.thermo_model.comp_names[0]
+
+        x_label = '$x_{' + species + '}$'
+        y_label = '$y_{' + species + '}$'
+
+        ax.set_xlabel(x_label, labelpad = 35, fontsize = 22)
+        ax.set_ylabel(y_label, labelpad = 10, fontsize = 22)
+
+        return 
+    
+    def plot_distil_rect_binary(self, ax, zoom_factor=0, rect_title = "Rectifying Section"):
+
+        if self.num_comp != 2:
+            raise ValueError("This method can only be used for binary distillation.")
+        
+        # Set limits for ax
+        if (zoom_factor == 0):
+            ax.set_xlim([0,1])
+            ax.set_ylim([-0.05,1.05])
+        else:
+            ax.set_xlim([0.72,0.82])
+            ax.set_ylim([0.80,0.90])
+
+        #Plot the equilibrium curve
+        ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
+
+        # Plot the x - axis
+        ax.hlines(0, 0, 1, linewidth = 1, color = 'k', linestyle = 'dotted')
+        
+        ax.vlines(self.xD[0], 0, self.xD[0], linestyles = 'dashed', colors = 'k')
+
+        for i, x1 in enumerate(self.x_array_equib):
+            self.y_r_array[i] = self.rectifying_step_xtoy(x1)
+        
+        #Plot the rectifying line
+        r_max_index = int(1000 * self.xD[0])
+        for i in range(len(self.y_r_array)):
+            if (self.y_r_array[i,0] < self.y_array_equib[i,0]):
+                r_min_index = i
+                break 
+        ax.plot(self.x_array_equib[r_min_index:r_max_index, 0], self.y_r_array[r_min_index:r_max_index, 0], color = 'green')
+        
+        #Plot y = x line
+        ax.plot([0,1], [0,1], linestyle='dashed')
+
+        #Plot the fixed points from stripping line
+        self.x_r_fixed, self.y_r_fixed = self.find_rect_fixedpoints_binary(n=30)
+        
+        x_stages, y_stages, N_2 = self.compute_equib_stages_binary(1, self.x_r_fixed)
+        ax.plot(x_stages, y_stages, linestyle='--', color='black', alpha = 0.3)
+        ax.scatter(self.x_r_fixed, self.y_r_fixed, s=50, c="red")
+
+        # Plot fixed point along the x - axis and the stagewise composition
+        
+        ax.scatter(self.x_r_fixed, [0]*len(self.x_r_fixed), marker='o', color='red', s = 100)
+        ax.scatter(x_stages, [0]*len(x_stages), marker='^', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
+        ax.tick_params(axis='x', which='both', labelsize = 18, width = 2, length = 4)
+        ax.tick_params(axis='y', which='both', labelsize = 18, width = 2, length = 4)
+        ax.set_title(rect_title, fontsize = 20)
+
+        species = self.thermo_model.comp_names[0]
+        x_label = '$x_{' + species + '}$'
+        y_label = '$y_{' + species + '}$'
+
+        ax.set_xlabel(x_label, labelpad = 35, fontsize = 22)
+        ax.set_ylabel(y_label, labelpad = 10, fontsize = 22)
+
+        return
+    
+
+        
+    def plot_distil_binary(self, ax):
 
         if self.num_comp != 2:
             raise ValueError("This method can only be used for binary distillation.")
         
                 # Set limits for ax
         ax.set_xlim([0,1])
-        ax.set_ylim([0,1])
+        ax.set_ylim([-0.05,1.05])
         
         for i, x1 in enumerate(self.x_array_equib):
             self.y_r_array[i] = self.rectifying_step_xtoy(x1)
             self.y_s_array[i] = self.stripping_step_xtoy(x1)
+
+        # Plot the x - axis
+        ax.hlines(0, 0, 1, linewidth = 1, color = 'k', linestyle = 'dotted')
             
         #Plot the equilibrium curve
         ax.plot(self.x_array_equib[:, 0], self.y_array_equib[:, 0])
+
+        # Plot top and bottom compositions
+        ax.vlines(self.xB[0], 0, self.xB[0], linestyles = 'dashed', colors = 'k')
+        ax.vlines(self.xD[0], 0, self.xD[0], linestyles = 'dashed', colors = 'k')
 
         op_color             = 'green'
         intersection_counter = 0
@@ -358,6 +359,7 @@ class DistillationModelBinary(DistillationModelSingleFeed):
         x_s_0, y_s_0 = self.find_strip_fixedpoints_binary(n=30)
         
         x_stages, y_stages, N_2 = self.compute_equib_stages_binary(2, x_r_0 + x_s_0)
+        
         if (op_color == 'green'):
             ax.plot(x_stages, y_stages, linestyle='--', color='black', alpha = 0.3)
         else:
@@ -366,36 +368,28 @@ class DistillationModelBinary(DistillationModelSingleFeed):
             xs_stages, ys_stages, N_s = self.compute_equib_stages_binary(0, self.x_s_fixed)
             ax.plot(xs_stages, ys_stages, linestyle='--', color='black', alpha = 0.3)
 
-        ax.scatter(x_r_0 + x_s_0, y_r_0 + y_s_0, s=50, c="red")
+        ax.scatter(x_r_0 + x_s_0, y_r_0 + y_s_0, s=100, c="red")
 
         x_rect = self.compute_equib_stages_binary(1, x_r_0 + x_s_0)[0]
-        ax_fixed.scatter(x_rect, [0]*len(x_rect), marker='o', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
+        ax.scatter(x_rect, [0]*len(x_rect), marker='o', color='blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
         x_strip = self.compute_equib_stages_binary(0, x_r_0 + x_s_0)[0]
-        ax_fixed.scatter(x_strip, [0]*len(x_strip), marker = '^', color = 'blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
-        ax_fixed.text(0.5, -7, f"# Stages: {N_2}", ha='center', va='center', transform=ax_fixed.transAxes, fontsize = 16)
-        ax_fixed.yaxis.set_ticks([])
-        ax.set_aspect('equal', adjustable='box')
+        ax.scatter(x_strip, [0]*len(x_strip), marker = '^', color = 'blue', facecolors='none', edgecolors='blue', linewidths = 0.75, s = 40)
+        ax.text(0.5, 0.9, f"# Stages: {N_2}", ha='center', va='center', transform=ax.transAxes, fontsize = 16)
+      
+        ax.scatter(self.x_r_fixed, [0]*len(self.x_r_fixed), marker='o', color='red', s = 50)
+        ax.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='o', color='red', s = 50)
 
-        ax_fixed.spines['top'].set_visible(False)
-        ax_fixed.spines['right'].set_visible(False)
-        ax_fixed.spines['bottom'].set_visible(False)
-        ax_fixed.spines['left'].set_visible(False)
         
-        ax_fixed.axhline(0, color='black')  # y=0 line
-        ax_fixed.set_xlim([0,1])
-        ax_fixed.tick_params(axis='x', labelsize=18, width = 2, length = 4)
-        ax_fixed.yaxis.set_ticks([])
-        ax_fixed.yaxis.set_ticklabels([])
-        ax_fixed.scatter(self.x_r_fixed, [0]*len(self.x_r_fixed), marker='o', color='red', s = 50)
-        ax_fixed.scatter(self.x_s_fixed, [0]*len(self.x_s_fixed), marker='o', color='red', s = 50)
-
-        ax.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
+        
+        ax.tick_params(axis='x', which='both', labelsize = 18, width = 2, length = 4)
         ax.tick_params(axis='y', which='both', labelsize = 18, width = 2, length = 4)
         ax.set_title("Full Column", fontsize = 20)
         species = self.thermo_model.comp_names[0]
-        #x_label = '$x_{' + species + '}$'
-        y_label = '$y_{' + species + '}$'
-        #ax.set_xlabel(x_label, labelpad = 35, fontsize = 20)
-        #ax.set_ylabel(y_label, labelpad = 10, fontsize = 22)
 
-        return ax, ax_fixed
+        x_label = '$x_{' + species + '}$'
+        y_label = '$y_{' + species + '}$'
+
+        ax.set_xlabel(x_label, labelpad = 35, fontsize = 20)
+        ax.set_ylabel(y_label, labelpad = 10, fontsize = 22)
+
+        return 

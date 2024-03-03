@@ -79,4 +79,6 @@ class MargulesModel(VLEModel):
         return ders # dgamma(i)/dx(j)
 
 
+
+
             

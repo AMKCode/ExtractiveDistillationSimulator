@@ -66,6 +66,8 @@ class PhasePortraits():
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
         ax.set_title(title)
+
+        
         
     def plot_vector_field_strip(self, ax, grid_data_points=20):
         def dxdt(t, x):
@@ -75,6 +77,8 @@ class PhasePortraits():
                 print("Overflow occurred in dxdt.")
                 return None
         self.plot_phase_vector_fields(ax,dxdt,grid_data_points, title = "Stripping Vector Field")
+
+
         
     def plot_vector_field_rect(self, ax, grid_data_points=20):
         def dxdt(t, x):
@@ -83,8 +87,9 @@ class PhasePortraits():
             except OverflowError:
                 print("Overflow occurred in dxdt.")
                 return None
-        self.plot_phase_vector_fields(ax,dxdt,grid_data_points, title = "Rectifying Vector Field")
+        self.plot_phase_vector_fields(ax, dxdt,grid_data_points, title = "Rectifying Vector Field")
 
+        
     def plot_vector_field_residue(self, ax, grid_data_points=20):
         def dxdt(t, x):
             try:
@@ -95,6 +100,7 @@ class PhasePortraits():
         self.plot_phase_vector_fields(ax,dxdt,grid_data_points, title = "Residue Vector Field")
         
     def plot_vector_field_middle(self, ax, grid_data_points=20):
+
         if self.distil_model is None:
             raise TypeError("Invalid operation")
         if not isinstance(self.distil_model, DistillationModelDoubleFeed):
@@ -106,8 +112,11 @@ class PhasePortraits():
                 print("Overflow occurred in dxdt.")
                 return None
         self.plot_phase_vector_fields(ax,dxdt,grid_data_points, title = "Middle Vector Field")
-             
+
+
+        
     def plot_residue_topography_curve_2D(self, ax, grid_data_points = 20, show_grid = True):
+
         # Generate the simplex grid
         x_array = create_simplex_grid(3, grid_data_points)
         
@@ -145,6 +154,7 @@ class PhasePortraits():
         ax.set_ylabel('x2')
     
     def plot_residue_curve(self, ax, t_span, data_points: int = 15, init_comps = None):
+
         def dxdt(t, x):
             try:
                 return x - self.thermo_model.convert_x_to_y(x_array=x)[0][:-1]
@@ -168,8 +178,10 @@ class PhasePortraits():
 
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
+
         
     def plot_strip_portrait(self, ax, t_span, data_points: int = 15, init_comps = None):
+
         if self.distil_model is None:
             raise TypeError("Invalid operation")
         def dxdt(t, x):
@@ -253,6 +265,7 @@ class PhasePortraits():
 
         # Plot the path as a red line
         ax.plot(path_data[:, 0], path_data[:, 1], color='red')
+
         
     def int_path(self, initial, t_span, num_points, dxdt):
         x0 = np.array(initial)
@@ -272,6 +285,8 @@ class PhasePortraits():
         
         return np.array(x_vals)
 
+
+    
 def rk4_step(t, x, dt, dxdt):
     try:
         k1 = dt * dxdt(t, x)

@@ -51,9 +51,10 @@ class DistillationModelTernary(DistillationModelSingleFeed):
 
             x_comp.append(x1)
             y_comp.append(y1)
-            counter += 1
-            x2 = self.thermo_model.convert_y_to_x(y1)[0][:-1]
             
+            counter += 1
+
+            x2 = self.thermo_model.convert_y_to_x(y1)[0][:-1]
             y2 = self.rectifying_step_xtoy(x2)
             
             x_comp.append(x2)
@@ -61,11 +62,12 @@ class DistillationModelTernary(DistillationModelSingleFeed):
             
             if counter == 100000:
                 return np.array(x_comp), np.array(y_comp)
-            if np.linalg.norm(x1 - x2) < 0.0000001:
+            if np.linalg.norm(x1 - x2) < 1.0e-10:
                 return np.array(x_comp), np.array(y_comp)
                 
             x1 = x2
             y1 = y2
+            
 
     def compute_stripping_stages(self):
 
@@ -76,15 +78,18 @@ class DistillationModelTernary(DistillationModelSingleFeed):
         y1 = self.stripping_step_xtoy(x1)
 
         while True:
+
             x_comp.append(x1)
             y_comp.append(y1)
+
             counter += 1
             
             y2 = self.thermo_model.convert_x_to_y(x1)[0][:-1]
-            x_comp.append(x1)
-            y_comp.append(y2)
-            
             x2 = self.stripping_step_ytox(y2)
+
+            x_comp.append(x2) # Should this be x2 ?
+            y_comp.append(y2)
+                        
             if counter == 5000:
                 return np.array(x_comp), np.array(y_comp)
             if np.linalg.norm(x1 - x2) < 1.0e-10:
@@ -93,23 +98,13 @@ class DistillationModelTernary(DistillationModelSingleFeed):
             x1 = x2
             y1 = y2
 
+
+            
     def plot_rect_strip_comp(self, ax: axes):
 
         x_rect_comp  = self.compute_rectifying_stages()[0]
         x_strip_comp = self.compute_stripping_stages()[0]
-        
-        #Extract x1 and x2 from arrays
-        '''
-        x1_rect = x_rect_comp[:-1, 0]
-        x1_rect_final = x_rect_comp[-1, 0]
-        x2_rect = x_rect_comp[:-1, 1]
-        x2_rect_final = x_rect_comp[-1, 1]
-        x1_strip = x_strip_comp[:-1, 0]
-        x1_strip_final = x_strip_comp[-1, 0]
-        x2_strip = x_strip_comp[:-1, 1]
-        x2_strip_final = x_strip_comp[-1,1]
-        '''
-        
+                
         # Plot the line connecting the points
         ax.plot(x_rect_comp[:-1, 0], x_rect_comp[:-1, 1], '-D', label='Rectifying Line', color = "red")  # '-D' means a line with diamond markers at each data point
         ax.plot( x_strip_comp[:-1, 0],  x_strip_comp[:-1, 1], '-s', label='Stripping Line', color = "blue")  # '-s' means a line with box markers at each data point
@@ -161,7 +156,7 @@ class DistillationModelTernary(DistillationModelSingleFeed):
     def plot_rect_comp(self, ax: axes):
 
         x_rect_comp  = self.compute_rectifying_stages()[0]
-                        
+        
         # Plot the line connecting the points
         ax.plot(x_rect_comp[:-1, 0], x_rect_comp[:-1, 1], '-D', label='Rectifying Line', color = "red")  # '-D' means a line with diamond markers at each data point
         ax.plot( x_rect_comp[-1, 0],  x_rect_comp[-1, 1], '*', label='Operating Section Terminus', color = "black", markersize = 15)  # '-*' means a line with a star marker at the endpoint

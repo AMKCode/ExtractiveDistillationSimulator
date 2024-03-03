@@ -68,8 +68,9 @@ class DistillationModelSingleFeed:
         Returns:
             np.ndarray: Mole fraction of each component in the vapor phase in the rectifying section that corresponds to x_r_j.
         """
-        r = self.reflux
+        r  = self.reflux
         xD = self.xD
+
         return ((r/(r+1))*x_r_j)+((1/(r+1))*xD)
 
     def rectifying_step_ytox(self, y_r_j):
