@@ -16,7 +16,6 @@ from scipy.optimize import brentq
 from utils.AntoineEquation import *
 from thermo_models.RaoultsLawModel import *
 
-
 #Notes:
 #Conditions for a feasible column, profiles match at the feed stage  + no pinch point in between xB and xD
 class DistillationModelSingleFeed:
@@ -98,7 +97,7 @@ class DistillationModelSingleFeed:
             float: Mole fraction of each component in the liquid phase in the stripping section that corresponds to y_s_j.
         """
         boil_up = self.boil_up
-        xB = self.xB
+        xB      = self.xB
         return ((boil_up/(boil_up+1))*y_s_j)+((1/(boil_up+1))*xB)
     
     def stripping_step_xtoy(self, x_s_j):
@@ -144,6 +143,9 @@ class DistillationModelSingleFeed:
     def set_xB(self, xB_new):
         self.xB = xB_new
 
+    def set_xF(self, xF_new):
+        self.xF = xF_new
+        
     def set_r(self, r_new):
 
         self.reflux = r_new
@@ -260,7 +262,8 @@ class DistillationModelSingleFeed:
             old_sol    = np.copy(new_sol[:-1])
 
             res[i, :] = np.concatenate((old_sol, np.array([lam_0])))
-        
+
+            
     def track_fixed_points_branch_stripping(self, ds, num_steps, x0, l0):
         def s(r):
             self.change_r(r)
@@ -286,10 +289,11 @@ class DistillationModelSingleFeed:
             return res
 
         def jac_eqns(uvec, l):
-            gammas = self.thermo_model.get_activity_coefficient(uvec[:-1], uvec[-1])
+
+            gammas     = self.thermo_model.get_activity_coefficient(uvec[:-1], uvec[-1])
             gamma_ders = self.thermo_model.get_gamma_ders(uvec, l)
-            res = np.empty((self.num_comp+1,self.num_comp+1))
-            P = self.thermo_model.get_Psys()
+            res        = np.empty((self.num_comp+1,self.num_comp+1))
+            P          = self.thermo_model.get_Psys()
 
             for i in range(self.num_comp):
                 Psat = self.thermo_model.get_Psat_i(i, uvec[-1])
@@ -327,6 +331,7 @@ class DistillationModelSingleFeed:
             return res
 
         def jac_eqns_aug(uvec, der, ds, u0):
+
             l = uvec[-1]
             res = np.empty((self.num_comp+2,self.num_comp+2))
 
@@ -356,14 +361,14 @@ class DistillationModelSingleFeed:
 
             # Approximation from eqn 8 of Laing
             guess = np.array([(old_sol[i]-old_sol_m1[i])/del_s for i in range(self.num_comp+1)] + [(lam_0 - lam_m1)/del_s])
-            tau = fsolve(eqns_der, guess, args = (old_sol, lam_0))
+            tau   = fsolve(eqns_der, guess, args = (old_sol, lam_0))
             
             prev_sol    = np.concatenate((old_sol, np.array([lam_0])))
             new_sol     = fsolve(eqns_aug, x0 = prev_sol + ds*tau, fprime=jac_eqns_aug, args = (tau, ds, prev_sol))
             
             # Edit the variables that hold the two prior solutions
             lam_m1, lam_0 = lam_0, new_sol[-1]
-            old_sol_m1 = np.copy(old_sol)
-            old_sol    = np.copy(new_sol[:-1])
+            old_sol_m1    = np.copy(old_sol)
+            old_sol       = np.copy(new_sol[:-1])
 
             res[i, :] = np.concatenate((old_sol, np.array([lam_0])))

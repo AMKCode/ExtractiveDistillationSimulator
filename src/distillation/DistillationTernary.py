@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 from matplotlib import axes
 import random as rand
 from utils.AntoineEquation import *
-from thermo_models.RaoultsLawModel import *
-from distillation.DistillationModel import DistillationModel
+from distillation.DistillationSingleFeed import DistillationModelSingleFeed
 
-class DistillationModelTernary(DistillationModel):
+class DistillationModelTernary(DistillationModelSingleFeed):
+
     def __init__(self, thermo_model:VLEModel, xF: np.ndarray, xD: np.ndarray, xB: np.ndarray, reflux = None, boil_up = None, q = 1) -> None:
         super().__init__(thermo_model,xF,xD,xB,reflux,boil_up,q)
         
@@ -31,7 +31,8 @@ class DistillationModelTernary(DistillationModel):
     def plot_distil_strip(self, ax, ax_fixed):
         pass
 
-        
+
+    
         
     def plot_rect_comp(self, ax):
         x_rect_comp = self.compute_rectifying_stages()[0]
@@ -123,14 +124,16 @@ class DistillationModelTernary(DistillationModel):
         ax.plot(x1_strip_final, x2_strip_final, '*', color = "black", markersize = 15)  # '-*' means a line with a star marker at the endpoint
 
         # Mark special points
-        ax.scatter(self.xF[0], self.xF[1], marker='x', color='orange', label='xF', s = 100)
-        ax.scatter(self.xB[0], self.xB[1], marker='x', color='purple', label='xB', s = 100)
-        ax.scatter(self.xD[0], self.xD[1], marker='x', color='green', label='xD', s = 100)
+        ax.scatter(self.xF[0], self.xF[1], marker='X', color='orange', label='xF', s = 100)
+        ax.scatter(self.xB[0], self.xB[1], marker='X', color='purple', label='xB', s = 100)
+        ax.scatter(self.xD[0], self.xD[1], marker='X', color='green',  label='xD', s = 100)
         
         ax.set_aspect('equal', adjustable='box')
-        ax.set_ylim([0, 1])
-        ax.set_xlim([0, 1])
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_xlim([-0.05, 1.05])
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        ax.plot([0, 0], [0, 1], 'k--')  # dashed line
+        ax.plot([0, 0], [1, 0], 'k--')  # dashed line
         
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
