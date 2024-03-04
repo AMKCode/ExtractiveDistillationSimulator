@@ -17,6 +17,7 @@ from thermo_models.RaoultsLawModel import *
 from distillation.DistillationModel import DistillationModel
 
 class DistillationModelDoubleFeed(DistillationModel):
+    
     def __init__(self, thermo_model:VLEModel, Fr: float, zF: np.ndarray, xFL: np.ndarray, xFU: np.ndarray, xD: np.ndarray, xB: np.ndarray, reflux = None, boil_up = None, qL = 1, qU = 1) -> None:
 
         D_B  = (zF[0]-xB[0])/(xD[0]-zF[0])
@@ -36,8 +37,42 @@ class DistillationModelDoubleFeed(DistillationModel):
         self.boil_up = boil_up
         self.qL = qL
         self.zF = zF
-    
-    
+
+    def update_boilup(self):
+
+        D_B  = (self.zF[0]-self.xB[0])/(self.xD[0]-self.zF[0])
+        FL_B = (self.xD[0]-self.xB[0])/(self.Fr*(self.xD[0]-self.xFU[0])+self.xD[0]-self.xFL[0])
+        self.boil_up =  ((self.reflux+1)*D_B)+(FL_B*(self.Fr*(self.qU-1))+(self.qL-1))
+        
+    def set_Fr(self, Fr_new):
+        self.Fr = Fr_new
+        self.update_boilup()
+
+    def set_zF(self, zF_new):
+        self.zF = zF_new
+        self.update_boilup()
+
+    def set_xFL(self, xFL_new):
+        self.xFL = xFL_new
+        self.update_boilup()
+
+    def set_xFU(self, xFU_new):
+        self.xFU = xFU_new
+        self.update_boilup()
+        
+    def set_xD(self, xD_new):
+        self.xD = xD_new
+        self.update_boilup()
+        
+    def set_xB(self, xB_new):
+        self.xB = xB_new
+        self.update_boilup()
+        
+    def set_r(self, r_new):
+
+        self.reflux = r_new
+        self.update_boilup()
+        
     def middle_step_y_to_x(self, y_m_j: np.ndarray):
         """
         Method to calculate y in the middle section of the distillation column from given y.
@@ -234,6 +269,36 @@ class DistillationModelDoubleFeed(DistillationModel):
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
         ax.legend()
+
+
+    def plot_middle_comp(self, ax: axes, middle_start):
+
+        middle_start = (2*middle_start - 1) #This is just to make the indexing work
+        x_middle_comp = self.compute_middle_stages(start_point = middle_start)[0]
+
+        #Extract x1 and x2 from arrays
+        x1_middle = x_middle_comp[:,0]
+        x2_middle = x_middle_comp[:,1]
+        
+        # Plot the line connecting the points
+        ax.plot(x1_middle, x2_middle, '-s', label='Middle Section', color = "#4daf4a") 
+
+        # Mark special points
+        
+        ax.set_aspect('equal', adjustable='box')
+
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_xlim([-0.05, 1.05])
+
+        ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
+        ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
+        
+        ax.legend()
+
         
     def compute_equib_stages(self, ax_num, fixed_points = []):
         pass

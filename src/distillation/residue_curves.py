@@ -62,6 +62,11 @@ class PhasePortraits():
         ax.set_xlim(-0.05, 1.05)
         ax.set_ylim(-0.05, 1.05)
 
+        ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+
+        ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad = 10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
@@ -114,7 +119,8 @@ class PhasePortraits():
         self.plot_phase_vector_fields(ax,dxdt,grid_data_points, title = "Middle Vector Field")
 
 
-        
+
+    # Should this remain or should we delete it ?
     def plot_residue_topography_curve_2D(self, ax, grid_data_points = 20, show_grid = True):
 
         # Generate the simplex grid
@@ -175,7 +181,6 @@ class PhasePortraits():
         ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
         ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
 
-
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
 
@@ -196,12 +201,18 @@ class PhasePortraits():
             self.int_plot_path(ax, init_comp, [t_span[0],-t_span[1]], data_points, dxdt=dxdt)
             
         ax.set_aspect('equal', adjustable='box')
-        ax.set_ylim([0, 1])
-        ax.set_xlim([0, 1])
+
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_xlim([-0.05, 1.05])
+
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
-            
+
+        
     def plot_rect_portrait(self, ax, t_span, data_points: int = 15, init_comps = None):
         if self.distil_model is None:
             raise TypeError("Invalid operation")
@@ -218,13 +229,19 @@ class PhasePortraits():
             self.int_plot_path(ax, init_comp, [t_span[0],-t_span[1]], data_points, dxdt=dxdt)
             
         ax.set_aspect('equal', adjustable='box')
-        ax.set_ylim([0, 1])
-        ax.set_xlim([0, 1])
+
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_xlim([-0.05, 1.05])
+
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
     def plot_middle_portrait(self, ax, t_span, data_points: int = 15, init_comps = None):
+
         if self.distil_model is None:
             raise TypeError("Invalid operation")
         if not isinstance(self.distil_model, DistillationModelDoubleFeed):
@@ -241,9 +258,14 @@ class PhasePortraits():
             self.int_plot_path(ax, init_comp, [t_span[0],-t_span[1]], data_points, dxdt=dxdt)
             
         ax.set_aspect('equal', adjustable='box')
-        ax.set_ylim([0, 1])
-        ax.set_xlim([0, 1])
+
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_xlim([-0.05, 1.05])
+
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)  
 

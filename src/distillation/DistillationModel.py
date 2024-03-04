@@ -140,10 +140,12 @@ class DistillationModel:
         
     def set_xD(self, xD_new):
         self.xD = xD_new
-    
+        self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
+        
     def set_xB(self, xB_new):
         self.xB = xB_new
-
+        self.boil_up = ((self.reflux+self.q)*((self.xF[0]-self.xB[0])/(self.xD[0]-self.xF[0]))) + self.q - 1
+        
     def set_r(self, r_new):
 
         self.reflux = r_new
