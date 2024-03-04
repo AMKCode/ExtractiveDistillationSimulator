@@ -9,7 +9,8 @@ PROJECT_ROOT = os.path.abspath(os.path.join(
 )
 sys.path.append(PROJECT_ROOT) 
 from thermo_models.VLEModelBaseClass import *
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+import seaborn as sns
 from matplotlib import axes
 import random as rand
 from utils.AntoineEquation import *
@@ -126,7 +127,7 @@ class DistillationModelTernary(DistillationModelSingleFeed):
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad = 10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
-        ax.legend()
+        ax.legend(loc = 'upper right')
 
 
     def plot_strip_comp(self, ax: axes):
@@ -150,7 +151,7 @@ class DistillationModelTernary(DistillationModelSingleFeed):
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad = 10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
-        ax.legend()
+        ax.legend(loc='upper right')
 
 
     def plot_rect_comp(self, ax: axes):
@@ -175,6 +176,6 @@ class DistillationModelTernary(DistillationModelSingleFeed):
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad = 10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
         
-        ax.legend()
+        ax.legend(loc = 'upper right')
 
    

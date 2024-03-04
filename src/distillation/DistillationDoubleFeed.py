@@ -18,7 +18,8 @@ from distillation.DistillationModel import DistillationModel
 
 class DistillationModelDoubleFeed(DistillationModel):
     def __init__(self, thermo_model:VLEModel, Fr: float, zF: np.ndarray, xFL: np.ndarray, xFU: np.ndarray, xD: np.ndarray, xB: np.ndarray, reflux = None, boil_up = None, qL = 1, qU = 1) -> None:
-        D_B = (zF[0]-xB[0])/(xD[0]-zF[0])
+
+        D_B  = (zF[0]-xB[0])/(xD[0]-zF[0])
         FL_B = (xD[0]-xB[0])/(Fr*(xD[0]-xFU[0])+xD[0]-xFL[0])
         
         # assume reflux is given, boil_up is not given, and qU and qL are 1.
@@ -71,20 +72,10 @@ class DistillationModelDoubleFeed(DistillationModel):
         
         return (x_m_j-block2)/block1
 
-    def find_rect_fixedpoints(self, n):
-        pass
-    
-    def find_strip_fixedpoints(self, n):
-        pass
-    
-    def plot_distil_strip(self, ax, ax_fixed):
-        pass
-    def plot_distil_strip(self, ax, ax_fixed):
-        pass
-
-        
+       
         
     def plot_rect_comp(self, ax):
+        
         x_rect_comp = self.compute_rectifying_stages()[0]
         
         #Extract x1 and x2 from arrays
@@ -92,16 +83,22 @@ class DistillationModelDoubleFeed(DistillationModel):
         x2_rect = x_rect_comp[:, 1]
 
         # Plot the line connecting the points
-        ax.plot(x1_rect, x2_rect, '-D', label='Rectifying Line', color = "red")  # '-o' means a line with circle markers at each data point
+        ax.plot(x1_rect, x2_rect, '-D', label='Rectifying Line', color = "#e41a1c")  # '-o' means a line with circle markers at each data point
         ax.set_aspect('equal', adjustable='box')
-        ax.set_ylim([0, 1])
-        ax.set_xlim([0, 1])
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_xlim([-0.05, 1.05])
+
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
-        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
+        ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+
+        ax.set_xlabel(self.thermo_model.comp_names[0], labelpad = 10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
-        ax.legend()
+        ax.legend(loc = 'upper right')
+
         
     def compute_rectifying_stages(self):
+
         x_comp, y_comp = [], []  # Initialize composition lists
         counter = 0
         
@@ -109,14 +106,15 @@ class DistillationModelDoubleFeed(DistillationModel):
         y1 = self.rectifying_step_xtoy(x1)
 
         while True:
-            x_comp.append(x1)
+
+            x_comp.append(x1) # Why do we have these append statements here
             y_comp.append(y1)
+
             counter += 1
             x2 = self.thermo_model.convert_y_to_x(y1)[0][:-1]
-            
             y2 = self.rectifying_step_xtoy(x2)
             
-            x_comp.append(x2)
+            x_comp.append(x2)  
             y_comp.append(y2)
             
             if counter == 100000:
@@ -127,7 +125,9 @@ class DistillationModelDoubleFeed(DistillationModel):
                 
             x1 = x2
             y1 = y2
+            
     def compute_stripping_stages(self):
+
         x_comp, y_comp = [], []  # Initialize composition lists
         counter = 0
         
@@ -140,10 +140,11 @@ class DistillationModelDoubleFeed(DistillationModel):
             counter += 1
             
             y2 = self.thermo_model.convert_x_to_y(x1)[0][:-1]
-            x_comp.append(x1)
+            x2 = self.stripping_step_ytox(y2)
+            
+            x_comp.append(x2)  # Should this be x2 or x1 - was x1 before
             y_comp.append(y2)
             
-            x2 = self.stripping_step_ytox(y2)
             if counter == 100:
                 print("counter strip:", counter)
                 return np.array(x_comp), np.array(y_comp)
@@ -154,12 +155,14 @@ class DistillationModelDoubleFeed(DistillationModel):
             y1 = y2
     
     def compute_middle_stages(self, start_point:int):
+        
         x_comp, y_comp = [], []  # Initialize composition lists
         counter = 0
+        
         #Need to start from a set position on the stripping section; call it 'start_point' number of 
         #stages into the stripping section.  Find the comp at that stage and use that as (x1, y1)
-
         #this is not done correctly though
+        
         x_strip_comp = self.compute_stripping_stages()[0]
         x1 = x_strip_comp[start_point, :]
         y1 = self.middle_step_x_to_y(x1)
@@ -167,15 +170,18 @@ class DistillationModelDoubleFeed(DistillationModel):
         #print(x1, y1) #debugging
         
         while True:
+            
             x_comp.append(x1)
             y_comp.append(y1)
+
             counter += 1
             
             y2 = self.thermo_model.convert_x_to_y(x1)[0][:-1]
-            x_comp.append(x1)
-            y_comp.append(y2)
-            
             x2 = self.middle_step_y_to_x(y2)
+
+            x_comp.append(x2) # Should this be x1 or x2 ?
+            y_comp.append(y2)
+                        
             if counter == 100:
                 print("counter middle:", counter)
                 return np.array(x_comp), np.array(y_comp)
@@ -183,30 +189,30 @@ class DistillationModelDoubleFeed(DistillationModel):
                 return np.array(x_comp), np.array(y_comp)
             if (np.any(x2 < 0) or np.any(y2 < 0)):
                 return np.array(x_comp), np.array(y_comp)
-            #print(x2,  y2) #debugging
+            
             x1 = x2
             y1 = y2
         
 
     def plot_rect_strip_comp(self, ax: axes, middle_start):
+
         middle_start = (2*middle_start - 1) #This is just to make the indexing work
         x_rect_comp = self.compute_rectifying_stages()[0]
         x_strip_comp = self.compute_stripping_stages()[0]
         x_middle_comp = self.compute_middle_stages(start_point = middle_start)[0]
 
-
         #Extract x1 and x2 from arrays
-        x1_rect = x_rect_comp[:, 0]
-        x2_rect = x_rect_comp[:, 1]
-        x1_strip = x_strip_comp[:, 0]
-        x2_strip = x_strip_comp[:, 1]
+        x1_rect   = x_rect_comp[:, 0]
+        x2_rect   = x_rect_comp[:, 1]
+        x1_strip  = x_strip_comp[:, 0]
+        x2_strip  = x_strip_comp[:, 1]
         x1_middle = x_middle_comp[:,0]
         x2_middle = x_middle_comp[:,1]
         
         # Plot the line connecting the points
-        ax.plot(x1_rect, x2_rect, '-D', label='Rectifying Line', color = "red")  # '-o' means a line with circle markers at each data point
-        ax.plot(x1_strip, x2_strip, '-s', label='Stripping Line', color = "blue")  # '-o' means a line with circle markers at each data point
-        ax.plot(x1_middle, x2_middle, '-s', label='Middle Section', color = "black")  # '-o' means a line with circle markers at each data point
+        ax.plot(x1_rect, x2_rect, '-D', label='Rectifying Line', color = "#e41a1c")  
+        ax.plot(x1_strip, x2_strip, '-s', label='Stripping Line', color = "#377eb8")  
+        ax.plot(x1_middle, x2_middle, '-s', label='Middle Section', color = "#4daf4a") 
 
         # Mark special points
         ax.scatter(self.xF[0], self.xF[1], marker='x', color='orange', label='xF', s = 100)
@@ -216,9 +222,13 @@ class DistillationModelDoubleFeed(DistillationModel):
         ax.scatter(self.xFU[0], self.xFU[1], marker='x', color='blue', label='xFU', s = 100)
         
         ax.set_aspect('equal', adjustable='box')
-        ax.set_ylim([0, 1])
-        ax.set_xlim([0, 1])
+
+        ax.set_ylim([-0.05, 1.05])
+        ax.set_xlim([-0.05, 1.05])
+
         ax.plot([1, 0], [0, 1], 'k--')  # Diagonal dashed line
+        ax.hlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
+        ax.vlines(0, 0, 1, colors = 'k', linestyles = 'dashed')  # dashed line
         
         ax.set_xlabel(self.thermo_model.comp_names[0], labelpad=10)
         ax.set_ylabel(self.thermo_model.comp_names[1], labelpad = 10)
@@ -232,9 +242,9 @@ class DistillationModelDoubleFeed(DistillationModel):
         pass
 
     def change_fr(self, new_fr):
+
         self.Fr = new_fr
-        D_B = (self.zF[0]-self.xB[0])/(self.xD[0]-self.zF[0])
+        D_B  = (self.zF[0]-self.xB[0])/(self.xD[0]-self.zF[0])
         FL_B = (self.xD[0]-self.xB[0])/(self.Fr*(self.xD[0]-self.xFU[0])+self.xD[0]-self.xFL[0])
-        
         self.boil_up = ((self.reflux+1)*D_B)+(FL_B*(self.Fr*(self.qU-1))+(self.qL-1))
         return self
