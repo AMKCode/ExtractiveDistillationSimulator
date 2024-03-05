@@ -149,8 +149,8 @@ class DistillationModelDoubleFeed(DistillationModel):
             x2 = self.thermo_model.convert_y_to_x(y1)[0][:-1]
             y2 = self.rectifying_step_xtoy(x2)
             
-            x_comp.append(x2)  
-            y_comp.append(y2)
+            #x_comp.append(x2)  
+            #y_comp.append(y2)
             
             if counter == 100000:
                 print("counter rect:", counter)
@@ -177,8 +177,8 @@ class DistillationModelDoubleFeed(DistillationModel):
             y2 = self.thermo_model.convert_x_to_y(x1)[0][:-1]
             x2 = self.stripping_step_ytox(y2)
             
-            x_comp.append(x2)  # Should this be x2 or x1 - was x1 before
-            y_comp.append(y2)
+            #x_comp.append(x2)  # Should this be x2 or x1 - was x1 before
+            #y_comp.append(y2)
             
             if counter == 100:
                 print("counter strip:", counter)
